@@ -1,0 +1,4 @@
+- source: project
+  netlify:
+    - id: 1b46fc65-de94-4f9a-b134-0b0a63b8d03e
+      url: 'https://playful-muffin-6efec1.netlify.app'
