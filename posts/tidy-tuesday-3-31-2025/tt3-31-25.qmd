@@ -4,6 +4,8 @@ author: "Nicky Spiva"
 date: "2025-03-31"
 categories: [code, analysis]
 image: "image.jpg"
+execute:
+  shiny: true
 ---
 
 ```{r warning=FALSE}
@@ -210,7 +212,7 @@ ggplotly(p1, tooltip="text")
 
 ```
 
-part 2 
+part 2
 
 ```{r}
 # Remove rows with NA values before plotting
@@ -268,6 +270,8 @@ server <- function(input, output) {
 }
 
 # Run the Shiny app
-shinyApp(ui = ui, server = server)
+# shinyApp(ui = ui, server = server)
+
 
 ```
+<iframe src="https://wlx6sl-nick-spiva.shinyapps.io/test_color/" width="100%" height="600px"></iframe>
