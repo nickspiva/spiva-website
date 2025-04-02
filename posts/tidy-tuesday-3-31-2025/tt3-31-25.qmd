@@ -3,16 +3,10 @@ title: "#TidyTuesday Pokemon!"
 author: "Nicky Spiva"
 date: "2025-04-1"
 categories: [code, analysis]
-image: "image.jpg"
+image: "bulby.png"
 execute:
   shiny: true
-format:
-  html:
-    toc: true
-  pdf:
-    toc: true
-  docx:
-    toc: true
+
 ---
 
 ```{r setup, warning=FALSE, message=FALSE}
@@ -58,11 +52,7 @@ ggplot(gg) +
 
 But how to map out specific colors?
 
-Looking at the help documentation for scale_color_identity seems to provide some examples.
-
-![](scale_colour_identity_example){width="535"}
-
-I think this could kind of work? Each graph could be a type, and each point could be a pokemon's primary color. Some tricky things I had to figure out - how to convert colors from HEX to RGB to LUV - it ended up simple, but I learned about trying to use non-vectorized functions in mutate, which doesn't go well! 
+Looking at the help documentation for scale_color_identity seems to provide some examples.I think this could kind of work? Each graph could be a type, and each point could be a pokemon's primary color. Some tricky things I had to figure out - how to convert colors from HEX to RGB to LUV - it ended up simple, but I learned about trying to use non-vectorized functions in mutate, which doesn't go well! 
 
 ```{r testing-colors-plots, warning=FALSE, message=FALSE}
 
