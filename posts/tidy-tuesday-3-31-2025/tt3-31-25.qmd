@@ -1,0 +1,273 @@
+---
+title: "#TidyTuesday Pokemon!"
+author: "Nicky Spiva"
+date: "2025-03-31"
+categories: [code, analysis]
+image: "image.jpg"
+---
+
+```{r warning=FALSE}
+# Using R
+# Option 1: tidytuesdayR R package 
+## install.packages("tidytuesdayR")
+library(tidyverse)
+library(colorspace)
+
+luv_c <- luv_colours
+
+tuesdata <- tidytuesdayR::tt_load('2025-04-01')
+
+pokemon_df <- tuesdata$pokemon_df
+```
+
+Here's an idea to explore, what is the relationship between a Pokemon's type and their colors? Can we do NBA style heatmaps for primary, secondary, and tertiary colors for each type of pokemon? Perhaps bug types have colors like leaf green and bright yellow, can we see that on a hex-tile?
+
+How are colors even represented numerically? I'm familiar with RGB type scales, which are essentially three-dimensional numerical representtions of colors right?
+
+Does converting
+
+https://stackoverflow.com/questions/21490210/how-to-plot-a-colour-wheel-by-using-ggplot - article regaridng mapping color wheels with r.
+
+Seems like HSV values are another three dimensional numerical representation of colors (hue, 360 wheel, 0 red, green 120, blue 240), saturation (0 gray, 100 pure color), value (brightness - 0 black, 100 full brightness)
+
+Ok! Hex is RGB, just using a hexadecimal system. #RRGGBB, going from OO to FF in terms of intensity for 0-255 values for each color.
+
+I'm imagining visualization kind of like how they do population density, but instead of a spatial map of a city, we just have a color wheel, and the heights of various colors are based on the frequency of that color's appearance in the type.
+
+To do this, I would need a few things - first a way to map out radially and assign colors to points/locations, next I would need a way to modify points of heights, or potentially to only display points that are present?
+
+Googling is tricky for this! "mapping/graphing colors" type queries result in stuff about how to generally use color in the tidyverse, not how to actually visualize colors themselves.
+
+It seems like [this code](https://stackoverflow.com/questions/21490210/how-to-plot-a-colour-wheel-by-using-ggplot) basically generates it:
+
+```{r}
+r  <- seq(0,1,length=201)
+th <- seq(0,2*pi, length=201)
+d  <- expand.grid(r=r,th=th)
+gg <- with(d,data.frame(d,x=r*sin(th),y=r*cos(th),
+                        z=hcl(h=360*th/(2*pi),c=100*r, l=65)))
+ggplot(gg) +
+  geom_point(aes(x,y, color=z), size=3)+
+  scale_color_identity()+
+  labs(x="",y="") +
+  coord_fixed()
+```
+
+But how to map out specific colors?
+
+Looking at the help documentation for scale_color_identity seems to provide some examples.
+
+![](scale_colour_identity_example){width="535"}
+
+I think this could kind of work? Each graph could be a type, and each point could be a pokemon's primary color. But I would need a way to translate hex colors into LUV colors
+
+I ran into a frustrating issue where I was trying to mutate using col2rgb but it wasn't vectorized so I just had the first color copied for the
+
+```{r}
+library(purrr)
+library(colorspace)
+library(plotly)
+library(shiny)
+
+test0 <- col2rgb("#abcdef")
+test1 <- col2rgb("#abcdef")[2]
+
+# pokemon_df_rgb <- pokemon_df |> mutate(
+#   red = map_dbl(color_1, ~ col2rgb(.x)[1]), 
+#   green = map_dbl(color_1, ~ col2rgb(.x)[2]), 
+#   blue = map_dbl(color_1, ~ col2rgb(.x)[3]),
+#   red2 = map_dbl(color_2, ~ col2rgb(.x)[1]), 
+#   green2 = map_dbl(color_2, ~ col2rgb(.x)[2]), 
+#   blue2 = map_dbl(color_2, ~ col2rgb(.x)[3]),
+#   red3 = map_dbl(color_3, ~ col2rgb(.x)[1]), 
+#   green3 = map_dbl(color_3, ~ col2rgb(.x)[2]), 
+#   blue3 = map_dbl(color_3, ~ col2rgb(.x)[3])
+# ) 
+# 
+# # Create a matrix of normalized RGB values
+# rgb_matrix <- as.matrix(pokemon_df_rgb %>% select(red, green, blue) / 255)
+# rgb_matrix2 <- as.matrix(pokemon_df_rgb %>% select(red2, green2, blue2) / 255)
+# rgb_matrix3 <- as.matrix(pokemon_df_rgb %>% select(red3, green3, blue3) / 255)
+# 
+# # Convert RGB to Luv
+# luv_values <- convertColor(rgb_matrix, from = "sRGB", to = "Luv")
+# luv_values2 <- convertColor(rgb_matrix2, from = "sRGB", to = "Luv")
+# luv_values3 <- convertColor(rgb_matrix3, from = "sRGB", to = "Luv")
+# 
+# 
+# 
+# # Add Luv values to the dataframe
+# pokemon_df_rgb <- pokemon_df_rgb %>%
+#   mutate(
+#     L = luv_values[, 1],
+#     u = luv_values[, 2],
+#     v = luv_values[, 3]
+#   )
+# 
+# pokemon_df_rgb <- pokemon_df_rgb %>%
+#   mutate(
+#     L2 = luv_values2[, 1],
+#     u2 = luv_values2[, 2],
+#     v2 = luv_values2[, 3]
+#   )
+# 
+# pokemon_df_rgb <- pokemon_df_rgb %>%
+#   mutate(
+#     L3 = luv_values3[, 1],
+#     u3 = luv_values3[, 2],
+#     v3 = luv_values3[, 3]
+#   )
+# 
+# ggplot(pokemon_df_rgb, aes(x=u, y=v)) +
+#   geom_point(aes(colour=color_1, size = 2)) +
+#   scale_color_identity() +
+#   coord_fixed()
+# 
+# ggplot(pokemon_df_rgb, aes(x=u2, y=v2)) +
+#   geom_point(aes(colour=color_1, size = 2)) +
+#   scale_color_identity() +
+#   coord_fixed()
+# 
+# ggplot(pokemon_df_rgb, aes(x=u3, y=v3)) +
+#   geom_point(aes(colour=color_1, size = 2)) +
+#   scale_color_identity() +
+#   coord_fixed()
+
+# Function to extract and normalize RGB values and convert to Luv
+extract_and_convert <- function(df, color_col) {
+  rgb_matrix <- df %>%
+    mutate(
+      red = map_dbl(.data[[color_col]], ~ ifelse(is.na(.x), NA, col2rgb(.x)[1])), 
+      green = map_dbl(.data[[color_col]], ~ ifelse(is.na(.x), NA, col2rgb(.x)[2])),
+      blue = map_dbl(.data[[color_col]], ~ ifelse(is.na(.x), NA, col2rgb(.x)[3]))
+    ) %>%
+    select(red, green, blue) %>%
+    as.matrix() / 255
+  
+  # Handle NA values in the RGB matrix
+  rgb_matrix[is.na(rgb_matrix)] <- 0
+  
+  luv_values <- convertColor(rgb_matrix, from = "sRGB", to = "Luv")
+  
+  # Restore NA values in the Luv matrix
+  luv_values[rowSums(rgb_matrix == 0) == 3, ] <- NA
+  
+  return(luv_values)
+}
+
+# Extract and convert colors
+luv_values1 <- extract_and_convert(pokemon_df, "color_1")
+luv_values2 <- extract_and_convert(pokemon_df, "color_2")
+luv_values3 <- extract_and_convert(pokemon_df, "color_f")
+
+# Add Luv values to the dataframe
+pokemon_df_rgb <- pokemon_df %>%
+  mutate(
+    L = luv_values1[, 1],
+    u = luv_values1[, 2],
+    v = luv_values1[, 3],
+    L2 = luv_values2[, 1],
+    u2 = luv_values2[, 2],
+    v2 = luv_values2[, 3],
+    L3 = luv_values3[, 1],
+    u3 = luv_values3[, 2],
+    v3 = luv_values3[, 3]
+  )
+
+# Plotting
+plots <- list(
+  ggplot(pokemon_df_rgb, aes(x=u, y=v)) +
+    geom_point(aes(colour=color_1, size = 2)) +
+    scale_color_identity() +
+    coord_fixed(),
+  
+  ggplot(pokemon_df_rgb, aes(x=u2, y=v2)) +
+    geom_point(aes(colour=color_1, size = 2)) +
+    scale_color_identity() +
+    coord_fixed(),
+  
+  ggplot(pokemon_df_rgb, aes(x=u3, y=v3)) +
+    geom_point(aes(colour=color_1, size = 2)) +
+    scale_color_identity() +
+    coord_fixed()
+)
+
+# Print plots
+# for (plot in plots) {
+#   print(plot)
+# }
+
+
+
+p1 <- ggplot(pokemon_df_rgb, aes(x=u3, y=v3)) +
+    geom_point(aes(colour=color_f, text=pokemon)) +
+    scale_color_identity() +
+    coord_fixed() + 
+    facet_wrap(vars(type_1)) +
+    theme_gray()
+
+ggplotly(p1, tooltip="text")
+
+```
+
+part 2 
+
+```{r}
+# Remove rows with NA values before plotting
+pokemon_df_rgb <- pokemon_df_rgb |> mutate(
+  fancy_label = paste0(pokemon, "<br>", type_2), 
+  color_graph = ifelse(is.na(color_f), color_1, color_f)
+)
+
+# print(pokemon_df_rgb$u3)
+
+# Define UI for the Shiny app
+ui <- fluidPage(
+  titlePanel("Interactive Pokémon Type Plot"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("type", "Select Pokémon Type:", choices = c("All Types", unique(pokemon_df_rgb$type_1)))
+    ),
+    
+    mainPanel(
+      plotlyOutput("typePlot")
+    )
+  )
+)
+
+# print(pokemon_df_rgb$u)
+
+# Define server logic for the Shiny app
+server <- function(input, output) {
+  output$typePlot <- renderPlotly({
+    selected_type <- input$type
+    
+    if (selected_type == "All Types") {
+      filtered_data <- pokemon_df_rgb
+    } else {
+      filtered_data <- pokemon_df_rgb %>%
+        filter(type_1 == selected_type)
+    }
+    
+    # print(pokemon_df_rgb$u3)
+    
+    x_limits <- range(pokemon_df_rgb$u3, na.rm = TRUE)
+    y_limits <- range(pokemon_df_rgb$v3, na.rm = TRUE)
+    
+    # print(filtered_data$u3)
+    
+    p <- ggplot(filtered_data, aes(x = u3, y = v3)) +
+      geom_point(aes(colour = color_graph, text=fancy_label)) +
+      scale_color_identity() +
+      coord_fixed(xlim = x_limits, ylim = y_limits) +
+      ggtitle(paste("Pokémon Type:", selected_type))
+    
+    ggplotly(p, tooltip="text")
+  })
+}
+
+# Run the Shiny app
+shinyApp(ui = ui, server = server)
+
+```
