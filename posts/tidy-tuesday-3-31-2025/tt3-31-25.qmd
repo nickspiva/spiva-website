@@ -6,6 +6,13 @@ categories: [code, analysis]
 image: "image.jpg"
 execute:
   shiny: true
+format:
+  html:
+    toc: true
+  pdf:
+    toc: true
+  docx:
+    toc: true
 ---
 
 ```{r setup, warning=FALSE, message=FALSE}
@@ -192,7 +199,8 @@ p1 <- ggplot(pokemon_df_rgb, aes(x=u3, y=v3)) +
     scale_color_identity() +
     coord_fixed() + 
     facet_wrap(vars(type_1)) +
-    theme_gray()
+    theme_gray() +
+    theme(legend.position = "none")
 
 #make it interactive, like we did in #dataviz24
 ggplotly(p1, tooltip="text")
