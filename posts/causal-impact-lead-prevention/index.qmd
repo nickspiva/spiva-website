@@ -2,7 +2,7 @@
 title: "Final Project - PMAP 8521"
 author: "Nicky Spiva"
 date: "5/5/2025"
-bibliography: "bibliography.bib"
+bibliography: "Housing.bib"
 format: html
 ---
 
@@ -73,7 +73,7 @@ There are several assumptions underlying the legislation. 
 
 While earlier advocacy and city efforts in the 2000s focused on improving the city’s response to cases of lead poisoning and addressing known issues (such as the backlog of poisonous properties), the 2019 legislative package focused more on universal prevention than response to crises. I have attempted to distill the program theory in the below graph: 
 
-![](images/clipboard-974317270.png){width="578"}
+\[pic to add\]
 
 ## Logic model
 
@@ -318,7 +318,7 @@ ggplot(data = lead_dd_table, aes(x = year, y = exposure_risk, color = city)) +
 model_DD <- lm(exposure_risk ~ city + after + city * after, data = lead_dd_table)
 tidy(model_DD)
 
-write_csv(lead_dd_table, "data/diff_diff.csv")
+#write_csv(lead_dd_table, "data/diff_diff.csv")
 
 ```
 
