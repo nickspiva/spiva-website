@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Nicky Spiva">
+<meta name="dcterms.date" content="2025-05-05">
+
+<title>Final Project - PMAP 8521 – spiva-website</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c1fac2584b48ed01fb6e278e36375074.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">spiva-website</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Final Project - PMAP 8521</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Nicky Spiva </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">May 5, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<hr>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>Lead exposure is particularly harmful to young children. Lead exposure can damage children’s brains and nervous systems, slow their growth and development, and cause learning, behavior, hearing, and speech problems <span class="citation" data-cites="cdc_lead_2025">(<a href="#ref-cdc_lead_2025" role="doc-biblioref"><strong>cdc_lead_2025?</strong></a>)</span>. In 2016, over half a million children in the United States had elevated blood lead levels, and millions more live in homes with lead paint <span class="citation" data-cites="jacobs_childhood_2023">(<a href="#ref-jacobs_childhood_2023" role="doc-biblioref"><strong>jacobs_childhood_2023?</strong></a>)</span>. An advocacy campaign in Philadelphia over the past two decades was successful in securing tens of millions of dollars in funding to address the issue and also resulted in passage of several laws aiming to reduce lead exposure for residents <span class="citation" data-cites="pccy_getting_2006">(<a href="#ref-pccy_getting_2006" role="doc-biblioref"><strong>pccy_getting_2006?</strong></a>)</span>.</p>
+<p>In 2011, legislation was passed in Philadelphia requiring landlords to acquire certification that their residential property is lead free or lead safe before it may be rented to a tenant; however, dwellings where children ages 6 and under do not reside were exempted from the requirement <span class="citation" data-cites="criterion_laboratories_philadelphia_2013">(<a href="#ref-criterion_laboratories_philadelphia_2013" role="doc-biblioref"><strong>criterion_laboratories_philadelphia_2013?</strong></a>)</span>.</p>
+<p>In 2019, legislation was passed expanding the lead testing requirement to all residences in the City of Philadelphia, with the exception of college dorms. Legislators stated that the 2011 legislation was largely ineffective, achieving only 25% compliance from landlords, and that it made obtaining rental housing more difficult for families with young children <span class="citation" data-cites="philadelphia_city_council_philadelphia_2019">(<a href="#ref-philadelphia_city_council_philadelphia_2019" role="doc-biblioref"><strong>philadelphia_city_council_philadelphia_2019?</strong></a>)</span>. In addition to the bill requiring universal testing of rental properties, legislation was passed requiring lead and water quality testing as well as any required remediation in schools and daycare facilities. Lastly, legislation was also passed requiring physicians to conduct blood lead level testing for young children <span class="citation" data-cites="city_of_philadelphia_lead_2023">(<a href="#ref-city_of_philadelphia_lead_2023" role="doc-biblioref"><strong>city_of_philadelphia_lead_2023?</strong></a>)</span>.</p>
+<p>Major progress has been made in reducing lead exposure risk in Philadelphia. Between 2019 and 2022, over 82,000 rental properties were certified as lead free or lead safe and all public schools (District and charter) have conducted water quality testing and, if needed, remediation. In the most recent year of publicly available data, 2022, first-time elevated blood levels were at their lowest-ever observed level (6%) in young children, which is roughly half the 2012 rate (12%) <span class="citation" data-cites="city_of_philadelphia_childhood_2024">(<a href="#ref-city_of_philadelphia_childhood_2024" role="doc-biblioref"><strong>city_of_philadelphia_childhood_2024?</strong></a>)</span>.</p>
+<p>To what degree should the city’s success in reducing childhood lead exposure be attributed to the passage of recent laws requiring lead testing in homes and schools? If the laws have had a major effect in reducing childhood lead exposure, and we can demonstrate that, such evidence would be valuable to other local governments seeking to take effective action to protect children as well as to advocates seeking to push for meaningful action on the issue.</p>
+</section>
+<section id="program-overview" class="level1">
+<h1>Program overview</h1>
+<p>Provide in-depth background about the program. Include details about (1) when it was started, (2) why it was started, (3) what it was designed to address in society. If the program hasn’t started yet, explain why it’s under consideration. (<strong>≈300 words</strong>)</p>
+<p>Children can be exposed to lead in several ways. Touching, swallowing, or breathing in lead or lead dust exposes children to lead <span class="citation" data-cites="cdc_lead_2025">(<a href="#ref-cdc_lead_2025" role="doc-biblioref"><strong>cdc_lead_2025?</strong></a>)</span>. For example, children might inhale dust from crushed flakes of lead paint, ingest lead paint flakes chipping near a windowsill, or drink water that flows through old, degrading lead pipes exposing them to potential lead poisoning.&nbsp;</p>
+<p>Philadelphia’s DPH reported that over 55% of the properties that poisoned children with lead exposure were rental properties <span class="citation" data-cites="pccy_fact_nodate">(<a href="#ref-pccy_fact_nodate" role="doc-biblioref"><strong>pccy_fact_nodate?</strong></a>)</span>.&nbsp;</p>
+<p>While important steps were taken in the 2000s and early 2010s, there were known gaps with the laws and prevention strategies. Specifically, children do not only spend time in the house in which they primarily reside. Children spend time with relatives, family friends, etc. and can be exposed in those environments where there were no requirements for lead safe certification. Additionally, many landlords may be unaware (intentionally or not) of the ages of the children that reside in the homes. Requiring the landlord to identify the age of the children and then act accordingly did not achieve significant compliance with lead safe certification requirements. Furthermore, legislators noted that families with children face discrimination and additional challenges in obtaining rental housing and this additional requirement added to that burden <span class="citation" data-cites="philadelphiacitycouncil2019">(<a href="#ref-philadelphiacitycouncil2019" role="doc-biblioref"><strong>philadelphiacitycouncil2019?</strong></a>)</span>. Lastly, children can be exposed in school and day care environments where there were not strong requirements and enforcement.&nbsp;</p>
+<p>As such, the legislation in 2019 sought to address these gaps by expanding the breadth of the testing and remediation requirements to cover all residential units (exempting college dormitories), public schools, and daycare facilities.&nbsp;</p>
+</section>
+<section id="program-theory-and-implementation" class="level1">
+<h1>Program theory and implementation</h1>
+<section id="program-theory-and-impact-theory-graph" class="level2">
+<h2 class="anchored" data-anchor-id="program-theory-and-impact-theory-graph">Program theory and impact theory graph</h2>
+<p>There are several assumptions underlying the legislation.&nbsp;</p>
+<ul>
+<li><p>A universal requirement for residential properties will increase compliance and enforcement of laws related to lead testing, remediation, and notification.&nbsp;</p></li>
+<li><p>A universal requirement for residential properties will eliminate the specific burden placed on landlords seeking to lease to families with young children, reducing discrimination towards those families as they search for rental homes.&nbsp;</p></li>
+<li><p>Certified lead testing can effectively identify lead hazards.&nbsp;</p></li>
+<li><p>Increased identification of lead hazards by certified individuals will lead to increased remediation of lead hazards.&nbsp;</p></li>
+<li><p>Publication of information regarding property and landlord compliance with laws, childhood lead exposure levels, and school testing will support monitoring and compliance with existing laws (in part by informing the public, media, and advocates).&nbsp;</p></li>
+<li><p>Strong financial penalties and a private right of action for tenants will empower tenants and legal aid organizations and increase compliance with the laws.&nbsp;</p></li>
+<li><p>Requiring physicians to test young children for lead exposure will increase the screened population and more accurately capture the degree of childhood lead exposure in the city.&nbsp;</p></li>
+<li><p>Requiring DPH to conduct testing at the request of owners or upon receipt of credible reports of lead poisoning will increase testing and identification of lead hazards.&nbsp;</p></li>
+</ul>
+<p>While earlier advocacy and city efforts in the 2000s focused on improving the city’s response to cases of lead poisoning and addressing known issues (such as the backlog of poisonous properties), the 2019 legislative package focused more on universal prevention than response to crises. I have attempted to distill the program theory in the below graph:&nbsp;</p>
+<p>[pic to add]</p>
+</section>
+<section id="logic-model" class="level2">
+<h2 class="anchored" data-anchor-id="logic-model">Logic model</h2>
+</section>
+<section id="inputs" class="level2">
+<h2 class="anchored" data-anchor-id="inputs">Inputs</h2>
+<section id="laws" class="level3">
+<h3 class="anchored" data-anchor-id="laws">Laws</h3>
+<p>Bill No.&nbsp;180936-A - establishes lead safe certification requirements for rental licenses, penalties, conditions for testing by the Philadelphia Department of Public Health (DPH), and other requirements.&nbsp;</p>
+<p>Bill No.&nbsp;100011-A - establishes requirements for landlords to provide valid lead safe/free certification to tenants and DPH, protections and private right of action for tenants to address non-compliance.&nbsp;</p>
+<p>Bill No.&nbsp;180937-A - requires physicians to conduct testing of blood lead levels in young children.&nbsp;</p>
+</section>
+<section id="peopleorganizations" class="level3">
+<h3 class="anchored" data-anchor-id="peopleorganizations">People/organizations</h3>
+<p>Department of Public Health staff - individuals working for the Department of Public Health responsible for responding to requests for testing, publishing information on landlord compliance, and more. Provide care/resources to families dealing with lead poisoning / hazards. Also assist in connecting landlords to resources to pay for testing and remediation.&nbsp;</p>
+<p>Landlords - individuals seeking to lease residential property in the City of Philadelphia responsible for ensuring properties receive inspections and valid certification of lead free or lead safe status; providing certifications to tenants and DPH.&nbsp;</p>
+<p>Tenants - individuals seeking to lease residential property in the City of Philadelphia, granted the private right of action to sue landlords if non-compliant with lead safe laws and regulations.&nbsp;</p>
+<p>Young children - children under the age of 6, for whom blood lead testing by physicians is required.&nbsp;</p>
+<p>Physicians.&nbsp;</p>
+<p>Lead inspectors - An individual certified by the City’s DPH or state to conduct comprehensive lead inspections and risk assessments (based on state regulations) or is certified by the EPA and trained as a lead dust sampling technician.&nbsp;</p>
+<p>Lead remediators - Individuals qualified to perform lead remediation (DPH will maintain a list on its website).&nbsp;</p>
+<p>Legal aid organizations - Organizations focused on providing legal services to low-income residents in Philadelphia (e.g.&nbsp;Community Legal Services, Philadelphia Legal Assistance, etc.).&nbsp;</p>
+<p>Courts - Responsible for hearing cases regarding compliance with lead safe laws (e.g.&nbsp;Philadelphia Court of Common Pleas, Philadelphia Municipal Court, other Courts with jurisdiction). Also assist in connecting landlords to resources to pay for testing and remediation.&nbsp;</p>
+</section>
+<section id="funding" class="level3">
+<h3 class="anchored" data-anchor-id="funding">Funding</h3>
+<p>I’m not sure what level of detail or type of categorical articulation is helpful here - there are a variety of local, state, and federal governmental funds supporting this work, as well as local philanthropy, as well as private investments by landlords seeking to participate in the rental market, with presumably some cost of compliance being passed on to tenants as well.&nbsp;</p>
+</section>
+</section>
+<section id="activities" class="level2">
+<h2 class="anchored" data-anchor-id="activities">Activities</h2>
+<p>Mandated DPH residential property testing.&nbsp;</p>
+<p>Mandated physician blood lead level testing of young children.</p>
+<p>Submission of lead safe certification to DPH by landlords.&nbsp;</p>
+<p>Publication of information on the degree and details of childhood lead exposure in Philadelphia.</p>
+<p>Publication of information regarding landlord, school, and daycare compliance with lead safe requirements.&nbsp;</p>
+<p>Public notification of lead-related concerns to renters, families of school children, and the public.&nbsp;</p>
+<p>Lead testing of residential properties.&nbsp;</p>
+<p>Lead remediation work in residential properties.&nbsp;</p>
+<p>Lawsuits against landlords for non-compliance with lead safety requirements.&nbsp;</p>
+</section>
+<section id="outputs" class="level2">
+<h2 class="anchored" data-anchor-id="outputs">Outputs</h2>
+<p>Number of residential units tested for lead.</p>
+<p>Number of residential units certified as lead safe.</p>
+<p>Number of residential units remediated, replaced, avoided, or deactivated.</p>
+</section>
+<section id="outcomes" class="level2">
+<h2 class="anchored" data-anchor-id="outcomes">Outcomes</h2>
+<p>Reduce childhood lead exposure.&nbsp;</p>
+<p>Improve cognitive and physical health of Philadelphia children and residents.&nbsp;</p>
+<p>Improve school performance for Philadelphia children.&nbsp;</p>
+<p>Increase public awareness and access to information regarding lead exposure.&nbsp;</p>
+<p>Equip advocates with information &amp; infrastructure for future public safety campaigns.&nbsp;</p>
+<p>Support ongoing monitoring and increase compliance with laws.&nbsp;</p>
+<p>Empower tenants and legal aid organizations.</p>
+<p><img src="laws, people, money.png" class="img-fluid"></p>
+</section>
+</section>
+<section id="outcome-and-causation" class="level1">
+<h1>Outcome and causation</h1>
+<section id="main-outcome" class="level2">
+<h2 class="anchored" data-anchor-id="main-outcome">Main outcome</h2>
+<p>The main outcome for this evaluation is the lead exposure risk for children. I focus on this outcome for several reasons:</p>
+<ul>
+<li><p>It is easier to measure than outcomes like “empower tenants” and “improve mental and physical health”;</p></li>
+<li><p>It is more directly connected to the activities and outputs and less impacted by other policies that might be enacted (e.g.&nbsp;expanding health insurance access, funding tutoring programs); and</p></li>
+<li><p>It is very important - children should be protected from exposure to toxic, harmful substances.</p></li>
+</ul>
+</section>
+<section id="measurement" class="level2">
+<h2 class="anchored" data-anchor-id="measurement">Measurement</h2>
+<p>Below I list several potential attributes connected to my main outcome (lead exposure risk for children) and then suggest a measurable definition, ideal measurement, feasible measurement, and measurement of program effect for the attribute: breadth of exposure.</p>
+<section id="potential-attributes" class="level3">
+<h3 class="anchored" data-anchor-id="potential-attributes"><strong>Potential attributes:</strong></h3>
+<ul>
+<li><p>Severity of exposure</p></li>
+<li><p>Frequency of exposure (e.g.&nbsp;repeated exposure, prolonged exposure)</p></li>
+<li><p><u>Breadth of exposure (proportion of children exposed)</u></p></li>
+<li><p>Absolute number of children exposed</p></li>
+<li><p>Exposure sources</p></li>
+<li><p>Time between exposure and identification/treatment</p></li>
+<li><p>Lead remediation work completed in homes</p></li>
+<li><p>Lead remediation work completed in schools&nbsp;</p></li>
+<li><p>Lead free or lead safe certified rental homes</p></li>
+</ul>
+</section>
+</section>
+<section id="breadth-of-exposure" class="level2">
+<h2 class="anchored" data-anchor-id="breadth-of-exposure">Breadth of Exposure</h2>
+<p><strong>Measurable definition:</strong> The percentage of children in a given area with a blood lead level of greater than or equal to 3.5 ug/dL (micrograms per deciliter) in a given calendar year <span class="citation" data-cites="cdc2025">(<a href="#ref-cdc2025" role="doc-biblioref"><strong>cdc2025?</strong></a>)</span>&nbsp;</p>
+<p><strong>Ideal measurement:</strong> Ideally, every child residing in Philadelphia would receive at least one blood test annually measuring the level of lead in their blood.&nbsp;</p>
+<p><strong>Feasible measurement:</strong> While it is certainly possible, currently, despite requirements that physicians conduct blood tests for young children, only 36% of three year-olds were tested in 2022, so universal annual testing is not a reality on the ground. That said, 80% of three year-olds had been tested at some point in their lives. Perhaps it would make sense to do some sort of rolling cohort type thing (similar to how graduation rates are calculated and compared over time) - e.g.&nbsp;the percentage of 3-year olds who have at any point experienced blood lead levels at or above 3.5 ug/dL - and then compare each age group across years - e.g.&nbsp;2022 3-years olds v 2023 3-year olds - do we see a decrease in the percentage of children exposed to lead? The reason I think something like this might be superior is that it would give you a greater degree of coverage of the comparison groups (e.g.&nbsp;80% plus of each group will have been tested) and they will have had the same number of years (3) for potential exposures. That said, it might seem a bit convoluted or hard to explain.&nbsp;</p>
+<p><strong>Measurement of program effect:</strong> Perhaps we could look at the change in the percentage of children exposed following implementation of the 2019 legislative package and compare it to similar cities (or imagined/constructed cities) with similar context (e.g.&nbsp;deep poverty, old housing stock, old school buildings, weather, etc.). It might be tricky if other places have significantly higher or lower testing levels as well - similar to how looking at SAT or AP scores from some states shows artificially inflated numbers due to low participation rates.</p>
+</section>
+<section id="causal-theory" class="level2">
+<h2 class="anchored" data-anchor-id="causal-theory">Causal theory</h2>
+<p>Given your measurement approach, describe and draw a causal diagram (DAG) that shows how your program causes the outcome. Note that this is not the same thing as the logic model—you’ll likely have nodes in the DAG that aren’t related to the program at all (like socioeconomic status, gender, experience, or other factors). The logic model provides the framework for the actual implementation of your program and connects all the moving parts to the outcomes. The DAG is how you can prove causation with statistical approaches. (<strong>≈150 words</strong>)</p>
+<p>What factors change (or could change) the risk for children to be exposed to lead over time (other than the policy in question - requiring residential rental unit lead-safe certification)?</p>
+</section>
+<section id="sources-of-lead" class="level2">
+<h2 class="anchored" data-anchor-id="sources-of-lead">Sources of Lead</h2>
+<p>To answer this we can consider the different potential sources of lead exposure for children - lead in homes (e.g.&nbsp;flaking lead paint, lead in water from an old pipe - both are possibilities in older homes prior to the ban on use of lead in home construction). Additionally, lead in the soil could be a source of exposure for children. The amount of lead in water from a given outlet is correlated with the future amount of lead in the water from that outlet - barring remediation, we would expect to see similar levels of lead exposure. So past sources predict current sources and current risk, to a degree.</p>
+<p>Sub-elements:</p>
+<ul>
+<li>lead in water,</li>
+<li>lead in buildings (residences here),</li>
+<li>lead in soil</li>
+</ul>
+<p>These also can be impacted by laws - e.g.&nbsp;requiring lead-safe certification of rental units is hoped to have an effect of reducing the lead in homes.</p>
+</section>
+<section id="changing-knowledge-behavior" class="level2">
+<h2 class="anchored" data-anchor-id="changing-knowledge-behavior">Changing Knowledge &amp; Behavior</h2>
+<p>From there, we must consider what effects the various sources of lead - either removing them or adding to them - as well as what might effect children’s exposure and proximity to those sources (e.g.&nbsp;if parents become more knowledgeable about the harms of lead paint exposure may take additional efforts to remove or paint over old flaking paint - reducing their children’s risk of exposure).</p>
+<p>These can also be impacted by laws - both by general awareness campaigns and funding to highlight the issue, and by, for example, doctors being required to do testing, informing parents about the risk, and, more specifically, publishing information on compliance of rental units online.</p>
+<p>Sub-elements:</p>
+<ul>
+<li>public awareness of lead exposure risks, and</li>
+<li>housing preferences.</li>
+</ul>
+</section>
+<section id="changing-residential-rental-landscape" class="level2">
+<h2 class="anchored" data-anchor-id="changing-residential-rental-landscape">Changing Residential / Rental Landscape</h2>
+<p>Additionally, if residential units become less proximate to sources of potential exposure - e.g.&nbsp;industrial sites, hazardous waste sites, landfills, high traffic areas - which release lead and other toxins into the environment - the risk of childhood exposure is likely to decrease as children become farther from exposure sites.</p>
+<p>Additionally, factors like - the proportion of rental properties to owner-occupied properties is likely to effect not necessarily proximity to lead exposure sources - but the efficacy of the treatment (legislation requiring lead safe testing for rental license acquisition).</p>
+<p>Lastly, the age of housing stock as well as the pace of housing unit replacement within a given community is also likely to impact the exposure risk over time.</p>
+<p>These can also be impacted by laws, though perhaps less so than some other factors - perhaps some units are sold or replaced because of the laws.</p>
+<p>Sub-elements:</p>
+<ul>
+<li>age of housing stock,</li>
+<li>replacement rate of housing stock,</li>
+<li>proximity of housing stock to sites of risk</li>
+</ul>
+</section>
+<section id="legal-context" class="level2">
+<h2 class="anchored" data-anchor-id="legal-context">Legal Context</h2>
+<p>State preemption of necessary elements (e.g.&nbsp;Georgia’s ban on local governments establishing registries of rental properties) would likely weaken if not completely nullify the impact of local legislation that may be dependent on something like a rental registry from which to issue rental licenses. In this way it acts as a potential moderator on the treatment in the DAG.</p>
+<p>Additionally, previous laws may also lay the groundwork for the current legislative package under consideration, and also impact childhood exposure risk in the past and present.</p>
+<p><img src="dagitty-model.png" class="img-fluid"></p>
+</section>
+<section id="hypotheses" class="level2">
+<h2 class="anchored" data-anchor-id="hypotheses">Hypotheses</h2>
+<p>I predict that the 2019 legislative package will reduce the percentage of children exposed to lead by approximately 20% (e.g.&nbsp;going from 10% of children being exposed lead by the age of five to 8% of children being exposed to lead by the age of five). Given the change in exposure rate (~-6% in 10 years, or a 50% reduction) from 2012 to 2022 - this seems possible <span class="citation" data-cites="cityofphiladelphia2024">(<a href="#ref-cityofphiladelphia2024" role="doc-biblioref"><strong>cityofphiladelphia2024?</strong></a>)</span>.</p>
+</section>
+</section>
+<section id="data-and-methods" class="level1">
+<h1>Data and methods</h1>
+<section id="identification-strategy" class="level2">
+<h2 class="anchored" data-anchor-id="identification-strategy">Identification strategy</h2>
+<p>Also briefly describe what kinds of threats to internal and external validity you face in your study.</p>
+<p>RCT doesn’t seem feasible - can’t assign laws randomly across jurisdictions.</p>
+<p>Regression discontinuity also doesn’t seem feasible here - we don’t have a clear cutoff applied to treatment (passage of a law) that makes sense.</p>
+<p>IVs - I can’t think of anything that would essentially stand in for a randomizing treatment effect a la malfunctioning submarine torpedos for promotion or special radio towers for Sesame Street.</p>
+<p>Which leaves me with Differences-in-Differences (DD). I suppose I would look at some nearby cities (e.g.&nbsp;Wilmington, Camden, Baltimore, Newark, New York City) and try to find one (or several) that have similar trends with regards to the percentage of children that had newly identified lead exposures in a given year for the time period leading up to the legislation (pre-2019).</p>
+<p>My goal is to find a city or couple cities that satisfy the <em>requirements*</em> laid out in the Effect -</p>
+<ol type="1">
+<li>“There’s no particular reason to believe the untreated group would suddenly change around the time of treatment.”
+<ul>
+<li>e.g.&nbsp;the comparison city should not be enacting similar lead-prevention legislation, or say undertaking a massive atypical residential construction spree</li>
+</ul></li>
+<li>The treated group and untreated groups are generally similar in many ways.
+<ul>
+<li>e.g.&nbsp;the cities should have similar age housing stock, similar levels of industrial and waste exposure in the cities and proximity of residential housing to those risks, similar levels of poverty and rental housing</li>
+</ul></li>
+<li>The treated group and untreated groups had similar trajectories for the dependent variable before treatment.”
+<ul>
+<li>e.g.&nbsp;for the years before the legislation, the other city should also have a downward trend (like Philadelphia) in terms of it’s exposure rate.</li>
+</ul></li>
+</ol>
+<p>DD deals with selection bias by saying - one group may have opted to do the treatment - but we are going to make a case that the other group, though they didn’t select the treatment, was very similar to the treatment group - for the reasons noted above - and as such, we think the trend of the control group serves as a useful comparison and predictor for what would’ve happened with the treatment group had the treatment (legislation) not occurred.</p>
+<p>DD isolates the causal outcome by saying (e.g.&nbsp;assuming Camden was a good, similar comparison city) - we are going to create a counterfactual for what would’ve happened in Philadelphia, by looking at the before and after 2019 eras in Camden and comparing the change in lead exposure risk for children there to the change in exposure risk for children in Philadelphia. Because these two cities were so similar and on the same path and Camden did nothing wild during that time period, it is reasonable to attribute the differences in differences between the two cities’ before and after risk levels to the treatment - in this case the 2019 legislative package enacted in Philadelphia.</p>
+</section>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>We will rely on data captured by local or state governments on city or county level data on childhood exposure risk to lead. Philadelphia’s Department of Health collects this data <a href="https://www.phila.gov/programs/lead-and-healthy-homes-program/childhood-lead-poisoning-surveillance-report/">here</a>. We will measure the percentage of children who are 6-years old who have been exposed to lead one or more times in their life while residing in the city.</p>
+<p>Ideally we would access individual-level data on every test conducted on children by the local government.</p>
+<p>Additional data we will consider, not for the causal analysis per se, but to make the argument for parallel trends would be information on housing stock trends and legislative changes related to these issues.</p>
+</section>
+</section>
+<section id="synthetic-analysis" class="level1">
+<h1>Synthetic analysis</h1>
+<p>Below I generate a fake data set for my treatment city (Philadelphia) and control city (Wilmington) before and after the treatment (2019) with data on the outcome of interest - childhood lead exposure rate.</p>
+<p>The estimated effect using the DD model is that the legislative package reduced the risk by 0.4 percentage points.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>lead_dd_table <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">city =</span> <span class="fu">c</span>(<span class="st">"Philadelphia"</span>, <span class="st">"Philadelphia"</span>, <span class="st">"Wilmington"</span>, <span class="st">"Wilmington"</span>), </span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">year =</span> <span class="fu">c</span>(<span class="dv">2019</span>, <span class="dv">2020</span>, <span class="dv">2019</span>, <span class="dv">2020</span>), </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">exposure_risk =</span> <span class="fu">c</span>(<span class="fl">7.0</span>, <span class="fl">6.5</span>, <span class="fl">8.3</span>, <span class="fl">8.2</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">after =</span> year <span class="sc">&gt;</span> <span class="dv">2019</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> lead_dd_table, <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> exposure_risk, <span class="at">color =</span> city)) <span class="sc">+</span> </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fl">2019.5</span>) <span class="sc">+</span> </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>model_DD <span class="ot">&lt;-</span> <span class="fu">lm</span>(exposure_risk <span class="sc">~</span> city <span class="sc">+</span> after <span class="sc">+</span> city <span class="sc">*</span> after, <span class="at">data =</span> lead_dd_table)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(model_DD)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 5
+  term                     estimate std.error statistic p.value
+  &lt;chr&gt;                       &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+1 (Intercept)                 7           NaN       NaN     NaN
+2 cityWilmington              1.30        NaN       NaN     NaN
+3 afterTRUE                  -0.5         NaN       NaN     NaN
+4 cityWilmington:afterTRUE    0.400       NaN       NaN     NaN</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#write_csv(lead_dd_table, "data/diff_diff.csv")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+<p>The findings from this analysis would help justify the value and cost of the legislation and the requirement to have all rental properties achieve lead safe certification - and, if positive findings are discovered - for example an effect of reducing the risk of childhood lead poisoning by a not insignificant amount (e.g.&nbsp;a 10% reduction or 1 percentage point reduction) - then that could also help justify other cities enacting similar requirements - and reducing the number of children that are poisoned by lead!</p>
+<p>A tricky thing with this analysis is that Philadelphia has enacted several waves of legislation aiming to prevent lead exposure for children - it will be hard to suss out the effect for just a single or couple bills passed in a given year. Also, the legislative packages are connected - the later ones could not have been enacted without those that came before them - it may not necessarily be true that other cities have to take the same path - but it also may be the case that there are certain benefits to staggered implementation in terms of increasing likelihood of legislative success in the future.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
