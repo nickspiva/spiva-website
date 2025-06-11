@@ -25,7 +25,7 @@ set.seed(1234)  # Make any random stuff be the same every time you run this
 options(dplyr.summarise.inform = FALSE)
 ```
 
-# Introduction
+# Introduction2
 
 Lead exposure is particularly harmful to young children. Lead exposure can damage children's brains and nervous systems, slow their growth and development, and cause learning, behavior, hearing, and speech problems [@cdc_lead_2025]. In 2016, over half a million children in the United States had elevated blood lead levels, and millions more live in homes with lead paint [@jacobs_childhood_2023]. An advocacy campaign in Philadelphia over the past two decades was successful in securing tens of millions of dollars in funding to address the issue and also resulted in passage of several laws aiming to reduce lead exposure for residents [@pccy_getting_2006].
 
