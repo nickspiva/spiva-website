@@ -1,5 +1,5 @@
 ---
-title: "Effect of Philly's Lead Prevention Laws"
+title: "Using Causal Inference to Estimate the Effect of Philly's Lead Prevention Laws"
 author: "Nicky Spiva"
 date: "5/5/2025"
 bibliography: "Housing.bib"
@@ -71,11 +71,7 @@ There are several assumptions underlying the legislation. 
 
 While earlier advocacy and city efforts in the 2000s focused on improving the city’s response to cases of lead poisoning and addressing known issues (such as the backlog of poisonous properties), the 2019 legislative package focused more on universal prevention than response to crises. I have attempted to distill the program theory in the below graph: 
 
-<<<<<<< HEAD
-![program theory](laws2.png)
-=======
-\[pic to add\]
->>>>>>> 239b1c5c569e228b3c7de03d422de75ffbff61b7
+\<\<\<\<\<\<\< HEAD ![program theory](laws2.png) ======= \[pic to add\] \>\>\>\>\>\>\> 239b1c5c569e228b3c7de03d422de75ffbff61b7
 
 ## Logic model
 
