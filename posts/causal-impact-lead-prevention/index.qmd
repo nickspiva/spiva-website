@@ -1,5 +1,5 @@
 ---
-title: "Final Project - PMAP 8521"
+title: "Effect of Philly's Lead Prevention Laws"
 author: "Nicky Spiva"
 date: "5/5/2025"
 bibliography: "bibliography.bib"
@@ -39,8 +39,6 @@ To what degree should the city's success in reducing childhood lead exposure be 
 
 # Program overview
 
-Provide in-depth background about the program. Include details about (1) when it was started, (2) why it was started, (3) what it was designed to address in society. If the program hasn't started yet, explain why it's under consideration. (**≈300 words**)
-
 Children can be exposed to lead in several ways. Touching, swallowing, or breathing in lead or lead dust exposes children to lead [@cdc_lead_2025]. For example, children might inhale dust from crushed flakes of lead paint, ingest lead paint flakes chipping near a windowsill, or drink water that flows through old, degrading lead pipes exposing them to potential lead poisoning. 
 
 Philadelphia’s DPH reported that over 55% of the properties that poisoned children with lead exposure were rental properties [@pccy_fact_nodate]. 
@@ -73,7 +71,7 @@ There are several assumptions underlying the legislation. 
 
 While earlier advocacy and city efforts in the 2000s focused on improving the city’s response to cases of lead poisoning and addressing known issues (such as the backlog of poisonous properties), the 2019 legislative package focused more on universal prevention than response to crises. I have attempted to distill the program theory in the below graph: 
 
-![](images/clipboard-974317270.png){width="578"}
+![program theory](laws2.png)
 
 ## Logic model
 
@@ -155,7 +153,7 @@ Support ongoing monitoring and increase compliance with laws. 
 
 Empower tenants and legal aid organizations.
 
-![](laws,%20people,%20money.png)
+![DAG model](dagitty-model.png)
 
 # Outcome and causation
 
@@ -318,7 +316,7 @@ ggplot(data = lead_dd_table, aes(x = year, y = exposure_risk, color = city)) +
 model_DD <- lm(exposure_risk ~ city + after + city * after, data = lead_dd_table)
 tidy(model_DD)
 
-write_csv(lead_dd_table, "data/diff_diff.csv")
+#write_csv(lead_dd_table, "data/diff_diff.csv")
 
 ```
 
