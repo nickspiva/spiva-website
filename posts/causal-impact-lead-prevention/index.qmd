@@ -1,5 +1,5 @@
 ---
-title: "Final Project - PMAP 8521"
+title: "Using Causal Inference to Estimate the Effect of Philly's Lead Prevention Laws"
 author: "Nicky Spiva"
 date: "5/5/2025"
 bibliography: "Housing.bib"
@@ -25,7 +25,7 @@ set.seed(1234)  # Make any random stuff be the same every time you run this
 options(dplyr.summarise.inform = FALSE)
 ```
 
-# Introduction
+# Introduction2
 
 Lead exposure is particularly harmful to young children. Lead exposure can damage children's brains and nervous systems, slow their growth and development, and cause learning, behavior, hearing, and speech problems [@cdc_lead_2025]. In 2016, over half a million children in the United States had elevated blood lead levels, and millions more live in homes with lead paint [@jacobs_childhood_2023]. An advocacy campaign in Philadelphia over the past two decades was successful in securing tens of millions of dollars in funding to address the issue and also resulted in passage of several laws aiming to reduce lead exposure for residents [@pccy_getting_2006].
 
@@ -38,8 +38,6 @@ Major progress has been made in reducing lead exposure risk in Philadelphia. Bet
 To what degree should the city's success in reducing childhood lead exposure be attributed to the passage of recent laws requiring lead testing in homes and schools? If the laws have had a major effect in reducing childhood lead exposure, and we can demonstrate that, such evidence would be valuable to other local governments seeking to take effective action to protect children as well as to advocates seeking to push for meaningful action on the issue.
 
 # Program overview
-
-Provide in-depth background about the program. Include details about (1) when it was started, (2) why it was started, (3) what it was designed to address in society. If the program hasn't started yet, explain why it's under consideration. (**≈300 words**)
 
 Children can be exposed to lead in several ways. Touching, swallowing, or breathing in lead or lead dust exposes children to lead [@cdc_lead_2025]. For example, children might inhale dust from crushed flakes of lead paint, ingest lead paint flakes chipping near a windowsill, or drink water that flows through old, degrading lead pipes exposing them to potential lead poisoning. 
 
@@ -73,7 +71,7 @@ There are several assumptions underlying the legislation. 
 
 While earlier advocacy and city efforts in the 2000s focused on improving the city’s response to cases of lead poisoning and addressing known issues (such as the backlog of poisonous properties), the 2019 legislative package focused more on universal prevention than response to crises. I have attempted to distill the program theory in the below graph: 
 
-\[pic to add\]
+\<\<\<\<\<\<\< HEAD ![program theory](laws2.png) ======= \[pic to add\] \>\>\>\>\>\>\> 239b1c5c569e228b3c7de03d422de75ffbff61b7
 
 ## Logic model
 
@@ -155,7 +153,7 @@ Support ongoing monitoring and increase compliance with laws. 
 
 Empower tenants and legal aid organizations.
 
-![](laws,%20people,%20money.png)
+![DAG model](dagitty-model.png)
 
 # Outcome and causation
 
