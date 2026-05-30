@@ -53,21 +53,21 @@ As such, the legislation in 2019 sought to address these gaps by expanding the b
 
 There are several assumptions underlying the legislation. 
 
--   A universal requirement for residential properties will increase compliance and enforcement of laws related to lead testing, remediation, and notification. 
+- A universal requirement for residential properties will increase compliance and enforcement of laws related to lead testing, remediation, and notification. 
 
--   A universal requirement for residential properties will eliminate the specific burden placed on landlords seeking to lease to families with young children, reducing discrimination towards those families as they search for rental homes. 
+- A universal requirement for residential properties will eliminate the specific burden placed on landlords seeking to lease to families with young children, reducing discrimination towards those families as they search for rental homes. 
 
--   Certified lead testing can effectively identify lead hazards. 
+- Certified lead testing can effectively identify lead hazards. 
 
--   Increased identification of lead hazards by certified individuals will lead to increased remediation of lead hazards. 
+- Increased identification of lead hazards by certified individuals will lead to increased remediation of lead hazards. 
 
--   Publication of information regarding property and landlord compliance with laws, childhood lead exposure levels, and school testing will support monitoring and compliance with existing laws (in part by informing the public, media, and advocates). 
+- Publication of information regarding property and landlord compliance with laws, childhood lead exposure levels, and school testing will support monitoring and compliance with existing laws (in part by informing the public, media, and advocates). 
 
--   Strong financial penalties and a private right of action for tenants will empower tenants and legal aid organizations and increase compliance with the laws. 
+- Strong financial penalties and a private right of action for tenants will empower tenants and legal aid organizations and increase compliance with the laws. 
 
--   Requiring physicians to test young children for lead exposure will increase the screened population and more accurately capture the degree of childhood lead exposure in the city. 
+- Requiring physicians to test young children for lead exposure will increase the screened population and more accurately capture the degree of childhood lead exposure in the city. 
 
--   Requiring DPH to conduct testing at the request of owners or upon receipt of credible reports of lead poisoning will increase testing and identification of lead hazards. 
+- Requiring DPH to conduct testing at the request of owners or upon receipt of credible reports of lead poisoning will increase testing and identification of lead hazards. 
 
 While earlier advocacy and city efforts in the 2000s focused on improving the city’s response to cases of lead poisoning and addressing known issues (such as the backlog of poisonous properties), the 2019 legislative package focused more on universal prevention than response to crises. I have attempted to distill the program theory in the below graph: 
 
@@ -161,11 +161,11 @@ Empower tenants and legal aid organizations.
 
 The main outcome for this evaluation is the lead exposure risk for children. I focus on this outcome for several reasons:
 
--   It is easier to measure than outcomes like "empower tenants" and "improve mental and physical health";
+- It is easier to measure than outcomes like "empower tenants" and "improve mental and physical health";
 
--   It is more directly connected to the activities and outputs and less impacted by other policies that might be enacted (e.g. expanding health insurance access, funding tutoring programs); and
+- It is more directly connected to the activities and outputs and less impacted by other policies that might be enacted (e.g. expanding health insurance access, funding tutoring programs); and
 
--   It is very important - children should be protected from exposure to toxic, harmful substances.
+- It is very important - children should be protected from exposure to toxic, harmful substances.
 
 ## Measurement
 
@@ -173,23 +173,23 @@ Below I list several potential attributes connected to my main outcome (lead exp
 
 ### **Potential attributes:**
 
--   Severity of exposure
+- Severity of exposure
 
--   Frequency of exposure (e.g. repeated exposure, prolonged exposure)
+- Frequency of exposure (e.g. repeated exposure, prolonged exposure)
 
--   [Breadth of exposure (proportion of children exposed)]{.underline}
+- [Breadth of exposure (proportion of children exposed)]{.underline}
 
--   Absolute number of children exposed
+- Absolute number of children exposed
 
--   Exposure sources
+- Exposure sources
 
--   Time between exposure and identification/treatment
+- Time between exposure and identification/treatment
 
--   Lead remediation work completed in homes
+- Lead remediation work completed in homes
 
--   Lead remediation work completed in schools 
+- Lead remediation work completed in schools 
 
--   Lead free or lead safe certified rental homes
+- Lead free or lead safe certified rental homes
 
 ## Breadth of Exposure
 
@@ -213,9 +213,9 @@ To answer this we can consider the different potential sources of lead exposure 
 
 Sub-elements:
 
--   lead in water,
--   lead in buildings (residences here),
--   lead in soil
+- lead in water,
+- lead in buildings (residences here),
+- lead in soil
 
 These also can be impacted by laws - e.g. requiring lead-safe certification of rental units is hoped to have an effect of reducing the lead in homes.
 
@@ -227,8 +227,8 @@ These can also be impacted by laws - both by general awareness campaigns and fun
 
 Sub-elements:
 
--   public awareness of lead exposure risks, and
--   housing preferences.
+- public awareness of lead exposure risks, and
+- housing preferences.
 
 ## Changing Residential / Rental Landscape
 
@@ -242,9 +242,9 @@ These can also be impacted by laws, though perhaps less so than some other facto
 
 Sub-elements:
 
--   age of housing stock,
--   replacement rate of housing stock,
--   proximity of housing stock to sites of risk
+- age of housing stock,
+- replacement rate of housing stock,
+- proximity of housing stock to sites of risk
 
 ## Legal Context
 
@@ -275,11 +275,11 @@ Which leaves me with Differences-in-Differences (DD). I suppose I would look at 
 My goal is to find a city or couple cities that satisfy the *requirements\** laid out in the Effect -
 
 1.  "There’s no particular reason to believe the untreated group would suddenly change around the time of treatment."
-    -   e.g. the comparison city should not be enacting similar lead-prevention legislation, or say undertaking a massive atypical residential construction spree
+    - e.g. the comparison city should not be enacting similar lead-prevention legislation, or say undertaking a massive atypical residential construction spree
 2.  The treated group and untreated groups are generally similar in many ways.
-    -   e.g. the cities should have similar age housing stock, similar levels of industrial and waste exposure in the cities and proximity of residential housing to those risks, similar levels of poverty and rental housing
+    - e.g. the cities should have similar age housing stock, similar levels of industrial and waste exposure in the cities and proximity of residential housing to those risks, similar levels of poverty and rental housing
 3.  The treated group and untreated groups had similar trajectories for the dependent variable before treatment."
-    -   e.g. for the years before the legislation, the other city should also have a downward trend (like Philadelphia) in terms of it's exposure rate.
+    - e.g. for the years before the legislation, the other city should also have a downward trend (like Philadelphia) in terms of it's exposure rate.
 
 DD deals with selection bias by saying - one group may have opted to do the treatment - but we are going to make a case that the other group, though they didn't select the treatment, was very similar to the treatment group - for the reasons noted above - and as such, we think the trend of the control group serves as a useful comparison and predictor for what would've happened with the treatment group had the treatment (legislation) not occurred.
 

@@ -6,7 +6,6 @@ categories: [code, analysis]
 image: "bulby.png"
 execute:
   shiny: true
-
 ---
 
 ```{r setup, warning=FALSE, message=FALSE}
@@ -23,13 +22,13 @@ pokemon_df <- tuesdata$pokemon_df
 
 Here's an idea to explore, what is the relationship between a Pokemon's type and their colors? Can we do NBA style heatmaps for primary, secondary, and tertiary colors for each type of pokemon? Perhaps bug types have colors like leaf green and bright yellow, can we see that on a hex-tile?
 
-How are colors even represented numerically? I'm familiar with RGB type scales, which are essentially three-dimensional numerical representtions of colors right? Well, in trying to graph this relationship I've learned about LUV values which is kind of another 3 number approach to describing colors. HSV values are another three dimensional numerical representation of colors (hue, 360 wheel, 0 red, green 120, blue 240), saturation (0 gray, 100 pure color), value (brightness - 0 black, 100 full brightness). 
+How are colors even represented numerically? I'm familiar with RGB type scales, which are essentially three-dimensional numerical representtions of colors right? Well, in trying to graph this relationship I've learned about LUV values which is kind of another 3 number approach to describing colors. HSV values are another three dimensional numerical representation of colors (hue, 360 wheel, 0 red, green 120, blue 240), saturation (0 gray, 100 pure color), value (brightness - 0 black, 100 full brightness).
 
 Basically, Hex is RGB, just using a hexadecimal system. #RRGGBB, going from OO to FF in terms of intensity for 0-255 values for each color.
 
-https://stackoverflow.com/questions/21490210/how-to-plot-a-colour-wheel-by-using-ggplot - This was a helpful article as I was starting to think about how to plot things on a color wheel, but ultimately the help documentation regarding the scale_color_identity function was what guided my approach. 
+https://stackoverflow.com/questions/21490210/how-to-plot-a-colour-wheel-by-using-ggplot - This was a helpful article as I was starting to think about how to plot things on a color wheel, but ultimately the help documentation regarding the scale_color_identity function was what guided my approach.
 
-I'm imagining visualization kind of like some folks they do population density maps with 3D peaks for dense areas that kind of make mountain maps, but instead of a spatial map of a city, we just have a color wheel, and the heights of various colors are based on the frequency of that color's appearance in the pokemon world (or in the given type). 
+I'm imagining visualization kind of like some folks they do population density maps with 3D peaks for dense areas that kind of make mountain maps, but instead of a spatial map of a city, we just have a color wheel, and the heights of various colors are based on the frequency of that color's appearance in the pokemon world (or in the given type).
 
 To do this, I would need a few things - first a way to map out radially and assign colors to points/locations, next I would need a way to modify points of heights, or potentially to only display points that are present?
 
@@ -52,7 +51,7 @@ ggplot(gg) +
 
 But how to map out specific colors?
 
-Looking at the help documentation for scale_color_identity seems to provide some examples.I think this could kind of work? Each graph could be a type, and each point could be a pokemon's primary color. Some tricky things I had to figure out - how to convert colors from HEX to RGB to LUV - it ended up simple, but I learned about trying to use non-vectorized functions in mutate, which doesn't go well! 
+Looking at the help documentation for scale_color_identity seems to provide some examples.I think this could kind of work? Each graph could be a type, and each point could be a pokemon's primary color. Some tricky things I had to figure out - how to convert colors from HEX to RGB to LUV - it ended up simple, but I learned about trying to use non-vectorized functions in mutate, which doesn't go well!
 
 ```{r testing-colors-plots, warning=FALSE, message=FALSE}
 
@@ -255,4 +254,7 @@ server <- function(input, output) {
 
 
 ```
-<iframe src="https://wlx6sl-nick-spiva.shinyapps.io/test_color/" width="100%" height="600px"></iframe>
+
+<iframe src="https://wlx6sl-nick-spiva.shinyapps.io/test_color/" width="100%" height="600px">
+
+</iframe>
