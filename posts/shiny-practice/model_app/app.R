@@ -1,6 +1,6 @@
 library(shiny)
 library(bslib)
-libary(ggplot2)
+library(ggplot2)
 
 ui <- page_sidebar(
   title = "My Shiny App",

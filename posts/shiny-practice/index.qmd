@@ -13,6 +13,19 @@ install.packages("tidyverse")
 ```
 
 ```{r}
+install.packages(c("ggiraph", "sf"))
+install.packages("ggspatial")
+```
+
+```{r}
+install.packages(c("prettymapr", "rosm"))
+```
+
+```{r}
+install.packages("raster")
+```
+
+```{r}
 library(shiny)
 
 #runExample("shiny-dir/app.R")
