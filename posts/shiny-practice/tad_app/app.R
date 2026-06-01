@@ -507,7 +507,7 @@ ui <- page_sidebar(
 
   p(
     "Atlanta's Tax Allocation Districts redirect property tax growth from ",
-    "schools to fund development. While a TAD is open, all revenue on growth ",
+    "schools to fund development. While a TAD is open, all tax revenue on property value ",
     "above the original baseline goes to ",
     strong("Invest Atlanta"),
     " — not Atlanta Public Schools, the City, or County. ",
@@ -521,12 +521,7 @@ ui <- page_sidebar(
   navset_card_tab(
     nav_panel(
       "Revenue Diverted from Schools & Kids",
-      p(
-        "Cumulative APS property tax revenue redirected to Invest Atlanta while ",
-        "TADs remain open, under each scenario. The brackets on the right show the ",
-        "total cost to the District of the Mayor's NRI proposals.",
-        class = "text-muted small px-3 pt-1 mt-1"
-      ),
+      uiOutput("diversion_subheader"),
       girafeOutput("diversion_chart", height = "360px")
     ),
 
@@ -861,88 +856,63 @@ server <- function(input, output, session) {
       mutate(scenario = factor(scenario, levels = names(diversion_scenarios)))
   })
 
-  # ── 7e-b. Diversion comparison chart ─────────────────────
+  # ── 7e-b. Diversion chart subheader (reactive) ───────────────────────────
+  # Rebuilds when the growth-rate assumption changes so the gap dollar amount
+  # and assumption name always match what's shown in the chart.
+  output$diversion_subheader <- renderUI({
+    proj_labels <- c(
+      "tad" = "Historic TAD growth (2007–2024)",
+      "tad_baseline" = "TAD growth since inception",
+      "city" = "Citywide average growth",
+      "optimistic" = "Optimistic (high-growth TADs)"
+    )
+    growth_name <- proj_labels[[input$proj_method]]
+
+    dd <- diversion_data()
+    cp_val <- dd$cumulative[dd$scenario == "Current Plan" & dd$year == PROJ_END]
+    m2_val <- dd$cumulative[
+      dd$scenario == "Mayor's Updated NRI" & dd$year == PROJ_END
+    ]
+    gap_fmt <- dollar(
+      m2_val - cp_val,
+      scale = 1e-9,
+      suffix = "B",
+      accuracy = 0.1
+    )
+
+    p(
+      strong(
+        "Cumulative APS property tax revenue redirected to Invest Atlanta"
+      ),
+      " while ",
+      "TADs remain open, under each scenario. Under the current growth assumption — ",
+      strong(growth_name),
+      " — the Mayor’s Updated NRI proposal would divert an ",
+      "additional ",
+      strong(gap_fmt),
+      " more than the current plan.",
+      class = "text-muted small px-3 pt-1 mt-1"
+    )
+  })
+
+  # ── 7e-c. Diversion comparison chart ─────────────────────
   # Shows cumulative revenue diverted AWAY from APS under each of the three
   # fixed scenarios. Unlike the projection chart, closure dates here are fixed
   # (not driven by sliders) so the three lines are always directly comparable.
   output$diversion_chart <- renderGirafe({
     dd <- diversion_data()
 
-    # End-of-range annotation: total diverted by 2055 per scenario
+    # Bold dollar labels at the 2055 endpoint of each line
     labels_2055 <- dd |>
-      filter(year == max(year)) |>
+      filter(year == PROJ_END) |>
       mutate(
-        lab = paste0(
-          scenario,
-          "  ",
-          dollar(cumulative, scale = 1e-9, suffix = "B", accuracy = 0.1)
-        )
+        lab = dollar(cumulative, scale = 1e-9, suffix = "B", accuracy = 0.1)
       )
-
-    # 2055 cumulative values per scenario — used for gap brackets
-    cp_2055 <- dd$cumulative[
-      dd$scenario == "Current Plan" & dd$year == PROJ_END
-    ]
-    m1_2055 <- dd$cumulative[
-      dd$scenario == "Mayor's Original NRI" & dd$year == PROJ_END
-    ]
-    m2_2055 <- dd$cumulative[
-      dd$scenario == "Mayor's Updated NRI" & dd$year == PROJ_END
-    ]
-
-    # Helper: draw a three-segment bracket (two caps + vertical spine)
-    # connecting y_lo to y_hi at x position x_pos
-    bracket <- function(x_pos, y_lo, y_hi, color) {
-      cap_w <- 0.7
-      list(
-        annotate(
-          "segment",
-          x = x_pos - cap_w,
-          xend = x_pos,
-          y = y_lo,
-          yend = y_lo,
-          color = color,
-          linewidth = 0.5
-        ),
-        annotate(
-          "segment",
-          x = x_pos - cap_w,
-          xend = x_pos,
-          y = y_hi,
-          yend = y_hi,
-          color = color,
-          linewidth = 0.5
-        ),
-        annotate(
-          "segment",
-          x = x_pos,
-          xend = x_pos,
-          y = y_lo,
-          yend = y_hi,
-          color = color,
-          linewidth = 0.5
-        )
-      )
-    }
 
     p <- ggplot(
       dd,
       aes(x = year, y = cumulative, color = scenario, group = scenario)
     ) +
-      # ── White mask past 2055 ──────────────────────────────────────────────
-      # ggiraph clips SVG output to the scale limits, so brackets must live
-      # within the scale (extended to 2068 below). This white rect masks the
-      # horizontal gridlines in the bracket zone so they don't clutter it.
-      # It must come FIRST so data lines and brackets render on top of it.
-      annotate(
-        "rect",
-        xmin = 2055,
-        xmax = Inf,
-        ymin = -Inf,
-        ymax = Inf,
-        fill = "white",
-        alpha = 1
-      ) +
       # ── Vertical dotted line: last TAD closes under Current Plan ──────────
       geom_vline(
         xintercept = LAST_CLOSURE_CURRENT,
@@ -985,37 +955,17 @@ server <- function(input, output, session) {
           )
         )
       ) +
-      # ── Gap bracket: Current Plan → Mayor's Updated NRI ───────────────────
-      bracket(2057, cp_2055, m2_2055, SCENARIO_COLORS["Mayor's Updated NRI"]) +
-      annotate(
-        "text",
-        x = 2057.4,
-        y = (cp_2055 + m2_2055) / 2,
-        label = paste0(
-          "-",
-          dollar(m2_2055 - cp_2055, scale = 1e-9, suffix = "B", accuracy = 0.1),
-          "\nUpdated\nNRI"
-        ),
-        hjust = 0,
+      # ── End-of-line labels at 2055 ────────────────────────────────────────
+      # hjust = -0.15 nudges text just past the last point; clip = "off" below
+      # lets the text overflow the panel edge without being cropped.
+      geom_text(
+        data = labels_2055,
+        aes(label = lab),
+        hjust = -0.15,
         vjust = 0.5,
-        size = 2.6,
-        color = SCENARIO_COLORS["Mayor's Updated NRI"]
-      ) +
-      # ── Gap bracket: Current Plan → Mayor's Original NRI ──────────────────
-      bracket(2060, cp_2055, m1_2055, SCENARIO_COLORS["Mayor's Original NRI"]) +
-      annotate(
-        "text",
-        x = 2060.4,
-        y = (cp_2055 + m1_2055) / 2,
-        label = paste0(
-          "-",
-          dollar(m1_2055 - cp_2055, scale = 1e-9, suffix = "B", accuracy = 0.1),
-          "\nOriginal\nNRI"
-        ),
-        hjust = 0,
-        vjust = 0.5,
-        size = 2.6,
-        color = SCENARIO_COLORS["Mayor's Original NRI"]
+        size = 2.8,
+        fontface = "bold",
+        show.legend = FALSE
       ) +
       scale_size_identity() +
       scale_color_manual(values = SCENARIO_COLORS, name = NULL) +
@@ -1024,19 +974,17 @@ server <- function(input, output, session) {
         limits = c(0, NA),
         expand = expansion(mult = c(0, 0.12))
       ) +
-      # xlim pins the panel and gridlines to exactly 2025–2055 with a tick at 2055.
-      # clip = "off" lets bracket annotations render past the right panel edge.
       scale_x_continuous(
         breaks = seq(2025, 2055, by = 5),
-        expand = expansion(add = c(0, 0))
+        expand = expansion(add = c(0, 3))
       ) +
-      coord_cartesian(xlim = c(2025, 2061.2), clip = "off") +
-      labs(y = "Cumulative Revenue Diverted") +
+      coord_cartesian(clip = "off") +
+      labs(y = "") +
       theme_tad()
 
     girafe(
       ggobj = p,
-      width_svg = 12, # extra width gives space for bracket annotations past 2055
+      width_svg = 9,
       height_svg = 4,
       options = list(
         opts_selection(type = "none"),
