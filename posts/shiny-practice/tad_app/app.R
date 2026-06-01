@@ -279,16 +279,30 @@ diversion_scenarios <- list(
 # goes to Invest Atlanta instead of schools. Summing and cumsumming gives the
 # running total of what schools have missed.
 compute_diverted <- function(proj_df, closure_df) {
-  proj_df |>
+  result <- proj_df |>
     left_join(closure_df, by = "tad_id") |>
-    filter(year < closure_year) |> # open = still diverting
+    filter(year < closure_year) |>   # open = still diverting
     group_by(year) |>
-    summarise(
-      annual = sum(aps_annual_revenue, na.rm = TRUE),
-      .groups = "drop"
-    ) |>
+    summarise(annual = sum(aps_annual_revenue, na.rm = TRUE), .groups = "drop") |>
     arrange(year) |>
     mutate(cumulative = cumsum(annual))
+
+  # Once all TADs have closed the cumulative total stops growing but doesn't
+  # disappear — extend the line flat to PROJ_END so all scenarios run to the
+  # same x-axis endpoint and the final diverted total remains visible.
+  last_year <- max(result$year)
+  if (last_year < PROJ_END) {
+    result <- bind_rows(
+      result,
+      tibble(
+        year       = (last_year + 1):PROJ_END,
+        annual     = 0,
+        cumulative = last(result$cumulative)
+      )
+    )
+  }
+
+  result
 }
 
 SCENARIO_COLORS <- c(
@@ -491,16 +505,31 @@ ui <- page_sidebar(
     class = "text-muted mb-3"
   ),
 
-  # ── Revenue diverted ─────────────────────────────────────
-  card(
-    card_header("Revenue Diverted from Schools & Kids to Invest Atlanta"),
-    p(
-      "Cumulative APS property tax revenue redirected to Invest Atlanta while ",
-      "TADs remain open, under each scenario. The gap between lines shows the ",
-      "additional diversion under the Mayor's NRI proposals.",
-      class = "text-muted small px-3 pt-1"
+  # ── Revenue impact — tabbed card ─────────────────────────
+  # navset_card_tab() puts Bootstrap tab buttons in the card header,
+  # letting users flip between the two complementary views of TAD revenue.
+  navset_card_tab(
+    nav_panel(
+      "Revenue Diverted from Schools & Kids",
+      p(
+        "Cumulative APS property tax revenue redirected to Invest Atlanta while ",
+        "TADs remain open, under each scenario. The gap between lines shows the ",
+        "additional diversion under the Mayor's NRI proposals.",
+        class = "text-muted small px-3 pt-1 mt-1"
+      ),
+      girafeOutput("diversion_chart", height = "360px")
     ),
-    girafeOutput("diversion_chart", height = "360px")
+
+    nav_panel(
+      "Projected APS Revenue Coming from Closed TADs",
+      p(
+        "Revenue begins flowing to APS the year a TAD closes. Dashed vertical ",
+        "lines mark each TAD's closure year under the current scenario. ",
+        "Adjust the controls on the left to simulate different timelines.",
+        class = "text-muted small px-3 pt-1 mt-1"
+      ),
+      girafeOutput("proj_chart", height = "380px")
+    )
   ),
 
   br(),
@@ -617,23 +646,6 @@ ui <- page_sidebar(
       card_header("Historic Property Values  ·  2007–2024"),
       girafeOutput("historic_chart", height = "380px")
     )
-  ),
-
-  br(),
-
-  # ── Projected APS revenue ────────────────────────────────
-  card(
-    card_header(paste0(
-      "Projected Annual APS Revenue from Closed TADs  ·  2025–",
-      PROJ_END
-    )),
-    p(
-      "Revenue begins flowing to APS the year a TAD closes. Dashed vertical ",
-      "lines mark each TAD's closure year. Adjust the controls on the left or ",
-      "customize individual TADs using the accordion above.",
-      class = "text-muted small px-3 pt-1"
-    ),
-    girafeOutput("proj_chart", height = "420px")
   ),
 
   br()
@@ -883,7 +895,8 @@ server <- function(input, output, session) {
       scale_size_identity() +
       scale_color_manual(values = SCENARIO_COLORS, name = NULL) +
       scale_y_continuous(
-        labels = label_dollar(scale = 1e-9, suffix = "B"),
+        labels = label_dollar(scale = 1e-9, suffix = "B", accuracy = 0.1),
+        limits = c(0, NA),
         expand = expansion(mult = c(0, 0.08))
       ) +
       labs(y = "Cumulative Revenue Diverted") +
