@@ -474,6 +474,25 @@ ui <- page_sidebar(
   "
   )),
 
+  # ── CSS: inline year select ───────────────────────────────────────────────
+  tags$style(HTML("
+    select.inline-year-sel {
+      -webkit-appearance: auto;
+      appearance: auto;
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid #6c757d;
+      font-size: inherit;
+      font-weight: 700;
+      color: inherit;
+      cursor: pointer;
+      padding: 0 2px;
+      vertical-align: baseline;
+      display: inline;
+    }
+    select.inline-year-sel:focus { outline: none; border-bottom-color: #0d6efd; }
+  ")),
+
   # ════════════════════════════════════════════════════════
   # SIDEBAR — sticky scenario controls
   # page_sidebar() keeps this panel fixed while the user
@@ -487,7 +506,7 @@ ui <- page_sidebar(
 
     actionButton(
       "btn_current",
-      "Current Planned",
+      "Current Plan in Place",
       class = "btn btn-outline-primary btn-sm w-100 mb-1"
     ),
     actionButton(
@@ -555,12 +574,7 @@ ui <- page_sidebar(
 
     nav_panel(
       "Projected APS Revenue Coming from Closed TADs",
-      p(
-        "Revenue begins flowing to APS the year a TAD closes. Dashed vertical ",
-        "lines mark each TAD's closure year under the current scenario. ",
-        "Adjust the controls on the left to simulate different timelines.",
-        class = "text-muted small px-3 pt-1 mt-1"
-      ),
+      uiOutput("proj_subheader"),
       girafeOutput("proj_chart", height = "380px")
     )
   ),
@@ -995,7 +1009,9 @@ server <- function(input, output, session) {
       br(),
       "On just an annual basis, the Mayor’s Updated NRI proposal would divert approximately ",
       strong(ann_2035_fmt),
-      " from APS in 2035, ballooning to ",
+      " from APS in",
+      strong("2035"),
+      " ballooning to ",
       strong(ann_2055_fmt),
       " per year by 2055.",
       class = "text-muted small px-3 pt-1 mt-1"
@@ -1280,22 +1296,150 @@ server <- function(input, output, session) {
     )
   })
 
+  # ── 7g-a. Projection chart subheader ─────────────────────
+  output$proj_subheader <- renderUI({
+    cy <- closure_years()
+    pd <- proj_data()
+    ref_year <- as.integer(input$ref_year %||% 2035)
+
+    growth_name <- c(
+      "tad" = "Historic TAD growth (2007–2024)",
+      "tad_baseline" = "TAD growth since inception",
+      "city" = "Citywide average growth",
+      "optimistic" = "Optimistic (high-growth TADs)"
+    )[[input$proj_method]]
+
+    beltline_closure <- cy$closure_year[cy$tad_id == "Beltline"]
+
+    # Native <select> built as an HTML string — onchange pushes value to Shiny.
+    # This is the most reliable cross-browser inline picker: no custom JS
+    # dropdown logic, no Bootstrap init dependency, always works in renderUI.
+    options_html <- paste(
+      vapply(2030:2055, function(yr) {
+        sprintf('<option value="%d"%s>%d</option>',
+                yr, if (yr == ref_year) " selected" else "", yr)
+      }, character(1)),
+      collapse = ""
+    )
+    picker_html <- sprintf(
+      '<select class="inline-year-sel" onchange="Shiny.setInputValue(\'ref_year\', parseInt(this.value), {priority:\'event\'})">%s</select>',
+      options_html
+    )
+
+    example_html <- if (
+      length(beltline_closure) > 0 &&
+      !is.na(beltline_closure) &&
+      beltline_closure <= ref_year
+    ) {
+      rev_val <- pd$aps_annual_revenue[pd$tad_id == "Beltline" & pd$year == ref_year]
+      rev_fmt <- if_else(
+        rev_val >= 1e9,
+        dollar(rev_val, scale = 1e-9, suffix = "B", accuracy = 0.1),
+        dollar(rev_val, scale = 1e-6, suffix = "M", accuracy = 0.1)
+      )
+      sprintf(
+        " For example, in %s, tax on property in the former Beltline TAD area will generate <strong>%s</strong> of annual revenue for schools, using the <strong>%s</strong> growth assumption.",
+        picker_html, rev_fmt, growth_name
+      )
+    } else {
+      sprintf(
+        " For example, in %s: Beltline TAD hasn&#39;t closed yet under this scenario.",
+        picker_html
+      )
+    }
+
+    HTML(sprintf(
+      '<p class="text-muted small px-3 pt-1 mt-1">%s%s</p>',
+      "Hover over dots on the TAD revenue lines to see how much money APS receives annually in property tax following the closure of each TAD.",
+      example_html
+    ))
+  })
+
   # ── 7g. Graphic 3: Projection chart ──────────────────────
   output$proj_chart <- renderGirafe({
     sel <- selected_tad()
     cy <- closure_years()
     pd <- proj_data()
 
+    # Atlantic Station and Princeton Lake are confirmed closed; Stadium is active.
+    # Explicit list avoids any data-quirk ambiguity with the already_closed flag.
+    closed_tad_ids <- c("Atlantic Station", "Princeton Lake")
+    active_tad_ids <- tad_meta |>
+      filter(!tad_id %in% closed_tad_ids) |>
+      pull(tad_id)
+
+    # TAD groupings for labeling
+    corridor_ids <- c("Campbellton", "Metropolitan", "Stadium", "Hollowell")
+    individual_ids <- c("Beltline", "Eastside", "Westside", "Perry Bolton")
+
     per_tad <- pd |>
       left_join(cy, by = "tad_id") |>
-      filter(year >= closure_year) |>
+      filter(tad_id %in% active_tad_ids, year >= closure_year) |>
       mutate(
         line_a = if (is.null(sel)) 0.8 else if_else(tad_id == sel, 1, 0.12),
         line_w = if (is.null(sel)) 0.8 else if_else(tad_id == sel, 1.4, 0.45)
       )
 
-    # Dashed vertical line at each TAD's closure year
-    vlines <- cy |> filter(closure_year >= 2025, closure_year <= PROJ_END)
+    # ── Empty-state guard ─────────────────────────────────────────────────
+    # Under scenarios where all TADs close after 2055, per_tad has no rows.
+    # Return a blank chart with proper axes rather than letting ggplot error.
+    if (nrow(per_tad) == 0) {
+      p_empty <- ggplot(
+        data.frame(year = c(2025, PROJ_END), rev = c(0, 0)),
+        aes(x = year, y = rev)
+      ) +
+        annotate(
+          "text",
+          x = mean(c(2025, PROJ_END)),
+          y = 0.5,
+          label = "No active TADs close before 2055 under this scenario.\nRevenue to APS begins after 2055.",
+          hjust = 0.5,
+          vjust = 0.5,
+          size = 3.2,
+          color = "grey50"
+        ) +
+        scale_x_continuous(breaks = seq(2025, PROJ_END, by = 5)) +
+        scale_y_continuous(
+          labels = label_dollar(scale = 1e-6, suffix = "M"),
+          limits = c(0, 1)
+        ) +
+        labs(y = "Annual APS Revenue") +
+        theme_tad() +
+        theme(
+          axis.title.y = element_text(size = 10, color = "grey40"),
+          legend.position = "none"
+        )
+      return(girafe(
+        ggobj = p_empty,
+        width_svg = 10,
+        height_svg = 4.5,
+        options = list(opts_toolbar(saveaspng = FALSE))
+      ))
+    }
+
+    # Dashed vertical line at each TAD's closure year (active TADs only)
+    vlines <- cy |>
+      filter(
+        tad_id %in% active_tad_ids,
+        closure_year >= 2025,
+        closure_year <= PROJ_END
+      )
+
+    # ── Start-of-line labels ───────────────────────────────────────────────
+    # Individual TADs: label at first data point, stagger same-year pairs
+    labels_individual <- per_tad |>
+      filter(tad_id %in% individual_ids) |>
+      group_by(tad_id) |>
+      slice_min(year, n = 1) |>
+      ungroup() |>
+      arrange(year, aps_annual_revenue) |>
+      group_by(year) |>
+      mutate(rank_in_yr = row_number()) |>
+      ungroup() |>
+      mutate(
+        lbl_vjust = if_else(rank_in_yr %% 2 == 1, -0.7, 1.6),
+        lbl_alpha = line_a
+      )
 
     p <- ggplot(
       per_tad,
@@ -1337,6 +1481,15 @@ server <- function(input, output, session) {
           )
         )
       ) +
+      # Individual TAD names at the start of each line; dim with selection
+      geom_text(
+        data = labels_individual,
+        aes(label = tad_id, vjust = lbl_vjust, alpha = lbl_alpha),
+        hjust = 0.5,
+        size = 2.4,
+        fontface = "bold",
+        show.legend = FALSE
+      ) +
       scale_color_manual(values = TAD_PALETTE, na.value = "grey70") +
       scale_y_continuous(labels = label_dollar(scale = 1e-6, suffix = "M")) +
       scale_size_identity() +
@@ -1344,7 +1497,10 @@ server <- function(input, output, session) {
       scale_linewidth_identity() +
       labs(y = "Annual APS Revenue") +
       theme_tad() +
-      theme(axis.title.y = element_text(size = 10, color = "grey40"))
+      theme(
+        axis.title.y = element_text(size = 10, color = "grey40"),
+        legend.position = "none"
+      )
 
     girafe(
       ggobj = p,
