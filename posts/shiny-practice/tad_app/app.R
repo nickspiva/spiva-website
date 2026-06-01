@@ -74,15 +74,16 @@ TAD_PALETTE <- c(
   "Hollowell" = "#B5838D"
 )
 
-# Items for the "What Could This Fund?" panel with rough unit costs.
-# All costs are annual / per-unit unless noted.
+# Items for the "What Could This Fund?" panel.
+# cost_label controls the "@ X / unit" display line — lets us format large
+# costs like the pre-K program as "$78.2M" rather than the default k-scale.
 unit_costs <- tribble(
-  ~id           , ~label                           , ~cost   , ~unit        ,
-  "teachers"    , "Pre-K teachers (1 yr)"          ,   85000 , "teacher"    ,
-  "lunches"     , "Free school lunches (1 yr)"     ,    1000 , "student"    ,
-  "buses"       , "Electric school buses"          ,  400000 , "bus"        ,
-  "playgrounds" , "New playgrounds"                ,  100000 , "playground" ,
-  "schools"     , "Neighborhood schools kept open" , 1500000 , "school/yr"
+  ~id           , ~label                                                  , ~cost    , ~unit          , ~cost_label          ,
+  "prek"        , "Universal Pre-K teaching staff\n(668 educators, 3K+4K)", 78222968 , "full program" , "$78.2M / program"   ,
+  "lunches"     , "Free school lunches (1 yr)"                            ,     1000 , "student"      , "$1k / student"      ,
+  "buses"       , "Electric school buses"                                 ,   400000 , "bus"          , "$400k / bus"        ,
+  "playgrounds" , "New playgrounds"                                       ,   100000 , "playground"   , "$100k / playground" ,
+  "schools"     , "Neighborhood schools kept open"                        ,  1500000 , "school/yr"    , "$1.5M / school/yr"
 )
 
 
@@ -460,13 +461,53 @@ ui <- page_fluid(
     ),
     p(
       paste0(
-        "Estimated annual APS revenue in ",
-        BUY_REF_YEAR,
-        " from all TADs that have closed by then under the current scenario."
+        "Based on estimated annual APS revenue in ", BUY_REF_YEAR,
+        " under the current planned TAD closure timeline."
       ),
       class = "text-muted small px-3 pt-1"
     ),
-    uiOutput("buy_panel")
+    uiOutput("buy_panel"),
+    # ── Methodology accordion ──────────────────────────────────────────────
+    accordion(
+      open  = FALSE,
+      class = "mt-3 mx-2 mb-2",
+      accordion_panel(
+        "How is the Pre-K estimate calculated?",
+        p(strong("Scope:"), " Annual staffing costs only — teacher and assistant salaries plus employer benefits. Does not include capital costs, curriculum, materials, or transportation."),
+        p(strong("Seat gap:")),
+        tags$ul(
+          tags$li("APS kindergarten enrollment (2025–26): 3,620 — used as a proxy for the size of each age cohort"),
+          tags$li("Total seats needed for universal 3K + 4K: 7,240 (3,620 × 2 cohorts)"),
+          tags$li("Existing APS pre-K seats: 1,234 (GADOE via APS Insights; does not break out by age and may not fully reflect Head Start seats serving 3-year-olds)"),
+          tags$li(strong("Gap: 6,006 additional seats"))
+        ),
+        p(strong("Staffing:")),
+        tags$ul(
+          tags$li("Class size: 18 (Georgia state cap is 20; 18 for inclusion classrooms)"),
+          tags$li("Classrooms needed: ⌈6,006 ÷ 18⌉ = 334"),
+          tags$li("334 lead teachers + 334 assistant teachers = 668 total new staff")
+        ),
+        p(strong("Annual employer cost per employee:")),
+        tags$ul(
+          tags$li("Lead teacher: $100k salary (APS 2030 target) + $22,620 health insurance + $21,910 pension (21.91% of salary, TRS of Georgia) = $144,530"),
+          tags$li("Assistant teacher: $55k salary + $22,620 health insurance + $12,050 pension = $89,670"),
+          tags$li("Health insurance: $1,885/month × 12 = $22,620 — employer share of premium (individual plan; family coverage would be higher)")
+        ),
+        p(strong("Total: 334 × $144,530 + 334 × $89,670 ≈ $78.2M/year")),
+        p(
+          class = "text-muted small mt-2 mb-0",
+          "Note: pension contribution rises to 22.32% in 2028 (TRS of Georgia). Health insurance premiums and salaries will also grow over time, so this figure understates future costs in nominal terms. Capital costs (constructing/retrofitting 334 classrooms) are not included."
+        ),
+        p(
+          class = "text-muted small mb-0",
+          tags$a("APS Insights enrollment data", href = "https://apsinsights.org/2026/02/23/aps-enrollment-1994-2026/", target = "_blank"),
+          " · ",
+          tags$a("TRS of Georgia contribution rates", href = "https://www.trsga.com/employer/contribution-rates/", target = "_blank"),
+          " · ",
+          tags$a("GBPI FY2027 K-12 budget overview", href = "https://gbpi.org/overview-2027-fiscal-year-budget-for-k-12-education/", target = "_blank")
+        )
+      )
+    )
   ),
 
   br(),
@@ -1068,14 +1109,21 @@ server <- function(input, output, session) {
   })
 
   # ── 7h. Graphic 4: What could this fund? ─────────────────
-  # Computes total annual APS revenue in BUY_REF_YEAR from all
-  # TADs that have closed by then, then divides by each unit cost.
+  # Always uses the *current planned* closure dates (not the sliders) so this
+  # panel answers "what do we get if we stay on the existing timeline?" as a
+  # fixed reference point rather than a simulation.
 
   ref_revenue <- reactive({
-    rv <- aps_revenue() |>
-      filter(year == BUY_REF_YEAR) |>
-      pull(total_rev)
-    if (length(rv) == 0) 0 else rv[1]
+    cy_current <- tad_meta |>
+      transmute(tad_id, closure_year = year_end_current)
+
+    rv <- proj_data() |>
+      left_join(cy_current, by = "tad_id") |>
+      filter(year >= closure_year, year == BUY_REF_YEAR) |>
+      summarise(total = sum(aps_annual_revenue, na.rm = TRUE)) |>
+      pull(total)
+
+    if (length(rv) == 0 || is.na(rv[1])) 0 else rv[1]
   })
 
   output$buy_panel <- renderUI({
@@ -1083,7 +1131,10 @@ server <- function(input, output, session) {
 
     boxes <- map(seq_len(nrow(unit_costs)), \(i) {
       item <- unit_costs[i, ]
-      n <- floor(rev / item$cost)
+      n    <- floor(rev / item$cost)
+
+      # Label may contain \n for line breaks — convert to HTML
+      label_html <- HTML(gsub("\n", "<br>", item$label))
 
       card(
         class = "text-center border-0 bg-light h-100",
@@ -1095,16 +1146,8 @@ server <- function(input, output, session) {
           ),
           tags$p(item$unit, class = "small text-muted mb-1"),
           tags$hr(class = "mx-4 my-1"),
-          tags$p(item$label, class = "small fw-semibold mb-0"),
-          tags$p(
-            paste0(
-              "@ ",
-              dollar(item$cost, scale = 1e-3, suffix = "k"),
-              " / ",
-              item$unit
-            ),
-            class = "small text-muted"
-          )
+          tags$p(label_html, class = "small fw-semibold mb-0"),
+          tags$p(item$cost_label, class = "small text-muted")
         )
       )
     })
@@ -1114,7 +1157,8 @@ server <- function(input, output, session) {
         class = "px-3 pb-1",
         tags$span(
           class = "fw-bold",
-          paste0("Total annual APS revenue in ", BUY_REF_YEAR, ":  "),
+          paste0("Annual APS revenue in ", BUY_REF_YEAR,
+                 " (current plan):  "),
           dollar(rev, scale = 1e-6, suffix = "M", accuracy = 0.1)
         )
       ),
