@@ -48,7 +48,7 @@ library(scales)
 
 
 # ════════════════════════════════════════════════════════════
-# § 1  CONSTANTS
+# § 1  CONSTANTS ----
 # ════════════════════════════════════════════════════════════
 
 # APS millage rate (mills = dollars per $1,000 of assessed value).
@@ -88,7 +88,7 @@ unit_costs <- tribble(
 
 
 # ════════════════════════════════════════════════════════════
-# § 2  DATA LOADING & WRANGLING
+# § 2  DATA LOADING & WRANGLING ----
 # ════════════════════════════════════════════════════════════
 # The CSV has a *transposed* layout:
 #   Row 1  = field labels / TAD full names
@@ -161,7 +161,7 @@ hist_data <- map_dfr(seq_along(short_names), \(i) {
 #fancier version of using pivot-longer to handle some non-standard things - e.g. dollar value strings, etc.
 
 # ════════════════════════════════════════════════════════════
-# § 3  PROJECTION MODEL
+# § 3  PROJECTION MODEL ----
 # ════════════════════════════════════════════════════════════
 # For each TAD we compute a Compound Annual Growth Rate (CAGR)
 # from its first to last observed value, then extrapolate forward.
@@ -299,7 +299,7 @@ SCENARIO_COLORS <- c(
 
 
 # ════════════════════════════════════════════════════════════
-# § 4  SHAPEFILES
+# § 4  SHAPEFILES ----
 # ════════════════════════════════════════════════════════════
 
 tad_sf <- st_read("../TAD_shapefiles/Tax_Allocation_District.shp", quiet = TRUE)
@@ -378,7 +378,7 @@ for (tid in names(label_overrides)) {
 
 
 # ════════════════════════════════════════════════════════════
-# § 5  SHARED GGPLOT THEME
+# § 5  SHARED GGPLOT THEME ----
 # ════════════════════════════════════════════════════════════
 # Centralizing your theme means one change updates all charts.
 # This function extends theme_minimal() with project-specific tweaks.
@@ -397,7 +397,7 @@ theme_tad <- function(...) {
 }
 
 # ════════════════════════════════════════════════════════════
-# § 6  UI
+# § 6  UI ----
 # ════════════════════════════════════════════════════════════
 # page_fluid()       — standard responsive scrollable page
 # layout_columns()   — Bootstrap 12-column grid; col_widths controls splits
@@ -405,97 +405,112 @@ theme_tad <- function(...) {
 # girafeOutput()     — placeholder for a ggiraph interactive chart
 # uiOutput()         — placeholder for UI elements built dynamically in server
 
-ui <- page_fluid(
+ui <- page_sidebar(
+  title = "Atlanta TADs & Public School Funding",
   theme = bs_theme(bootswatch = "flatly"),
+  fillable = FALSE, # let cards take their natural height; main area scrolls
 
-  # ── Background-click deselect ─────────────────────────────
-  # ggiraph doesn't reliably fire a Shiny event when the user clicks on
-  # blank space in the SVG. This script fills the gap: it listens for any
-  # click inside a girafe container and, if the clicked element has no
-  # data-id (i.e. it's background / axes / labels, not a data shape),
-  # fires a 'bg_click' input so the server can clear the selection.
-  # Math.random() ensures the value always changes so Shiny processes it
-  # even on repeated background clicks.
+  # ── JS: background-click deselect ────────────────────────
   tags$script(HTML(
     "
-    // ── Background-click deselect ──────────────────────────────────────────
     $(document).on('click', function(e) {
       var container = $(e.target).closest('.girafe_container_std');
       if (container.length > 0 && !$(e.target).attr('data-id')) {
         Shiny.setInputValue('bg_click', Math.random(), {priority: 'event'});
       }
     });
-
-    // ── Slider tick marks ──────────────────────────────────────────────────
-    // Places a small colored tick on an ion.rangeSlider track at a given value.
-    // pct   = (value - min) / (max - min) * 100  (pre-computed in R)
-    // color = hex color string
-    // label = tooltip text shown on hover
-    function addSliderTick(sliderId, pct, color, label) {
-      var el = document.getElementById(sliderId);
-      if (!el) return;
-      var line = el.closest('.form-group').querySelector('.irs-line');
-      if (!line) return;
-
-      // Avoid duplicates if renderUI re-runs
-      var tickId = 'tick-' + sliderId + '-' + pct.toFixed(1);
-      if (document.getElementById(tickId)) return;
-
-      var tick = document.createElement('span');
-      tick.id = tickId;
-      tick.title = label;
-      tick.style.cssText =
-        'position:absolute; left:' + pct + '%;' +
-        'top:0; bottom:0; width:3px;' +
-        'background:' + color + ';' +
-        'transform:translateX(-50%);' +
-        'border-radius:2px; opacity:0.85; pointer-events:auto; cursor:default;';
-      line.style.position = 'relative';
-      line.style.overflow = 'visible';
-      line.appendChild(tick);
-    }
   "
   )),
 
-  # ── Page header ───────────────────────────────────────────
-  div(
-    class = "container-fluid pt-4 pb-2",
-    h1("Atlanta TADs & Public School Funding", class = "h3 fw-bold mb-1"),
-    p(
-      "Atlanta's Tax Allocation Districts redirect property tax growth from schools ",
-      "to spur development. While a TAD is open, all tax revenue on growth in assessed value above ",
-      "the original baseline goes to ",
-      strong("Invest Atlanta"),
-      " — not Atlanta Public Schools (APS), the City, or County. ",
-      "This app shows what that costs APS, and how it changes under different ",
-      "TAD closure scenarios.",
-      class = "text-muted mb-3"
+  # ════════════════════════════════════════════════════════
+  # SIDEBAR — sticky scenario controls
+  # page_sidebar() keeps this panel fixed while the user
+  # scrolls through the charts on the right.
+  # ════════════════════════════════════════════════════════
+  sidebar = sidebar(
+    width = 290,
+    open = "desktop", # open on desktop, collapsible on mobile
+
+    h6("When will TADs close?", class = "fw-bold mb-1 mt-1"),
+
+    actionButton(
+      "btn_current",
+      "Current Planned",
+      class = "btn btn-outline-primary btn-sm w-100 mb-1"
     ),
-    hr(class = "mb-3")
+    actionButton(
+      "btn_mayor1",
+      "Mayor's Original NRI",
+      class = "btn btn-outline-warning btn-sm w-100 mb-1"
+    ),
+    actionButton(
+      "btn_mayor2",
+      "Mayor's Updated NRI",
+      class = "btn btn-outline-danger btn-sm w-100"
+    ),
+
+    hr(class = "my-2"),
+
+    h6("How fast will property values grow?", class = "fw-bold mb-1"),
+    radioButtons(
+      inputId = "proj_method",
+      label = NULL,
+      choices = c(
+        "Historic TAD growth (2007–2024)" = "tad",
+        "TAD growth since inception" = "tad_baseline",
+        "Citywide average growth" = "city",
+        "Optimistic (high-growth TADs)" = "optimistic"
+      ),
+      selected = "tad"
+    ),
+
+    hr(class = "my-2"),
+
+    # Per-TAD sliders live in a collapsed accordion so they don't
+    # overwhelm the sidebar — most users will use the presets above
+    accordion(
+      open = FALSE,
+      accordion_panel(
+        "Customize individual TAD closure years",
+        uiOutput("tad_sliders")
+      )
+    )
   ),
 
-  # ── Row 1: Revenue diverted chart ────────────────────────
+  # ════════════════════════════════════════════════════════
+  # MAIN CONTENT — charts scroll past the sticky sidebar
+  # ════════════════════════════════════════════════════════
+
+  p(
+    "Atlanta's Tax Allocation Districts redirect property tax growth from ",
+    "schools to fund development. While a TAD is open, all revenue on growth ",
+    "above the original baseline goes to ",
+    strong("Invest Atlanta"),
+    " — not Atlanta Public Schools, the City, or County. ",
+    "Use the controls on the left to explore different closure scenarios.",
+    class = "text-muted mb-3"
+  ),
+
+  # ── Revenue diverted ─────────────────────────────────────
   card(
     card_header("Revenue Diverted from Schools & Kids to Invest Atlanta"),
     p(
-      "Cumulative APS property tax revenue redirected to Invest Atlanta while TADs ",
-      "remain open, shown for each scenario. The gap between lines represents the ",
-      "additional diversion under the Mayor's NRI proposals relative to the current plan.",
+      "Cumulative APS property tax revenue redirected to Invest Atlanta while ",
+      "TADs remain open, under each scenario. The gap between lines shows the ",
+      "additional diversion under the Mayor's NRI proposals.",
       class = "text-muted small px-3 pt-1"
     ),
-    girafeOutput("diversion_chart", height = "380px")
+    girafeOutput("diversion_chart", height = "360px")
   ),
 
   br(),
 
-  # ── Row 2: What could this fund? ─────────────────────────
+  # ── What could this fund? ────────────────────────────────
   card(
-    card_header(
-      paste0(
-        "What Could This Fund?  ·  Annual APS Revenue from Closed TADs in ",
-        BUY_REF_YEAR
-      )
-    ),
+    card_header(paste0(
+      "What Could This Fund?  ·  Annual APS Revenue from Closed TADs in ",
+      BUY_REF_YEAR
+    )),
     p(
       paste0(
         "Based on estimated annual APS revenue in ",
@@ -505,7 +520,6 @@ ui <- page_fluid(
       class = "text-muted small px-3 pt-1"
     ),
     uiOutput("buy_panel"),
-    # ── Methodology accordion ──────────────────────────────────────────────
     accordion(
       open = FALSE,
       class = "mt-3 mx-2 mb-2",
@@ -513,12 +527,12 @@ ui <- page_fluid(
         "How is the Pre-K estimate calculated?",
         p(
           strong("Scope:"),
-          " Annual staffing costs only — teacher and assistant salaries plus employer benefits. Does not include capital costs, curriculum, materials, or transportation."
+          " Annual staffing costs only — salaries plus employer benefits. Does not include capital costs, curriculum, materials, or transportation."
         ),
         p(strong("Seat gap:")),
         tags$ul(
           tags$li(
-            "APS kindergarten enrollment (2025–26): 3,620 — used as a proxy for the size of each age cohort"
+            "APS kindergarten enrollment (2025–26): 3,620 — proxy for each age cohort"
           ),
           tags$li(
             "Total seats needed for universal 3K + 4K: 7,240 (3,620 × 2 cohorts)"
@@ -531,7 +545,7 @@ ui <- page_fluid(
         p(strong("Staffing:")),
         tags$ul(
           tags$li(
-            "Class size: 18 (Georgia state cap is 20; 18 for inclusion classrooms)"
+            "Class size: 18 (state cap is 20; 18 for inclusion classrooms)"
           ),
           tags$li("Classrooms needed: ⌈6,006 ÷ 18⌉ = 334"),
           tags$li(
@@ -541,36 +555,36 @@ ui <- page_fluid(
         p(strong("Annual employer cost per employee:")),
         tags$ul(
           tags$li(
-            "Lead teacher: $100k salary (APS 2030 target) + $22,620 health insurance + $21,910 pension (21.91% of salary, TRS of Georgia) = $144,530"
+            "Lead teacher: $100k salary + $22,620 health insurance + $21,910 pension (21.91%, TRS of Georgia) = $144,530"
           ),
           tags$li(
             "Assistant teacher: $55k salary + $22,620 health insurance + $12,050 pension = $89,670"
           ),
           tags$li(
-            "Health insurance: $1,885/month × 12 = $22,620 — employer share of premium (individual plan; family coverage would be higher)"
+            "Health insurance: $1,885/month × 12 = $22,620 — employer share (individual plan; family coverage would be higher)"
           )
         ),
         p(strong("Total: 334 × $144,530 + 334 × $89,670 ≈ $78.2M/year")),
         p(
-          class = "text-muted small mt-2 mb-0",
-          "Note: pension contribution rises to 22.32% in 2028 (TRS of Georgia). Health insurance premiums and salaries will also grow over time, so this figure understates future costs in nominal terms. Capital costs (constructing/retrofitting 334 classrooms) are not included."
+          class = "text-muted small mt-2 mb-1",
+          "Note: pension rises to 22.32% in 2028 (TRS of Georgia). Health insurance and salaries will grow over time. Capital costs for 334 new classrooms are not included."
         ),
         p(
           class = "text-muted small mb-0",
           tags$a(
-            "APS Insights enrollment data",
+            "APS Insights",
             href = "https://apsinsights.org/2026/02/23/aps-enrollment-1994-2026/",
             target = "_blank"
           ),
           " · ",
           tags$a(
-            "TRS of Georgia contribution rates",
+            "TRS of Georgia",
             href = "https://www.trsga.com/employer/contribution-rates/",
             target = "_blank"
           ),
           " · ",
           tags$a(
-            "GBPI FY2027 K-12 budget overview",
+            "GBPI FY2027 K-12 overview",
             href = "https://gbpi.org/overview-2027-fiscal-year-budget-for-k-12-education/",
             target = "_blank"
           )
@@ -581,54 +595,10 @@ ui <- page_fluid(
 
   br(),
 
-  # ── Row 3: Scenario controls ──────────────────────────────
-  card(
-    card_header("Scenario: Adjust TAD Closure Years"),
-    layout_columns(
-      col_widths = c(3, 9),
-
-      div(
-        p(strong("Load a preset:"), class = "mb-1 small"),
-        actionButton(
-          "btn_current",
-          "Current Planned",
-          class = "btn btn-outline-primary btn-sm w-100 mb-1"
-        ),
-        actionButton(
-          "btn_mayor1",
-          "Mayor's Original NRI",
-          class = "btn btn-outline-warning btn-sm w-100 mb-1"
-        ),
-        actionButton(
-          "btn_mayor2",
-          "Mayor's Updated NRI",
-          class = "btn btn-outline-danger btn-sm w-100 mb-3"
-        ),
-        p(strong("Growth assumption:"), class = "mb-1 small"),
-        radioButtons(
-          inputId = "proj_method",
-          label = NULL,
-          choices = c(
-            "TAD historical (2007–2024)" = "tad",
-            "TAD from creation year" = "tad_baseline",
-            "Citywide average" = "city",
-            "Optimistic (high-growth TADs)" = "optimistic"
-          ),
-          selected = "tad"
-        )
-      ),
-
-      uiOutput("tad_sliders")
-    )
-  ),
-
-  br(),
-
-  # ── Row 4: Map + Historic chart ───────────────────────────
+  # ── Map + Historic chart ─────────────────────────────────
   layout_columns(
     col_widths = c(5, 7),
     gap = "1rem",
-
     card(
       card_header(
         div(
@@ -643,7 +613,6 @@ ui <- page_fluid(
       ),
       girafeOutput("tad_map", height = "460px")
     ),
-
     card(
       card_header("Historic Property Values  ·  2007–2024"),
       girafeOutput("historic_chart", height = "380px")
@@ -652,16 +621,16 @@ ui <- page_fluid(
 
   br(),
 
-  # ── Row 5: Projected APS revenue ─────────────────────────
+  # ── Projected APS revenue ────────────────────────────────
   card(
     card_header(paste0(
       "Projected Annual APS Revenue from Closed TADs  ·  2025–",
       PROJ_END
     )),
     p(
-      "Revenue begins flowing to APS the year a TAD closes. Dashed vertical lines mark ",
-      "each TAD's closure year under the current scenario. Adjust sliders above ",
-      "or click a preset to simulate different timelines.",
+      "Revenue begins flowing to APS the year a TAD closes. Dashed vertical ",
+      "lines mark each TAD's closure year. Adjust the controls on the left or ",
+      "customize individual TADs using the accordion above.",
       class = "text-muted small px-3 pt-1"
     ),
     girafeOutput("proj_chart", height = "420px")
@@ -672,7 +641,7 @@ ui <- page_fluid(
 
 
 # ════════════════════════════════════════════════════════════
-# § 7  SERVER
+# § 7  SERVER ----
 # ════════════════════════════════════════════════════════════
 
 server <- function(input, output, session) {
@@ -790,7 +759,8 @@ server <- function(input, output, session) {
     )))
 
     tagList(
-      do.call(layout_column_wrap, c(list(width = 1 / 4), sliders)),
+      # width = 1 stacks sliders one per row — fits the narrow sidebar
+      do.call(layout_column_wrap, c(list(width = 1), sliders)),
       tick_script
     )
   })
@@ -1139,12 +1109,21 @@ server <- function(input, output, session) {
           alpha = line_a,
           linewidth = line_w,
           data_id = tad_id,
+          tooltip = tad_id # line tooltip is simple; points give year detail
+        )
+      ) +
+      geom_point_interactive(
+        aes(
+          alpha = line_a,
+          size = line_w, # scale with selection state like lines do
+          data_id = tad_id,
           tooltip = paste0(
             "<b>",
             tad_id,
             "</b><br>",
             year,
-            ":  APS rev = ",
+            "<br>",
+            "APS revenue: ",
             dollar(
               aps_annual_revenue,
               scale = 1e-6,
@@ -1156,6 +1135,7 @@ server <- function(input, output, session) {
       ) +
       scale_color_manual(values = TAD_PALETTE, na.value = "grey70") +
       scale_y_continuous(labels = label_dollar(scale = 1e-6, suffix = "M")) +
+      scale_size_identity() +
       scale_alpha_identity() +
       scale_linewidth_identity() +
       labs(y = "Annual APS Revenue") +
@@ -1238,6 +1218,6 @@ server <- function(input, output, session) {
 
 
 # ════════════════════════════════════════════════════════════
-# Launch
+# Launch ----
 # ════════════════════════════════════════════════════════════
 shinyApp(ui = ui, server = server)
