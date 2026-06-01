@@ -861,36 +861,56 @@ server <- function(input, output, session) {
   # and assumption name always match what's shown in the chart.
   output$diversion_subheader <- renderUI({
     proj_labels <- c(
-      "tad" = "Historic TAD growth (2007–2024)",
-      "tad_baseline" = "TAD growth since inception",
-      "city" = "Citywide average growth",
-      "optimistic" = "Optimistic (high-growth TADs)"
+      "tad" = "individualized historic TAD growth (2007–2024)",
+      "tad_baseline" = "individualized TAD growth since creation of each TAD",
+      "city" = "citywide average growth (2007-2024)",
+      "optimistic" = "optimistic (average of high-growth TADs - Beltline, Eastside, & Atlantic Station)"
     )
     growth_name <- proj_labels[[input$proj_method]]
 
     dd <- diversion_data()
-    cp_val <- dd$cumulative[dd$scenario == "Current Plan" & dd$year == PROJ_END]
-    m2_val <- dd$cumulative[
-      dd$scenario == "Mayor's Updated NRI" & dd$year == PROJ_END
-    ]
-    gap_fmt <- dollar(
-      m2_val - cp_val,
-      scale = 1e-9,
-      suffix = "B",
-      accuracy = 0.1
-    )
+    # Use grepl() to avoid apostrophe-encoding mismatches in string comparison
+    is_cp <- grepl("Current Plan", as.character(dd$scenario), fixed = TRUE)
+    is_m2 <- grepl("Updated NRI", as.character(dd$scenario), fixed = TRUE)
+
+    cp_val <- dd$cumulative[is_cp & dd$year == PROJ_END]
+    m2_val <- dd$cumulative[is_m2 & dd$year == PROJ_END]
+    ann_2035 <- dd$annual[is_m2 & dd$year == 2035]
+    ann_2055 <- dd$annual[is_m2 & dd$year == PROJ_END]
+
+    # Format a dollar amount: billions when >= $1B, else millions
+    fmt_amt <- function(x, b_acc = 0.1, m_acc = 0.1) {
+      if (!length(x) || !is.finite(x)) {
+        return("")
+      }
+      if (x >= 1e9) {
+        dollar(x, scale = 1e-9, suffix = "B", accuracy = b_acc)
+      } else {
+        dollar(x, scale = 1e-6, suffix = "M", accuracy = m_acc)
+      }
+    }
+
+    gap_fmt <- fmt_amt(m2_val - cp_val, b_acc = 0.1)
+    ann_2035_fmt <- fmt_amt(ann_2035)
+    ann_2055_fmt <- fmt_amt(ann_2055)
 
     p(
+      "This chart projects the ",
       strong(
         "Cumulative APS property tax revenue redirected to Invest Atlanta"
       ),
-      " while ",
-      "TADs remain open, under each scenario. Under the current growth assumption — ",
+      "from 2025 onwward, while TADs remain open under each scenario. Under the current growth assumption — based on ",
       strong(growth_name),
-      " — the Mayor’s Updated NRI proposal would divert an ",
-      "additional ",
+      " — the Mayor’s Updated NRI proposal would divert an additional ",
       strong(gap_fmt),
       " more than the current plan.",
+      br(),
+      br(),
+      "On just an annual basis, the Mayor’s Updated NRI proposal would divert approximately ",
+      strong(ann_2035_fmt),
+      " from APS in 2035, ballooning to ",
+      strong(ann_2055_fmt),
+      " per year by 2055.",
       class = "text-muted small px-3 pt-1 mt-1"
     )
   })
@@ -1037,7 +1057,11 @@ server <- function(input, output, session) {
             "</b><br>",
             year,
             ":  ",
-            dollar(value, scale = 1e-6, suffix = "M", accuracy = 1)
+            if_else(
+              value >= 1e9,
+              dollar(value, scale = 1e-9, suffix = "B", accuracy = 0.1),
+              dollar(value, scale = 1e-6, suffix = "M", accuracy = 1)
+            )
           )
         )
       ) +
