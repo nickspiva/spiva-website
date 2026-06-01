@@ -45,6 +45,7 @@ library(tidyverse)
 library(sf)
 library(ggiraph)
 library(scales)
+library(geomtextpath)
 
 
 # ════════════════════════════════════════════════════════════
@@ -475,7 +476,8 @@ ui <- page_sidebar(
   )),
 
   # ── CSS: inline year select ───────────────────────────────────────────────
-  tags$style(HTML("
+  tags$style(HTML(
+    "
     select.inline-year-sel {
       -webkit-appearance: auto;
       appearance: auto;
@@ -491,7 +493,8 @@ ui <- page_sidebar(
       display: inline;
     }
     select.inline-year-sel:focus { outline: none; border-bottom-color: #0d6efd; }
-  ")),
+  "
+  )),
 
   # ════════════════════════════════════════════════════════
   # SIDEBAR — sticky scenario controls
@@ -964,58 +967,71 @@ server <- function(input, output, session) {
     proj_labels <- c(
       "tad" = "individualized historic TAD growth (2007–2024)",
       "tad_baseline" = "individualized TAD growth since creation of each TAD",
-      "city" = "citywide average growth (2007-2024)",
+      "city" = "citywide average growth (2007–2024)",
       "optimistic" = "optimistic (average of high-growth TADs - Beltline, Eastside, & Atlantic Station)"
     )
     growth_name <- proj_labels[[input$proj_method]]
+    ref_year_div <- as.integer(input$ref_year_div %||% 2035)
 
     dd <- diversion_data()
-    # Use grepl() to avoid apostrophe-encoding mismatches in string comparison
     is_cp <- grepl("Current Plan", as.character(dd$scenario), fixed = TRUE)
     is_m2 <- grepl("Updated NRI", as.character(dd$scenario), fixed = TRUE)
 
     cp_val <- dd$cumulative[is_cp & dd$year == PROJ_END]
     m2_val <- dd$cumulative[is_m2 & dd$year == PROJ_END]
-    ann_2035 <- dd$annual[is_m2 & dd$year == 2035]
+    ann_ref <- dd$annual[is_m2 & dd$year == ref_year_div]
     ann_2055 <- dd$annual[is_m2 & dd$year == PROJ_END]
 
-    # Format a dollar amount: billions when >= $1B, else millions
-    fmt_amt <- function(x, b_acc = 0.1, m_acc = 0.1) {
+    fmt_amt <- function(x) {
       if (!length(x) || !is.finite(x)) {
         return("")
       }
       if (x >= 1e9) {
-        dollar(x, scale = 1e-9, suffix = "B", accuracy = b_acc)
+        dollar(x, scale = 1e-9, suffix = "B", accuracy = 0.1)
       } else {
-        dollar(x, scale = 1e-6, suffix = "M", accuracy = m_acc)
+        dollar(x, scale = 1e-6, suffix = "M", accuracy = 0.1)
       }
     }
 
-    gap_fmt <- fmt_amt(m2_val - cp_val, b_acc = 0.1)
-    ann_2035_fmt <- fmt_amt(ann_2035)
+    gap_fmt <- fmt_amt(m2_val - cp_val)
+    ann_ref_fmt <- fmt_amt(ann_ref)
     ann_2055_fmt <- fmt_amt(ann_2055)
 
-    p(
-      "This chart projects the ",
-      strong(
-        "Cumulative APS property tax revenue redirected to Invest Atlanta"
+    # Inline year picker (same native <select> pattern as projected revenue card)
+    options_html <- paste(
+      vapply(
+        2025:(PROJ_END - 1),
+        function(yr) {
+          sprintf(
+            '<option value="%d"%s>%d</option>',
+            yr,
+            if (yr == ref_year_div) " selected" else "",
+            yr
+          )
+        },
+        character(1)
       ),
-      "from 2025 onwward, while TADs remain open under each scenario. Under the current growth assumption — based on ",
-      strong(growth_name),
-      " — the Mayor’s Updated NRI proposal would divert an additional ",
-      strong(gap_fmt),
-      " more than the current plan.",
-      br(),
-      br(),
-      "On just an annual basis, the Mayor’s Updated NRI proposal would divert approximately ",
-      strong(ann_2035_fmt),
-      " from APS in",
-      strong("2035"),
-      " ballooning to ",
-      strong(ann_2055_fmt),
-      " per year by 2055.",
-      class = "text-muted small px-3 pt-1 mt-1"
+      collapse = ""
     )
+    picker_html <- sprintf(
+      '<select class="inline-year-sel" onchange="Shiny.setInputValue(\'ref_year_div\', parseInt(this.value), {priority:\'event\'})">%s</select>',
+      options_html
+    )
+
+    HTML(sprintf(
+      '<p class="text-muted small px-3 pt-1 mt-1">%s<br><br>%s</p>',
+      sprintf(
+        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward, while TADs remain open under each scenario. Under the current growth assumption — based on <strong>%s</strong> — the Mayor's Updated NRI proposal would divert an additional <strong>%s</strong> more than the current plan.",
+        growth_name,
+        gap_fmt
+      ),
+      sprintf(
+        "On just an annual basis, the Mayor's Updated NRI proposal would divert approximately <strong>%s</strong> from APS in %s, ballooning to <strong>%s</strong> per year by 2055.",
+        ann_ref_fmt,
+        picker_html,
+        ann_2055_fmt
+      )
+    ))
   })
 
   # ── 7e-c. Diversion comparison chart ─────────────────────
@@ -1058,10 +1074,39 @@ server <- function(input, output, session) {
         size = 2.6,
         color = "#4a90d9"
       ) +
-      # ── Lines and points ──────────────────────────────────────────────────
+      # ── Lines with on-curve scenario labels (geomtextpath) ───────────────
+      # geom_textline draws the line AND places the label along the curve.
+      # hjust controls where along the line the text sits (0=start, 1=end).
+      # gap = TRUE cuts the line behind the text for readability.
+      # A thin invisible geom_line_interactive sits on top for hover events.
+      # Current Plan label sits below its line
+      geom_textline(
+        data = ~ filter(.x, grepl("Current Plan", scenario)),
+        aes(label = scenario),
+        linewidth = 1.3,
+        size = 2.6,
+        fontface = "bold",
+        hjust = 0.72,
+        gap = FALSE,
+        text_smoothing = 20,
+        offset = unit(-12, "pt")
+      ) +
+      # NRI scenario labels sit above their lines
+      geom_textline(
+        data = ~ filter(.x, !grepl("Current Plan", scenario)),
+        aes(label = scenario),
+        linewidth = 1.3,
+        size = 2.6,
+        fontface = "bold",
+        hjust = 0.72,
+        gap = FALSE,
+        text_smoothing = 20,
+        offset = unit(5, "pt")
+      ) +
       geom_line_interactive(
         aes(data_id = scenario, tooltip = scenario),
-        linewidth = 1.3
+        linewidth = 1.3,
+        alpha = 0
       ) +
       geom_point_interactive(
         aes(
@@ -1103,7 +1148,8 @@ server <- function(input, output, session) {
       ) +
       coord_cartesian(clip = "off") +
       labs(y = "") +
-      theme_tad()
+      theme_tad() +
+      theme(legend.position = "none")
 
     girafe(
       ggobj = p,
@@ -1315,10 +1361,18 @@ server <- function(input, output, session) {
     # This is the most reliable cross-browser inline picker: no custom JS
     # dropdown logic, no Bootstrap init dependency, always works in renderUI.
     options_html <- paste(
-      vapply(2030:2055, function(yr) {
-        sprintf('<option value="%d"%s>%d</option>',
-                yr, if (yr == ref_year) " selected" else "", yr)
-      }, character(1)),
+      vapply(
+        2030:2055,
+        function(yr) {
+          sprintf(
+            '<option value="%d"%s>%d</option>',
+            yr,
+            if (yr == ref_year) " selected" else "",
+            yr
+          )
+        },
+        character(1)
+      ),
       collapse = ""
     )
     picker_html <- sprintf(
@@ -1328,10 +1382,12 @@ server <- function(input, output, session) {
 
     example_html <- if (
       length(beltline_closure) > 0 &&
-      !is.na(beltline_closure) &&
-      beltline_closure <= ref_year
+        !is.na(beltline_closure) &&
+        beltline_closure <= ref_year
     ) {
-      rev_val <- pd$aps_annual_revenue[pd$tad_id == "Beltline" & pd$year == ref_year]
+      rev_val <- pd$aps_annual_revenue[
+        pd$tad_id == "Beltline" & pd$year == ref_year
+      ]
       rev_fmt <- if_else(
         rev_val >= 1e9,
         dollar(rev_val, scale = 1e-9, suffix = "B", accuracy = 0.1),
@@ -1339,7 +1395,9 @@ server <- function(input, output, session) {
       )
       sprintf(
         " For example, in %s, tax on property in the former Beltline TAD area will generate <strong>%s</strong> of annual revenue for schools, using the <strong>%s</strong> growth assumption.",
-        picker_html, rev_fmt, growth_name
+        picker_html,
+        rev_fmt,
+        growth_name
       )
     } else {
       sprintf(
@@ -1350,7 +1408,7 @@ server <- function(input, output, session) {
 
     HTML(sprintf(
       '<p class="text-muted small px-3 pt-1 mt-1">%s%s</p>',
-      "Hover over dots on the TAD revenue lines to see how much money APS receives annually in property tax following the closure of each TAD.",
+      "Hover over dots on the TAD revenue lines to see how much money APS will receive annually in property tax following the closure of each TAD.",
       example_html
     ))
   })

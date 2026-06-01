@@ -23,6 +23,7 @@ install.packages(c("prettymapr", "rosm"))
 
 ```{r}
 install.packages("raster")
+install.packages("geomtextpath")
 ```
 
 ```{r}
