@@ -81,9 +81,22 @@ Per-TAD line chart showing projected annual APS revenue starting from each TAD's
 - [ ] **Further map polish** — label positions, polygon styling, and surrounding area context can still be refined.
 
 ### Growth Assumption & Projection Methodology
-- [ ] **Add explainer text** in the app describing the projection methodology: what CAGR is, how it's computed per TAD, and what the three options represent.
-- [ ] **Fix the "Optimistic" scenario** — currently uses the 75th percentile of historical TAD CAGRs, which may actually be *lower* than some individual TAD rates. "Optimistic" should represent an assumption of *above-historical* growth (e.g., use a multiplier on the citywide rate, or use a fixed high rate like 8–10% annually). Needs a rethink.
-- [ ] **Per-TAD growth rate table** — display a table showing the historical CAGR for each TAD under each assumption, so users understand the basis for projections.
+
+- [ ] **Fix the citywide growth rate** — currently computed as the CAGR of the *sum of all TAD values* over time, which is TAD-aggregate growth, not city-wide growth. Should instead be computed from the **Atlanta column** in `TAD Basics.csv`, which is the total City of Atlanta property value from the Fulton County tax digest. This is the more meaningful citywide baseline.
+
+- [ ] **Add a new growth rate option: "TAD Baseline-to-2024 CAGR"** — a per-TAD CAGR computed from each TAD's *baseline value* (set at the time the TAD was created) to its 2024 assessed value, using the `Year Created` column as the starting year. This differs from the existing "TAD 2007–2024 CAGR" in that it captures the full growth history since each TAD's inception — for older TADs like Westside (created 1998), this means going back to 1998 rather than 2007, giving a longer and arguably more representative track record. Implementation note: for TADs created before 2007 (when the CSV data starts), the baseline value from `tad_meta` serves as the starting point since we don't have annual data that far back.
+
+- [ ] **Redefine the "Optimistic" scenario** — currently uses the 75th percentile of individual TAD CAGRs, which is not a reliable upper bound and may be lower than some individual rates. Replace with a rate derived from the high-growth TADs only: compute the average (or median) CAGR across Atlantic Station, Beltline, and Eastside — the three demonstrably high-growth TADs — and apply that rate uniformly to all TADs. This gives a grounded "what if all TADs grew like the successful ones?" scenario rather than an arbitrary percentile.
+
+- [ ] **Add a growth rate table as an accordion** — an expandable section showing each TAD's projected growth rate under each scenario. Suggested layout: rows = projection methods, columns = TAD names. Projection method rows:
+  - TAD 2007–2024 CAGR (individual, existing)
+  - TAD Baseline–2024 CAGR (individual, new)
+  - Citywide average (same value for all TADs, fixed)
+  - Optimistic — high-growth TAD average (same value for all TADs, fixed)
+
+  This table also serves as the methodology explainer for the projection charts. Implement as a `bslib::accordion_panel` within the scenario controls card or as a standalone card below it.
+
+- [ ] **Add explainer text** in the app describing the projection methodology: what CAGR is, how it's computed per TAD, and what the four options represent.
 - [ ] **QA projections** — compare against any published APS revenue forecasts if available.
 - [ ] **Eastside TAD PILOT exception** — should be noted in the UI and may affect revenue calculations; not yet fully handled.
 
@@ -149,9 +162,10 @@ Three selectable methods (radio button in scenario controls):
 
 | Method | How it works |
 |---|---|
-| TAD-specific (historical CAGR) | Each TAD uses its own computed CAGR |
-| Citywide average | All TADs use the CAGR of the total aggregate value across all TADs |
-| Optimistic (75th pctile) | ⚠️ Currently uses 75th percentile of individual TAD CAGRs — needs rethink; see outstanding items |
+| TAD 2007–2024 CAGR | Each TAD uses its own CAGR from 2007 (first data year) to 2024 |
+| TAD Baseline–2024 CAGR | Each TAD uses its own CAGR from its creation year / baseline value to 2024 — reaches further back for older TADs (e.g. Westside from 1998) | ⬜ Not yet built |
+| Citywide average | All TADs use the CAGR of the **Atlanta column** (total City of Atlanta property value from Fulton County tax digest) | ⚠️ Currently uses TAD aggregate — needs fix |
+| Optimistic — high-growth TADs | All TADs use the average CAGR of the three high-growth TADs (Atlantic Station, Beltline, Eastside) | ⚠️ Currently uses 75th pctile — needs fix |
 
 **APS revenue formula:** `aps_annual_revenue = (projected_value - baseline) × APS_MILLAGE / 1000`
 where `APS_MILLAGE = 20.74` mills (assumed constant; update if rate changes).

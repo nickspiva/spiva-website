@@ -78,12 +78,12 @@ TAD_PALETTE <- c(
 # cost_label controls the "@ X / unit" display line — lets us format large
 # costs like the pre-K program as "$78.2M" rather than the default k-scale.
 unit_costs <- tribble(
-  ~id           , ~label                                                  , ~cost    , ~unit          , ~cost_label          ,
-  "prek"        , "Universal Pre-K teaching staff\n(668 educators, 3K+4K)", 78222968 , "full program" , "$78.2M / program"   ,
-  "lunches"     , "Free school lunches (1 yr)"                            ,     1000 , "student"      , "$1k / student"      ,
-  "buses"       , "Electric school buses"                                 ,   400000 , "bus"          , "$400k / bus"        ,
-  "playgrounds" , "New playgrounds"                                       ,   100000 , "playground"   , "$100k / playground" ,
-  "schools"     , "Neighborhood schools kept open"                        ,  1500000 , "school/yr"    , "$1.5M / school/yr"
+  ~id           , ~label                                                   , ~cost    , ~unit          , ~cost_label          ,
+  "prek"        , "Universal Pre-K teaching staff\n(668 educators, 3K+4K)" , 78222968 , "full program" , "$78.2M / program"   ,
+  "lunches"     , "Free school lunches (1 yr)"                             ,     1000 , "student"      , "$1k / student"      ,
+  "buses"       , "Electric school buses"                                  ,   400000 , "bus"          , "$400k / bus"        ,
+  "playgrounds" , "New playgrounds"                                        ,   100000 , "playground"   , "$100k / playground" ,
+  "schools"     , "Neighborhood schools kept open"                         ,  1500000 , "school/yr"    , "$1.5M / school/yr"
 )
 
 
@@ -158,6 +158,7 @@ hist_data <- map_dfr(seq_along(short_names), \(i) {
   filter(!is.na(value), !is.na(year)) |>
   left_join(tad_meta |> select(tad_id, baseline, already_closed), by = "tad_id")
 
+#fancier version of using pivot-longer to handle some non-standard things - e.g. dollar value strings, etc.
 
 # ════════════════════════════════════════════════════════════
 # § 3  PROJECTION MODEL
@@ -180,24 +181,59 @@ growth_rates <- hist_data |>
     last_val = value[which.max(year)],
     .groups = "drop"
   ) |>
-  mutate(cagr = (last_val / first_val)^(1 / (last_year - first_year)) - 1)
-
-citywide_cagr <- hist_data |>
-  group_by(year) |>
-  summarise(total = sum(value, na.rm = TRUE), .groups = "drop") |>
-  arrange(year) |>
-  summarise(
-    cagr = (last(total) / first(total))^(1 / (last(year) - first(year))) - 1
+  # cagr: TAD-specific rate from first available data year (2007) to 2024
+  mutate(cagr = (last_val / first_val)^(1 / (last_year - first_year)) - 1) |>
+  # Join baseline value and creation year from tad_meta so we can compute
+  # the baseline-to-2024 CAGR, which reaches back to each TAD's founding
+  # year rather than just 2007
+  left_join(
+    tad_meta |> select(tad_id, baseline, year_created),
+    by = "tad_id"
   ) |>
-  pull(cagr)
+  mutate(
+    # cagr_baseline: uses the TAD's assessed value at creation as the
+    # starting point. For TADs created before 2007 (Westside 1998,
+    # Atlantic Station 1999, Princeton Lake / Perry Bolton 2002, Eastside
+    # 2003, Beltline 2005) this gives a longer, fuller growth history.
+    cagr_baseline = (last_val / baseline)^(1 / (last_year - year_created)) - 1
+  )
+
+glimpse(growth_rates)
+
+glimpse(hist_data) # opens the data viewer tab
+
+atl_col <- which(as.character(raw[1, ]) == "ATLANTA")
+if (length(atl_col) == 0) {
+  stop("Could not find 'ATLANTA' column in TAD Basics.csv")
+}
+
+atl_series <- tibble(
+  year = years,
+  value = suppressWarnings(
+    parse_number(
+      as.character(raw[3:20, atl_col][[1]]),
+      na = c("#N/A", "NA", "")
+    )
+  )
+) |>
+  filter(!is.na(value))
+
+citywide_cagr <- (last(atl_series$value) / first(atl_series$value))^(1 /
+  (last(atl_series$year) - first(atl_series$year))) -
+  1
 
 optimistic_cagr <- quantile(growth_rates$cagr, 0.75, na.rm = TRUE)
 
-# Build a projection tibble; rate_override = NULL uses TAD-specific rates
-build_projections <- function(rate_override = NULL) {
+# Build a projection tibble.
+# rate_override: a single numeric rate applied to ALL TADs (used for citywide
+#   and optimistic scenarios). NULL means use a per-TAD rate from growth_rates.
+# rate_col: which column of growth_rates to use as the per-TAD rate when
+#   rate_override is NULL. Defaults to "cagr" (2007–2024); pass "cagr_baseline"
+#   for the creation-year-to-2024 rates.
+build_projections <- function(rate_override = NULL, rate_col = "cagr") {
   map_dfr(seq_len(nrow(growth_rates)), \(i) {
     g <- growth_rates[i, ]
-    r <- if (!is.null(rate_override)) rate_override else g$cagr
+    r <- if (!is.null(rate_override)) rate_override else g[[rate_col]]
     tibble(
       year = (g$last_year + 1):PROJ_END,
       tad_id = g$tad_id,
@@ -211,9 +247,10 @@ build_projections <- function(rate_override = NULL) {
     )
 }
 
-# Pre-compute all three so we only run the model once at startup
+# Pre-compute all four so we only run the model once at startup
 proj_list <- list(
   tad = build_projections(),
+  tad_baseline = build_projections(rate_col = "cagr_baseline"),
   city = build_projections(citywide_cagr),
   optimistic = build_projections(optimistic_cagr)
 )
@@ -461,7 +498,8 @@ ui <- page_fluid(
     ),
     p(
       paste0(
-        "Based on estimated annual APS revenue in ", BUY_REF_YEAR,
+        "Based on estimated annual APS revenue in ",
+        BUY_REF_YEAR,
         " under the current planned TAD closure timeline."
       ),
       class = "text-muted small px-3 pt-1"
@@ -469,29 +507,48 @@ ui <- page_fluid(
     uiOutput("buy_panel"),
     # ── Methodology accordion ──────────────────────────────────────────────
     accordion(
-      open  = FALSE,
+      open = FALSE,
       class = "mt-3 mx-2 mb-2",
       accordion_panel(
         "How is the Pre-K estimate calculated?",
-        p(strong("Scope:"), " Annual staffing costs only — teacher and assistant salaries plus employer benefits. Does not include capital costs, curriculum, materials, or transportation."),
+        p(
+          strong("Scope:"),
+          " Annual staffing costs only — teacher and assistant salaries plus employer benefits. Does not include capital costs, curriculum, materials, or transportation."
+        ),
         p(strong("Seat gap:")),
         tags$ul(
-          tags$li("APS kindergarten enrollment (2025–26): 3,620 — used as a proxy for the size of each age cohort"),
-          tags$li("Total seats needed for universal 3K + 4K: 7,240 (3,620 × 2 cohorts)"),
-          tags$li("Existing APS pre-K seats: 1,234 (GADOE via APS Insights; does not break out by age and may not fully reflect Head Start seats serving 3-year-olds)"),
+          tags$li(
+            "APS kindergarten enrollment (2025–26): 3,620 — used as a proxy for the size of each age cohort"
+          ),
+          tags$li(
+            "Total seats needed for universal 3K + 4K: 7,240 (3,620 × 2 cohorts)"
+          ),
+          tags$li(
+            "Existing APS pre-K seats: 1,234 (GADOE via APS Insights; does not break out by age and may not fully reflect Head Start seats serving 3-year-olds)"
+          ),
           tags$li(strong("Gap: 6,006 additional seats"))
         ),
         p(strong("Staffing:")),
         tags$ul(
-          tags$li("Class size: 18 (Georgia state cap is 20; 18 for inclusion classrooms)"),
+          tags$li(
+            "Class size: 18 (Georgia state cap is 20; 18 for inclusion classrooms)"
+          ),
           tags$li("Classrooms needed: ⌈6,006 ÷ 18⌉ = 334"),
-          tags$li("334 lead teachers + 334 assistant teachers = 668 total new staff")
+          tags$li(
+            "334 lead teachers + 334 assistant teachers = 668 total new staff"
+          )
         ),
         p(strong("Annual employer cost per employee:")),
         tags$ul(
-          tags$li("Lead teacher: $100k salary (APS 2030 target) + $22,620 health insurance + $21,910 pension (21.91% of salary, TRS of Georgia) = $144,530"),
-          tags$li("Assistant teacher: $55k salary + $22,620 health insurance + $12,050 pension = $89,670"),
-          tags$li("Health insurance: $1,885/month × 12 = $22,620 — employer share of premium (individual plan; family coverage would be higher)")
+          tags$li(
+            "Lead teacher: $100k salary (APS 2030 target) + $22,620 health insurance + $21,910 pension (21.91% of salary, TRS of Georgia) = $144,530"
+          ),
+          tags$li(
+            "Assistant teacher: $55k salary + $22,620 health insurance + $12,050 pension = $89,670"
+          ),
+          tags$li(
+            "Health insurance: $1,885/month × 12 = $22,620 — employer share of premium (individual plan; family coverage would be higher)"
+          )
         ),
         p(strong("Total: 334 × $144,530 + 334 × $89,670 ≈ $78.2M/year")),
         p(
@@ -500,11 +557,23 @@ ui <- page_fluid(
         ),
         p(
           class = "text-muted small mb-0",
-          tags$a("APS Insights enrollment data", href = "https://apsinsights.org/2026/02/23/aps-enrollment-1994-2026/", target = "_blank"),
+          tags$a(
+            "APS Insights enrollment data",
+            href = "https://apsinsights.org/2026/02/23/aps-enrollment-1994-2026/",
+            target = "_blank"
+          ),
           " · ",
-          tags$a("TRS of Georgia contribution rates", href = "https://www.trsga.com/employer/contribution-rates/", target = "_blank"),
+          tags$a(
+            "TRS of Georgia contribution rates",
+            href = "https://www.trsga.com/employer/contribution-rates/",
+            target = "_blank"
+          ),
           " · ",
-          tags$a("GBPI FY2027 K-12 budget overview", href = "https://gbpi.org/overview-2027-fiscal-year-budget-for-k-12-education/", target = "_blank")
+          tags$a(
+            "GBPI FY2027 K-12 budget overview",
+            href = "https://gbpi.org/overview-2027-fiscal-year-budget-for-k-12-education/",
+            target = "_blank"
+          )
         )
       )
     )
@@ -540,9 +609,10 @@ ui <- page_fluid(
           inputId = "proj_method",
           label = NULL,
           choices = c(
-            "TAD-specific (historical CAGR)" = "tad",
+            "TAD historical (2007–2024)" = "tad",
+            "TAD from creation year" = "tad_baseline",
             "Citywide average" = "city",
-            "Optimistic (75th pctile)" = "optimistic"
+            "Optimistic (high-growth TADs)" = "optimistic"
           ),
           selected = "tad"
         )
@@ -1131,7 +1201,7 @@ server <- function(input, output, session) {
 
     boxes <- map(seq_len(nrow(unit_costs)), \(i) {
       item <- unit_costs[i, ]
-      n    <- floor(rev / item$cost)
+      n <- floor(rev / item$cost)
 
       # Label may contain \n for line breaks — convert to HTML
       label_html <- HTML(gsub("\n", "<br>", item$label))
@@ -1157,8 +1227,7 @@ server <- function(input, output, session) {
         class = "px-3 pb-1",
         tags$span(
           class = "fw-bold",
-          paste0("Annual APS revenue in ", BUY_REF_YEAR,
-                 " (current plan):  "),
+          paste0("Annual APS revenue in ", BUY_REF_YEAR, " (current plan):  "),
           dollar(rev, scale = 1e-6, suffix = "M", accuracy = 0.1)
         )
       ),
