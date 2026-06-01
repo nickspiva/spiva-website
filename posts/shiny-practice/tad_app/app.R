@@ -446,6 +446,34 @@ ui <- page_sidebar(
   "
   )),
 
+  # ── JS: preset button active-state toggling ───────────────
+  # Receives a preset key ('current', 'mayor1', 'mayor2', or null)
+  # and swaps each button between its outline and filled class.
+  tags$script(HTML(
+    "
+    Shiny.addCustomMessageHandler('setActivePreset', function(preset) {
+      var btns = {
+        'current': { id: 'btn_current', active: 'btn-primary',  outline: 'btn-outline-primary' },
+        'mayor1':  { id: 'btn_mayor1',  active: 'btn-warning',  outline: 'btn-outline-warning'  },
+        'mayor2':  { id: 'btn_mayor2',  active: 'btn-danger',   outline: 'btn-outline-danger'   }
+      };
+      Object.keys(btns).forEach(function(key) {
+        var el = document.getElementById(btns[key].id);
+        if (!el) return;
+        if (key === preset) {
+          el.classList.remove(btns[key].outline);
+          el.classList.add(btns[key].active);
+          el.style.color = 'white';
+        } else {
+          el.classList.remove(btns[key].active);
+          el.classList.add(btns[key].outline);
+          el.style.color = '';
+        }
+      });
+    });
+  "
+  )),
+
   # ════════════════════════════════════════════════════════
   # SIDEBAR — sticky scenario controls
   # page_sidebar() keeps this panel fixed while the user
@@ -667,6 +695,7 @@ server <- function(input, output, session) {
   # Any reactive that reads selected_tad() automatically
   # re-runs when it changes.
   selected_tad <- reactiveVal(NULL)
+  active_preset <- reactiveVal("current") # matches app's initial slider state
 
   # ignoreNULL = FALSE ensures these fire even when the selection becomes
   # empty (character(0)), which happens when the user clicks blank space
@@ -797,9 +826,54 @@ server <- function(input, output, session) {
     })
   }
 
-  observeEvent(input$btn_current, apply_preset("year_end_current"))
-  observeEvent(input$btn_mayor1, apply_preset("year_end_mayor1"))
-  observeEvent(input$btn_mayor2, apply_preset("year_end_mayor2"))
+  observeEvent(input$btn_current, {
+    apply_preset("year_end_current")
+    active_preset("current")
+  })
+  observeEvent(input$btn_mayor1, {
+    apply_preset("year_end_mayor1")
+    active_preset("mayor1")
+  })
+  observeEvent(input$btn_mayor2, {
+    apply_preset("year_end_mayor2")
+    active_preset("mayor2")
+  })
+
+  # ── Slider drift: clear active preset when any slider moves off its preset value
+  observe({
+    # Read all sliders (establishes reactive dependency on each one)
+    slider_vals <- map(active_tads$tad_id, \(tid) {
+      input[[paste0("cl_", make.names(tid))]]
+    })
+
+    current <- isolate(active_preset())
+    if (is.null(current)) {
+      return()
+    }
+
+    col <- c(
+      current = "year_end_current",
+      mayor1 = "year_end_mayor1",
+      mayor2 = "year_end_mayor2"
+    )[[current]]
+
+    still_matches <- every(seq_along(active_tads$tad_id), \(i) {
+      meta <- filter(tad_meta, tad_id == active_tads$tad_id[i])
+      expected <- meta[[col]]
+      if (is.na(expected)) {
+        expected <- meta$year_end_current
+      }
+      val <- slider_vals[[i]]
+      is.null(val) || val == expected
+    })
+
+    if (!still_matches) active_preset(NULL)
+  })
+
+  # ── Send active-preset key to JS whenever it changes
+  observe({
+    session$sendCustomMessage("setActivePreset", active_preset() %||% "none")
+  })
 
   # ── 7d. Reactive derived data ─────────────────────────────
   # reactive() creates a lazily-evaluated, cached expression.
@@ -817,13 +891,26 @@ server <- function(input, output, session) {
       filter(already_closed) |>
       transmute(tad_id, closure_year = year_end_current)
 
-    # Active TADs: read from sliders (use fallback if slider not yet initialized)
+    # When sliders haven't been rendered yet (accordion still closed), fall back
+    # to the active preset's column so preset buttons work before the accordion
+    # is ever opened.
+    preset_col <- switch(
+      active_preset() %||% "current",
+      "current" = "year_end_current",
+      "mayor1" = "year_end_mayor1",
+      "mayor2" = "year_end_mayor2",
+      "year_end_current"
+    )
+
+    # Active TADs: prefer the rendered slider value; fall back to preset column
     open <- map_dfr(active_tads$tad_id, \(tid) {
       val <- input[[paste0("cl_", make.names(tid))]]
       tibble(
         tad_id = tid,
         closure_year = if (is.null(val)) {
-          tad_meta$year_end_current[tad_meta$tad_id == tid]
+          meta <- filter(tad_meta, tad_id == tid)
+          fb <- meta[[preset_col]]
+          if (is.na(fb)) meta$year_end_current else fb
         } else {
           val
         }
