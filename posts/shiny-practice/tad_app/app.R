@@ -85,7 +85,8 @@ unit_costs <- tribble(
   "buses"       , "Electric school buses"                                  ,   400000 , "bus"          , "$400k / bus"        ,
   "playgrounds" , "New playgrounds"                                        ,   100000 , "playground"   , "$100k / playground" ,
   "schools"     , "Neighborhood schools kept open"                         ,  1500000 , "school/yr"    , "$1.5M / school/yr"  ,
-  "marta"       , "Free MARTA passes\n(all APS students, K–12)"             , 27666054 , "full program" , "$27.7M / program"
+  "marta"       , "Free MARTA passes\n(all APS students, K–12)"            , 27666054 , "full program" , "$27.7M / program"   ,
+  "teachers"    , "Raise all APS teachers\nto $100K average salary"        , 34575176 , "full program" , "$34.6M / year"
 )
 
 
@@ -684,22 +685,38 @@ ui <- page_sidebar(
       ),
       p(strong("Cost calculation:")),
       tags$ul(
-        tags$li("Base rate: MARTA UPass monthly unlimited pass at $68.50/month"),
-        tags$li("Duration: 12 months (year-round — school year, summer school, summer jobs, etc.)"),
-        tags$li("Bulk discount: 25% reduction assumed, reflecting negotiating leverage for a district-wide recurring contract of this scale"),
+        tags$li(
+          "Base rate: MARTA UPass monthly unlimited pass at $68.50/month"
+        ),
+        tags$li(
+          "Duration: 12 months (year-round — school year, summer school, summer jobs, etc.)"
+        ),
+        tags$li(
+          "Bulk discount: 25% reduction assumed, reflecting negotiating leverage for a district-wide recurring contract of this scale"
+        ),
         tags$li("44,876 × $68.50 × 12 × 0.75 ≈ $27.7M/year")
       ),
       p(strong("Limitations:")),
       tags$ul(
-        tags$li("The 25% bulk discount is an assumption; actual negotiated rate could be higher or lower"),
-        tags$li("UPass is a university product — APS would need a comparable institutional agreement with MARTA"),
-        tags$li("Uses 2024 enrollment data; does not project future student population"),
+        tags$li(
+          "The 25% bulk discount is an assumption; actual negotiated rate could be higher or lower"
+        ),
+        tags$li(
+          "UPass is a university product — APS would need a comparable institutional agreement with MARTA"
+        ),
+        tags$li(
+          "Uses 2024 enrollment data; does not project future student population"
+        ),
         tags$li("Not all APS students live near high-frequency MARTA service")
       ),
       p(strong("Comparable programs:")),
       tags$ul(
         tags$li(
-          tags$a("DC Kids Ride Free", href = "https://ddot.dc.gov/page/kids-ride-free-program", target = "_blank"),
+          tags$a(
+            "DC Kids Ride Free",
+            href = "https://ddot.dc.gov/page/kids-ride-free-program",
+            target = "_blank"
+          ),
           ": all students ages 5–21 ride free on all Metro/bus service, city-funded"
         ),
         tags$li("San Francisco Muni: free for all riders 18 and under"),
@@ -722,6 +739,65 @@ ui <- page_sidebar(
         tags$a(
           "DC Kids Ride Free",
           href = "https://ddot.dc.gov/page/kids-ride-free-program",
+          target = "_blank"
+        )
+      )
+    ),
+    accordion_panel(
+      "How is the teacher salary estimate calculated?",
+      p(
+        strong("Scope:"),
+        " Additional annual employer cost of raising the average APS teacher salary from its current level to $100,000,",
+        " including the corresponding increase in employer pension contributions."
+      ),
+      p(strong("Inputs:")),
+      tags$ul(
+        tags$li(
+          "Current average APS teacher salary: $90,470 (APS Back to Basics 2030 KPI Dashboard)"
+        ),
+        tags$li(
+          "Total APS classroom teachers: 2,976 (APS Back to Basics 2030 KPI Dashboard)"
+        ),
+        tags$li("Salary gap: $100,000 − $90,470 = $9,530 per teacher"),
+        tags$li("TRS of Georgia employer pension contribution rate: 21.91%")
+      ),
+      p(strong("Calculation:")),
+      tags$ul(
+        tags$li("Additional salary cost: 2,976 × $9,530 = $28,361,280"),
+        tags$li("Additional pension cost: $28,361,280 × 21.91% = $6,213,896"),
+        tags$li(strong("Total: ~$34.6M per year"))
+      ),
+      p(strong("Assumptions & limitations:")),
+      tags$ul(
+        tags$li(
+          "Uses the average gap — assumes a uniform raise across all teachers.",
+          " In practice, teachers already above $100K need no raise, so actual cost may be modestly lower."
+        ),
+        tags$li(
+          "Does not include health insurance (no new hires; existing staff already covered)"
+        ),
+        tags$li(
+          "Assumes flat teacher headcount — cost rises if APS grows enrollment and adds staff"
+        ),
+        tags$li("Pension rate rises to 22.32% in 2028 (TRS of Georgia)")
+      ),
+      p(
+        class = "text-muted small mt-2 mb-0",
+        tags$a(
+          "APS Back to Basics 2030 KPI Dashboard",
+          href = "https://www.atlantapublicschools.us/about/strategic-plan/key-performance-indicators",
+          target = "_blank"
+        ),
+        " · ",
+        tags$a(
+          "TRS of Georgia — Employer Contribution Rates",
+          href = "https://www.trsga.com/employer/contribution-rates/",
+          target = "_blank"
+        ),
+        " · ",
+        tags$a(
+          "GBPI — Retirement in Georgia's Public Schools",
+          href = "https://gbpi.org/retirement-in-georgias-public-schools/",
           target = "_blank"
         )
       )
@@ -1496,202 +1572,4 @@ server <- function(input, output, session) {
 
     # ── Empty-state guard ─────────────────────────────────────────────────
     # Under scenarios where all TADs close after 2055, per_tad has no rows.
-    # Return a blank chart with proper axes rather than letting ggplot error.
-    if (nrow(per_tad) == 0) {
-      p_empty <- ggplot(
-        data.frame(year = c(2025, PROJ_END), rev = c(0, 0)),
-        aes(x = year, y = rev)
-      ) +
-        annotate(
-          "text",
-          x = mean(c(2025, PROJ_END)),
-          y = 0.5,
-          label = "No active TADs close before 2055 under this scenario.\nRevenue to APS begins after 2055.",
-          hjust = 0.5,
-          vjust = 0.5,
-          size = 3.2,
-          color = "grey50"
-        ) +
-        scale_x_continuous(breaks = seq(2025, PROJ_END, by = 5)) +
-        scale_y_continuous(
-          labels = label_dollar(scale = 1e-6, suffix = "M"),
-          limits = c(0, 1)
-        ) +
-        labs(y = "Annual APS Revenue") +
-        theme_tad() +
-        theme(
-          axis.title.y = element_text(size = 10, color = "grey40"),
-          legend.position = "none"
-        )
-      return(girafe(
-        ggobj = p_empty,
-        width_svg = 10,
-        height_svg = 4.5,
-        options = list(opts_toolbar(saveaspng = FALSE))
-      ))
-    }
-
-    # Dashed vertical line at each TAD's closure year (active TADs only)
-    vlines <- cy |>
-      filter(
-        tad_id %in% active_tad_ids,
-        closure_year >= 2025,
-        closure_year <= PROJ_END
-      )
-
-    # ── Start-of-line labels ───────────────────────────────────────────────
-    # Individual TADs: label at first data point, stagger same-year pairs
-    labels_individual <- per_tad |>
-      filter(tad_id %in% individual_ids) |>
-      group_by(tad_id) |>
-      slice_min(year, n = 1) |>
-      ungroup() |>
-      arrange(year, aps_annual_revenue) |>
-      group_by(year) |>
-      mutate(rank_in_yr = row_number()) |>
-      ungroup() |>
-      mutate(
-        lbl_vjust = if_else(rank_in_yr %% 2 == 1, -0.7, 1.6),
-        lbl_alpha = line_a
-      )
-
-    p <- ggplot(
-      per_tad,
-      aes(x = year, y = aps_annual_revenue, color = tad_id, group = tad_id)
-    ) +
-      geom_vline(
-        data = vlines,
-        aes(xintercept = closure_year, color = tad_id),
-        linetype = "dashed",
-        linewidth = 0.35,
-        alpha = 0.45
-      ) +
-      geom_line_interactive(
-        aes(
-          alpha = line_a,
-          linewidth = line_w,
-          data_id = tad_id,
-          tooltip = tad_id # line tooltip is simple; points give year detail
-        )
-      ) +
-      geom_point_interactive(
-        aes(
-          alpha = line_a,
-          size = line_w, # scale with selection state like lines do
-          data_id = tad_id,
-          tooltip = paste0(
-            "<b>",
-            tad_id,
-            "</b><br>",
-            year,
-            "<br>",
-            "APS revenue: ",
-            dollar(
-              aps_annual_revenue,
-              scale = 1e-6,
-              suffix = "M",
-              accuracy = 0.1
-            )
-          )
-        )
-      ) +
-      # Individual TAD names at the start of each line; dim with selection
-      geom_text(
-        data = labels_individual,
-        aes(label = tad_id, vjust = lbl_vjust, alpha = lbl_alpha),
-        hjust = 0.5,
-        size = 2.4,
-        fontface = "bold",
-        show.legend = FALSE
-      ) +
-      scale_color_manual(values = TAD_PALETTE, na.value = "grey70") +
-      scale_y_continuous(labels = label_dollar(scale = 1e-6, suffix = "M")) +
-      scale_size_identity() +
-      scale_alpha_identity() +
-      scale_linewidth_identity() +
-      labs(y = "Annual APS Revenue") +
-      theme_tad() +
-      theme(
-        axis.title.y = element_text(size = 10, color = "grey40"),
-        legend.position = "none"
-      )
-
-    girafe(
-      ggobj = p,
-      width_svg = 10,
-      height_svg = 4.5,
-      options = list(
-        opts_selection(type = "single"),
-        opts_hover(css = "cursor:pointer; opacity:1; stroke-width:2px;"),
-        opts_tooltip(
-          css = "background:white; border:1px solid #ccc;
-                              padding:6px 10px; border-radius:4px; font-size:13px;"
-        ),
-        opts_toolbar(saveaspng = FALSE)
-      )
-    )
-  })
-
-  # ── 7h. Graphic 4: What could this fund? ─────────────────
-  # Always uses the *current planned* closure dates (not the sliders) so this
-  # panel answers "what do we get if we stay on the existing timeline?" as a
-  # fixed reference point rather than a simulation.
-
-  ref_revenue <- reactive({
-    cy_current <- tad_meta |>
-      transmute(tad_id, closure_year = year_end_current)
-
-    rv <- proj_data() |>
-      left_join(cy_current, by = "tad_id") |>
-      filter(year >= closure_year, year == BUY_REF_YEAR) |>
-      summarise(total = sum(aps_annual_revenue, na.rm = TRUE)) |>
-      pull(total)
-
-    if (length(rv) == 0 || is.na(rv[1])) 0 else rv[1]
-  })
-
-  output$buy_panel <- renderUI({
-    rev <- ref_revenue()
-
-    boxes <- map(seq_len(nrow(unit_costs)), \(i) {
-      item <- unit_costs[i, ]
-      n <- floor(rev / item$cost)
-
-      # Label may contain \n for line breaks — convert to HTML
-      label_html <- HTML(gsub("\n", "<br>", item$label))
-
-      card(
-        class = "text-center border-0 bg-light h-100",
-        div(
-          class = "py-3",
-          div(
-            style = "font-size:2rem; font-weight:700; color:#E63946; line-height:1;",
-            format(n, big.mark = ",")
-          ),
-          tags$p(item$unit, class = "small text-muted mb-1"),
-          tags$hr(class = "mx-4 my-1"),
-          tags$p(label_html, class = "small fw-semibold mb-0"),
-          tags$p(item$cost_label, class = "small text-muted")
-        )
-      )
-    })
-
-    tagList(
-      div(
-        class = "px-3 pb-1",
-        tags$span(
-          class = "fw-bold",
-          paste0("Annual APS revenue in ", BUY_REF_YEAR, " (current plan):  "),
-          dollar(rev, scale = 1e-6, suffix = "M", accuracy = 0.1)
-        )
-      ),
-      do.call(layout_column_wrap, c(list(width = 1 / 3, gap = "0.5rem"), boxes))
-    )
-  })
-}
-
-
-# ════════════════════════════════════════════════════════════
-# Launch ----
-# ════════════════════════════════════════════════════════════
-shinyApp(ui = ui, server = server)
+    # Return a blank chart with prop
