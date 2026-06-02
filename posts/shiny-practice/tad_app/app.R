@@ -84,7 +84,8 @@ unit_costs <- tribble(
   "lunches"     , "Free school lunches (1 yr)"                             ,     1000 , "student"      , "$1k / student"      ,
   "buses"       , "Electric school buses"                                  ,   400000 , "bus"          , "$400k / bus"        ,
   "playgrounds" , "New playgrounds"                                        ,   100000 , "playground"   , "$100k / playground" ,
-  "schools"     , "Neighborhood schools kept open"                         ,  1500000 , "school/yr"    , "$1.5M / school/yr"
+  "schools"     , "Neighborhood schools kept open"                         ,  1500000 , "school/yr"    , "$1.5M / school/yr"  ,
+  "marta"       , "Free MARTA passes\n(all APS students, K–12)"             , 27666054 , "full program" , "$27.7M / program"
 )
 
 
@@ -667,6 +668,61 @@ ui <- page_sidebar(
             href = "https://gbpi.org/overview-2027-fiscal-year-budget-for-k-12-education/",
             target = "_blank"
           )
+        )
+      )
+    ),
+    accordion_panel(
+      "How is the free MARTA estimate calculated?",
+      p(
+        strong("Scope:"),
+        " Annual cost of providing year-round, unlimited MARTA access to all APS students K–12.",
+        " Modeled on DC's Kids Ride Free program, which covers all students ages 5–21 on all Metro/bus service."
+      ),
+      p(strong("Student count:")),
+      tags$ul(
+        tags$li("Total APS K–12 enrollment (October 2024): 44,876 students")
+      ),
+      p(strong("Cost calculation:")),
+      tags$ul(
+        tags$li("Base rate: MARTA UPass monthly unlimited pass at $68.50/month"),
+        tags$li("Duration: 12 months (year-round — school year, summer school, summer jobs, etc.)"),
+        tags$li("Bulk discount: 25% reduction assumed, reflecting negotiating leverage for a district-wide recurring contract of this scale"),
+        tags$li("44,876 × $68.50 × 12 × 0.75 ≈ $27.7M/year")
+      ),
+      p(strong("Limitations:")),
+      tags$ul(
+        tags$li("The 25% bulk discount is an assumption; actual negotiated rate could be higher or lower"),
+        tags$li("UPass is a university product — APS would need a comparable institutional agreement with MARTA"),
+        tags$li("Uses 2024 enrollment data; does not project future student population"),
+        tags$li("Not all APS students live near high-frequency MARTA service")
+      ),
+      p(strong("Comparable programs:")),
+      tags$ul(
+        tags$li(
+          tags$a("DC Kids Ride Free", href = "https://ddot.dc.gov/page/kids-ride-free-program", target = "_blank"),
+          ": all students ages 5–21 ride free on all Metro/bus service, city-funded"
+        ),
+        tags$li("San Francisco Muni: free for all riders 18 and under"),
+        tags$li("Seattle King County Metro: free for all riders 18 and under")
+      ),
+      p(
+        class = "text-muted small mt-2 mb-0",
+        tags$a(
+          "APS Insights — Enrollment Data 1994–2024",
+          href = "https://apsinsights.org/2025/03/13/aps-enrollment-data-1994-2024/",
+          target = "_blank"
+        ),
+        " · ",
+        tags$a(
+          "MARTA University Pass Program",
+          href = "https://itsmarta.com/university-program.aspx",
+          target = "_blank"
+        ),
+        " · ",
+        tags$a(
+          "DC Kids Ride Free",
+          href = "https://ddot.dc.gov/page/kids-ride-free-program",
+          target = "_blank"
         )
       )
     )
@@ -1629,7 +1685,7 @@ server <- function(input, output, session) {
           dollar(rev, scale = 1e-6, suffix = "M", accuracy = 0.1)
         )
       ),
-      do.call(layout_column_wrap, c(list(width = 1 / 5, gap = "0.5rem"), boxes))
+      do.call(layout_column_wrap, c(list(width = 1 / 3, gap = "0.5rem"), boxes))
     )
   })
 }
