@@ -80,12 +80,8 @@ TAD_PALETTE <- c(
 # costs like the pre-K program as "$78.2M" rather than the default k-scale.
 unit_costs <- tribble(
   ~id           , ~label                                                   , ~cost    , ~unit          , ~cost_label          ,
-  "prek"        , "Universal Pre-K teaching staff\n(668 educators, 3K+4K)" , 78222968 , "full program" , "$78.2M / program"   ,
-  "lunches"     , "Free school lunches (1 yr)"                             ,     1000 , "student"      , "$1k / student"      ,
-  "buses"       , "Electric school buses"                                  ,   400000 , "bus"          , "$400k / bus"        ,
-  "playgrounds" , "New playgrounds"                                        ,   100000 , "playground"   , "$100k / playground" ,
-  "schools"     , "Neighborhood schools kept open"                         ,  1500000 , "school/yr"    , "$1.5M / school/yr"  ,
-  "marta"       , "Free MARTA passes\n(all APS students, K–12)"            , 27666054 , "full program" , "$27.7M / program"   ,
+  "prek"        , "Universal Pre-K teaching staff\n(668 educators, 3K+4K)" , 78222968 , "full program" , "$78.2M / program"  ,
+  "marta"       , "Free MARTA passes\n(all APS students, K–12)"            , 27666054 , "full program" , "$27.7M / program"  ,
   "teachers"    , "Raise all APS teachers\nto $100K average salary"        , 34575176 , "full program" , "$34.6M / year"
 )
 
@@ -588,19 +584,9 @@ ui <- page_sidebar(
 
   # ── What could this fund? ────────────────────────────────
   card(
-    card_header(paste0(
-      "What Could This Fund?  ·  Annual APS Revenue from Closed TADs in ",
-      BUY_REF_YEAR
-    )),
-    p(
-      paste0(
-        "Based on estimated annual APS revenue in ",
-        BUY_REF_YEAR,
-        " under the current planned TAD closure timeline."
-      ),
-      class = "text-muted small px-3 pt-1"
-    ),
+    card_header("Why TAD Closures Matter for APS Schools"),
     uiOutput("buy_panel"),
+    uiOutput("challenge_panel"),
     accordion(
       open = FALSE,
       class = "mt-3 mx-2 mb-2",
@@ -670,8 +656,7 @@ ui <- page_sidebar(
             target = "_blank"
           )
         )
-      )
-    ),
+      ),
     accordion_panel(
       "How is the free MARTA estimate calculated?",
       p(
@@ -802,6 +787,7 @@ ui <- page_sidebar(
         )
       )
     )
+    ),
   ),
 
   br(),
@@ -1572,4 +1558,308 @@ server <- function(input, output, session) {
 
     # ── Empty-state guard ─────────────────────────────────────────────────
     # Under scenarios where all TADs close after 2055, per_tad has no rows.
-    # Return a blank chart with prop
+    # Return a blank chart with proper axes rather than letting ggplot error.
+    if (nrow(per_tad) == 0) {
+      p_empty <- ggplot(
+        data.frame(year = c(2025, PROJ_END), rev = c(0, 0)),
+        aes(x = year, y = rev)
+      ) +
+        annotate(
+          "text",
+          x = mean(c(2025, PROJ_END)),
+          y = 0.5,
+          label = "No active TADs close before 2055 under this scenario.\nRevenue to APS begins after 2055.",
+          hjust = 0.5,
+          vjust = 0.5,
+          size = 3.2,
+          color = "grey50"
+        ) +
+        scale_x_continuous(breaks = seq(2025, PROJ_END, by = 5)) +
+        scale_y_continuous(
+          labels = label_dollar(scale = 1e-6, suffix = "M"),
+          limits = c(0, 1)
+        ) +
+        labs(y = "Annual APS Revenue") +
+        theme_tad() +
+        theme(
+          axis.title.y = element_text(size = 10, color = "grey40"),
+          legend.position = "none"
+        )
+      return(girafe(
+        ggobj = p_empty,
+        width_svg = 10,
+        height_svg = 4.5,
+        options = list(opts_toolbar(saveaspng = FALSE))
+      ))
+    }
+
+    # Dashed vertical line at each TAD's closure year (active TADs only)
+    vlines <- cy |>
+      filter(
+        tad_id %in% active_tad_ids,
+        closure_year >= 2025,
+        closure_year <= PROJ_END
+      )
+
+    # ── Start-of-line labels ───────────────────────────────────────────────
+    # Individual TADs: label at first data point, stagger same-year pairs
+    labels_individual <- per_tad |>
+      filter(tad_id %in% individual_ids) |>
+      group_by(tad_id) |>
+      slice_min(year, n = 1) |>
+      ungroup() |>
+      arrange(year, aps_annual_revenue) |>
+      group_by(year) |>
+      mutate(rank_in_yr = row_number()) |>
+      ungroup() |>
+      mutate(
+        lbl_vjust = if_else(rank_in_yr %% 2 == 1, -0.7, 1.6),
+        lbl_alpha = line_a
+      )
+
+    p <- ggplot(
+      per_tad,
+      aes(x = year, y = aps_annual_revenue, color = tad_id, group = tad_id)
+    ) +
+      geom_vline(
+        data = vlines,
+        aes(xintercept = closure_year, color = tad_id),
+        linetype = "dashed",
+        linewidth = 0.35,
+        alpha = 0.45
+      ) +
+      geom_line_interactive(
+        aes(
+          alpha = line_a,
+          linewidth = line_w,
+          data_id = tad_id,
+          tooltip = tad_id # line tooltip is simple; points give year detail
+        )
+      ) +
+      geom_point_interactive(
+        aes(
+          alpha = line_a,
+          size = line_w, # scale with selection state like lines do
+          data_id = tad_id,
+          tooltip = paste0(
+            "<b>",
+            tad_id,
+            "</b><br>",
+            year,
+            "<br>",
+            "APS revenue: ",
+            dollar(
+              aps_annual_revenue,
+              scale = 1e-6,
+              suffix = "M",
+              accuracy = 0.1
+            )
+          )
+        )
+      ) +
+      # Individual TAD names at the start of each line; dim with selection
+      geom_text(
+        data = labels_individual,
+        aes(label = tad_id, vjust = lbl_vjust, alpha = lbl_alpha),
+        hjust = 0.5,
+        size = 2.4,
+        fontface = "bold",
+        show.legend = FALSE
+      ) +
+      scale_color_manual(values = TAD_PALETTE, na.value = "grey70") +
+      scale_y_continuous(labels = label_dollar(scale = 1e-6, suffix = "M")) +
+      scale_size_identity() +
+      scale_alpha_identity() +
+      scale_linewidth_identity() +
+      labs(y = "Annual APS Revenue") +
+      theme_tad() +
+      theme(
+        axis.title.y = element_text(size = 10, color = "grey40"),
+        legend.position = "none"
+      )
+
+    girafe(
+      ggobj = p,
+      width_svg = 10,
+      height_svg = 4.5,
+      options = list(
+        opts_selection(type = "single"),
+        opts_hover(css = "cursor:pointer; opacity:1; stroke-width:2px;"),
+        opts_tooltip(
+          css = "background:white; border:1px solid #ccc;
+                              padding:6px 10px; border-radius:4px; font-size:13px;"
+        ),
+        opts_toolbar(saveaspng = FALSE)
+      )
+    )
+  })
+
+  # ── 7h. Graphic 4: What could this fund? ─────────────────
+  # Always uses the *current planned* closure dates (not the sliders) so this
+  # panel answers "what do we get if we stay on the existing timeline?" as a
+  # fixed reference point rather than a simulation.
+
+  ref_revenue <- reactive({
+    cy_current <- tad_meta |>
+      transmute(tad_id, closure_year = year_end_current)
+
+    rv <- proj_data() |>
+      left_join(cy_current, by = "tad_id") |>
+      filter(year >= closure_year, year == BUY_REF_YEAR) |>
+      summarise(total = sum(aps_annual_revenue, na.rm = TRUE)) |>
+      pull(total)
+
+    if (length(rv) == 0 || is.na(rv[1])) 0 else rv[1]
+  })
+
+  output$buy_panel <- renderUI({
+    rev <- ref_revenue()
+
+    boxes <- map(seq_len(nrow(unit_costs)), \(i) {
+      item <- unit_costs[i, ]
+      n <- floor(rev / item$cost)
+
+      # Label may contain \n for line breaks — convert to HTML
+      label_html <- HTML(gsub("\n", "<br>", item$label))
+
+      card(
+        class = "text-center border-0 bg-light h-100",
+        div(
+          class = "py-3",
+          div(
+            style = "font-size:2rem; font-weight:700; color:#E63946; line-height:1;",
+            format(n, big.mark = ",")
+          ),
+          tags$p(item$unit, class = "small text-muted mb-1"),
+          tags$hr(class = "mx-4 my-1"),
+          tags$p(label_html, class = "small fw-semibold mb-0"),
+          tags$p(item$cost_label, class = "small text-muted")
+        )
+      )
+    })
+
+    tagList(
+      div(
+        class = "px-3 pt-3 pb-1",
+        div(
+          class = "d-flex align-items-center gap-2 mb-1",
+          tags$span("✨", style = "font-size:1.1rem; color:#2A9D8F;"),
+          tags$span(
+            "What Becomes Possible",
+            class = "fw-bold",
+            style = "color:#2A9D8F; font-size:1rem;"
+          )
+        ),
+        tags$p(
+          HTML(sprintf(
+            "With an estimated <strong>%s</strong> in annual APS revenue from closed TADs in %d (current plan), here's what becomes achievable for Atlanta's kids.",
+            dollar(rev, scale = 1e-6, suffix = "M", accuracy = 0.1),
+            BUY_REF_YEAR
+          )),
+          class = "text-muted small mb-0"
+        )
+      ),
+      do.call(
+        layout_column_wrap,
+        c(list(width = 1 / 3, gap = "0.5rem", class = "px-2 pb-2"), boxes)
+      )
+    )
+  })
+
+  # ── 7i. Challenge panel ───────────────────────────────────
+  # Structural financial pressures APS faces regardless of TAD timelines.
+  # Cards are placeholder-styled (amber); stats filled in as research lands.
+  output$challenge_panel <- renderUI({
+    challenge_items <- list(
+      list(
+        title = "Skyrocketing Healthcare Costs",
+        stat = "—",
+        stat_lbl = "increase since 2008",
+        desc = paste0(
+          "Employee healthcare costs have grown dramatically and are largely outside APS control. ",
+          "The state provides no support for healthcare costs of many essential workers — ",
+          "including bus drivers, janitors, and food service staff."
+        )
+      ),
+      list(
+        title = "Property Tax Revenue at Risk",
+        stat = "—",
+        stat_lbl = "via SB 33",
+        desc = paste0(
+          "Georgia legislation sought to cap property tax revenue growth — threatening to widen the gap ",
+          "between unconstrained expense growth and constrained revenue, ",
+          "APS's single largest funding source."
+        )
+      ),
+      list(
+        title = "Declining Enrollment",
+        stat = "2,398",
+        stat_lbl = "projected student decline by 2030",
+        desc = paste0(
+          "APS enrollment is projected to fall from 49,944 students in 2024–25 to 47,546 in 2029–30. ",
+          "The district cited this trend in its decision last fall to close 16 neighborhood schools — ",
+          "including high-academic-growth schools like Dunbar. ",
+          "TAD revenue could change the calculus on which schools can stay open and fully resourced."
+        )
+      )
+    )
+
+    challenge_cards <- map(challenge_items, \(item) {
+      card(
+        class = "text-center border-0 h-100",
+        style = "background-color:#fff8e1;",
+        div(
+          class = "py-3 px-2",
+          div(
+            style = "font-size:2rem; font-weight:700; color:#e8a020; line-height:1;",
+            item$stat
+          ),
+          tags$p(item$stat_lbl, class = "small text-muted mb-1"),
+          tags$hr(class = "mx-4 my-1"),
+          tags$p(item$title, class = "small fw-semibold mb-1"),
+          tags$p(
+            item$desc,
+            class = "text-muted",
+            style = "font-size:0.75rem; line-height:1.4;"
+          )
+        )
+      )
+    })
+
+    tagList(
+      tags$hr(class = "mx-3 mt-2 mb-0"),
+      div(
+        class = "px-3 pt-3 pb-1",
+        div(
+          class = "d-flex align-items-center gap-2 mb-1",
+          tags$span("⚠", style = "font-size:1.1rem; color:#e8a020;"),
+          tags$span(
+            "What's Already at Risk",
+            class = "fw-bold",
+            style = "color:#e8a020; font-size:1rem;"
+          )
+        ),
+        tags$p(
+          paste0(
+            "TAD revenue arriving on time doesn't just unlock a wish list — ",
+            "it helps APS navigate structural financial pressures that threaten the system regardless."
+          ),
+          class = "text-muted small mb-0"
+        )
+      ),
+      do.call(
+        layout_column_wrap,
+        c(
+          list(width = 1 / 3, gap = "0.5rem", class = "px-2 pb-3"),
+          challenge_cards
+        )
+      )
+    )
+  })
+}
+
+
+# ════════════════════════════════════════════════════════════
+# Launch ----
+# ════════════════════════════════════════════════════════════
+shinyApp(ui = ui, server = server)
