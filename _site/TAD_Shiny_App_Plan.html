@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>tad_shiny_app_plan – spiva-website</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-a0f9fd0d421825b736dc1bbcbcba2219.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">spiva-website</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="tad-shiny-app-project-plan" class="level1">
+<h1>TAD Shiny App — Project Plan</h1>
+<p><em>Last updated: June 2026</em></p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>An interactive R/Shiny application visualizing Tax Allocation District (TAD) property values and their fiscal impact on Atlanta Public Schools (APS). The app connects five linked graphics enabling users to explore how TAD closure timelines affect school funding, and what that revenue could otherwise pay for.</p>
+<p><strong>Audience:</strong> Public advocacy and portfolio demonstration. Design and copy should be accessible to a general public audience, not just policy wonks.</p>
+<hr>
+</section>
+<section id="background-how-tad-revenue-works" class="level2">
+<h2 class="anchored" data-anchor-id="background-how-tad-revenue-works">Background: How TAD Revenue Works</h2>
+<p>A TAD freezes the property tax base (“the base”) at the moment it’s created. All property tax revenue generated <em>above</em> that base — the <strong>increment</strong> — flows to Invest Atlanta (the City’s development arm) for the life of the TAD, rather than to APS, the City, or Fulton County. Only when a TAD closes does the full increment return to the general tax digest, at which point APS receives its share (roughly half, with the remainder split between the City and County).</p>
+<p><strong>Exception — Eastside TAD:</strong> Although not yet closed, APS currently receives the full increment from the Eastside TAD via PILOT (Payment in Lieu of Taxes) payments. This is noted in the data but not yet fully reflected in the projection model.</p>
+<p>This dynamic — and how long TADs stay open — is the central policy question the app explores.</p>
+<hr>
+</section>
+<section id="current-app-layout-as-built" class="level2">
+<h2 class="anchored" data-anchor-id="current-app-layout-as-built">Current App Layout (as built)</h2>
+<p>Cards appear in this order, top to bottom:</p>
+<section id="revenue-diverted-from-schools-kids-projected-aps-revenue-tabbed-card" class="level3">
+<h3 class="anchored" data-anchor-id="revenue-diverted-from-schools-kids-projected-aps-revenue-tabbed-card">1. Revenue Diverted from Schools &amp; Kids / Projected APS Revenue — tabbed card ✅</h3>
+<p>A <code>navset_card_tab</code> card with two tabs:</p>
+<p><strong>Tab A — Revenue Diverted from Schools &amp; Kids</strong> Cumulative line chart showing the total APS property tax revenue redirected to Invest Atlanta over time, under each of three fixed scenarios: Current Plan, Mayor’s Original NRI, Mayor’s Updated NRI. Three colored lines. Does not respond to sliders — always shows the three named scenarios for direct comparison. Scenario names are labeled directly on the curves using <code>geomtextpath::geom_textline()</code> (no legend). End-of-line labels at 2055 show each scenario’s total cumulative cost. Dynamic subheader shows the gap between Updated NRI and Current Plan, plus an annual diversion figure at a user-selectable year.</p>
+<p><strong>Tab B — Projected APS Revenue Coming from Closed TADs</strong> Per-TAD line chart showing projected annual APS revenue starting from each TAD’s closure year. Responds to sliders and projection method. Cross-filters with map and historic chart. Start-of-line labels for four individually named TADs (Beltline, Eastside, Westside, Perry Bolton); the four corridor TADs (Campbellton, Metropolitan, Stadium, Hollowell) are unlabeled (hover-only). Dynamic subheader shows a Beltline revenue example at a user-selectable year.</p>
+</section>
+<section id="what-could-this-fund-unit-costs-need-updating-see-outstanding-items" class="level3">
+<h3 class="anchored" data-anchor-id="what-could-this-fund-unit-costs-need-updating-see-outstanding-items">2. What Could This Fund? ✅ <em>(unit costs need updating — see outstanding items)</em></h3>
+<p>Cards showing what the projected annual APS revenue from closed TADs (in 2035) could purchase: pre-K teachers, school lunches, electric buses, playgrounds, neighborhood schools saved. Responds to the scenario sliders.</p>
+</section>
+<section id="map-historic-property-values-side-by-side-map-still-has-items-outstanding" class="level3">
+<h3 class="anchored" data-anchor-id="map-historic-property-values-side-by-side-map-still-has-items-outstanding">3. Map + Historic Property Values (side by side) ✅ <em>(map still has items outstanding)</em></h3>
+<ul>
+<li><strong>Left:</strong> TAD boundary map of Atlanta. Clicking a TAD cross-filters both charts. City of Atlanta boundary shown as mid-gray polygon. TAD polygons color-coded. Labels use <code>st_point_on_surface</code> with manual overrides for Beltline (NE arc) and Atlantic Station (nudged north). Major roads (interstates + primary) shown in white from TIGER/Line shapefiles.</li>
+<li><strong>Right:</strong> Historic assessed property values by TAD, 2007–2024. Per-year tooltips via <code>geom_point_interactive</code>. Tooltips display in billions when value ≥ $1B, millions otherwise.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="whats-been-built-checked-off" class="level2">
+<h2 class="anchored" data-anchor-id="whats-been-built-checked-off">What’s Been Built / Checked Off</h2>
+<p><strong>Infrastructure</strong> - [x] Shiny app scaffolded with <code>{bslib}</code> layout - [x] Real data loaded from <code>TAD Basics.csv</code> (historic property values 2007–2024, baselines, closure years for all three scenarios) - [x] TAD boundary shapefiles sourced and integrated - [x] City of Atlanta boundary shapefile sourced and integrated - [x] TIGER/Line road shapefiles (Fulton + DeKalb) sourced and integrated - [x] Consistent TAD color palette applied across all graphics - [x] Custom <code>theme_tad()</code> ggplot2 theme function - [x] <code>reactiveVal</code> cross-filtering wired across all charts and map - [x] Blank-space click to deselect (JavaScript + Shiny input) - [x] “× Show all” deselect link in map card header</p>
+<p><strong>Scenario Controls</strong> - [x] Per-TAD closure year sliders with tick marks showing preset positions - [x] Three preset buttons with active-state highlighting (filled when selected, outlined when not) - [x] Preset buttons reactive even before the custom slider accordion is opened (fallback logic in <code>closure_years</code>) - [x] Projection methodology radio buttons (4 options including TAD baseline CAGR) - [x] Closure years for all three scenarios in <code>tad_meta</code></p>
+<p><strong>Charts</strong> - [x] Historic property value chart with smart B/M tooltip formatting - [x] TAD map with city boundary, roads, colored polygons, and labels - [x] Projected APS revenue chart — active TADs only, start-of-line labels for 4 named TADs, empty-state fallback when no TADs close before 2055 - [x] Revenue diverted chart — on-curve labels via <code>geomtextpath</code>, end-of-line cumulative totals, no legend - [x] “What Could This Fund?” panel - [x] Both revenue charts share a <code>navset_card_tab</code> card</p>
+<p><strong>Dynamic Subheaders</strong> - [x] Diversion chart: growth assumption name, cumulative gap vs.&nbsp;current plan, annual diversion at user-selectable year with inline picker - [x] Projected revenue chart: Beltline 2035 (or user-selected year) revenue example with inline picker, falls back gracefully when Beltline hasn’t closed yet under the active scenario</p>
+<hr>
+</section>
+<section id="outstanding-items" class="level2">
+<h2 class="anchored" data-anchor-id="outstanding-items">Outstanding Items</h2>
+<section id="sliders" class="level3">
+<h3 class="anchored" data-anchor-id="sliders">Sliders</h3>
+<ul class="task-list">
+<li><label><input type="checkbox"><strong>Tick marks on closure year sliders</strong> — previous attempt used JavaScript to inject marks on the ion.rangeSlider track, but it wasn’t working reliably. Either find a cleaner JS approach, use a custom slider widget, or document a simpler fallback (e.g., a small reference table showing the three years per TAD).</label></li>
+</ul>
+</section>
+<section id="map" class="level3">
+<h3 class="anchored" data-anchor-id="map">Map</h3>
+<ul class="task-list">
+<li><label><input type="checkbox"><strong>Additional county road shapefiles</strong> — currently only Fulton + DeKalb. Roads from Cobb, Clayton, and Henry counties cut off at county lines within the visible map extent. Add those TIGER/Line files and re-filter to S1100 + S1200.</label></li>
+<li><label><input type="checkbox"><strong>Map fills container</strong> — remove white space between the gray map background and the card border so the map bleeds edge-to-edge within its card.</label></li>
+<li><label><input type="checkbox"><strong>Map card header polish</strong> — “Click a district to highlight” subtext feels cluttered; consider removing or making it smaller/muted.</label></li>
+</ul>
+</section>
+<section id="growth-assumption-projection-methodology" class="level3">
+<h3 class="anchored" data-anchor-id="growth-assumption-projection-methodology">Growth Assumption &amp; Projection Methodology</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked=""><strong>Fix the citywide growth rate</strong> — now uses the <strong>Atlanta column</strong> in <code>TAD Basics.csv</code> (total City of Atlanta property value from the Fulton County tax digest) rather than the TAD aggregate.</label></li>
+<li><label><input type="checkbox" checked=""><strong>Redefine the “Optimistic” scenario</strong> — now uses the average CAGR of the three demonstrably high-growth TADs (Atlantic Station, Beltline, Eastside) rather than the 75th percentile.</label></li>
+<li><label><input type="checkbox"><strong>Add growth rate explainers</strong> — in-UI description of what CAGR is, how each method is computed, and what the options represent. Could live as a small accordion or tooltip beneath the sidebar growth buttons.</label></li>
+<li><label><input type="checkbox"><strong>Dual-phase growth rate model</strong> — projection scenario where each TAD uses its historical CAGR while open, then switches to citywide average after closure. Requires updating <code>build_projections()</code> and adding a new sidebar option.</label></li>
+<li><label><input type="checkbox"><strong>Eastside TAD PILOT exception</strong> — should be noted in the UI and may affect revenue calculations; not yet fully handled.</label></li>
+</ul>
+</section>
+<section id="why-tad-closures-matter-panel" class="level3">
+<h3 class="anchored" data-anchor-id="why-tad-closures-matter-panel">“Why TAD Closures Matter” Panel</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="">Vision cards: Universal Pre-K ($78.2M), Free MARTA ($27.7M), Teacher salaries to $100K ($34.6M) — all with methodology accordions and sources</label></li>
+<li><label><input type="checkbox" checked="">Challenge cards: Healthcare costs (+$127M/+78%), Property tax revenue at risk (~3% cap / SB 33), Declining enrollment (2,398 students by 2030)</label></li>
+<li><label><input type="checkbox" checked="">Two-section layout: “What Becomes Possible” (teal) and “What’s Already at Risk” (amber)</label></li>
+<li><label><input type="checkbox"><strong>“At Risk” card flip / more info</strong> — descriptions are currently long. Explore a card-flip or “more info” expand so each card shows 1–2 sentences by default with full detail on interaction.</label></li>
+<li><label><input type="checkbox"><strong>Accordion padding</strong> — the methodology accordions (Pre-K, MARTA, Teacher Salary) have too much vertical padding; tighten to reduce whitespace.</label></li>
+</ul>
+</section>
+<section id="charts-total-revenue-diverted" class="level3">
+<h3 class="anchored" data-anchor-id="charts-total-revenue-diverted">Charts — Total Revenue Diverted</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="">Tab renamed to “Total Revenue Diverted from Schools”</label></li>
+<li><label><input type="checkbox" checked="">Y-axis drops decimal ($2B not $2.0B)</label></li>
+<li><label><input type="checkbox" checked="">On-curve labels enlarged</label></li>
+<li><label><input type="checkbox" checked="">Chart fills container width</label></li>
+<li><label><input type="checkbox"><strong>2055 vertical line</strong> — add a dotted vertical line at 2055 (amber/orange) with label “Extended TADs close / (NRI Proposals, 2055)” marking where the Mayor’s proposals finally close all TADs.</label></li>
+<li><label><input type="checkbox"><strong>Tab header styling</strong> — current teal color on active tab feels off; revisit to match overall color scheme.</label></li>
+</ul>
+</section>
+<section id="charts-projected-annual-aps-revenue" class="level3">
+<h3 class="anchored" data-anchor-id="charts-projected-annual-aps-revenue">Charts — Projected Annual APS Revenue</h3>
+<ul class="task-list">
+<li><label><input type="checkbox"><strong>Tab title</strong> — rename to “Projected Annual APS Revenue from Closed TADs” (add “Annual”).</label></li>
+<li><label><input type="checkbox"><strong>Chart polish</strong> — stretch chart height/width, consider removing or simplifying the y-axis label.</label></li>
+<li><label><input type="checkbox"><strong>Tab header styling</strong> — same as above; revisit active tab color.</label></li>
+</ul>
+</section>
+<section id="charts-historic-property-values" class="level3">
+<h3 class="anchored" data-anchor-id="charts-historic-property-values">Charts — Historic Property Values</h3>
+<ul class="task-list">
+<li><label><input type="checkbox"><strong>Remove “value” y-axis label</strong> — redundant given context; clean up the chart margin.</label></li>
+</ul>
+</section>
+<section id="explainer-sources" class="level3">
+<h3 class="anchored" data-anchor-id="explainer-sources">Explainer &amp; Sources</h3>
+<ul class="task-list">
+<li><label><input type="checkbox"><strong>Growth rate explainer</strong> — see Growth Assumption section above.</label></li>
+<li><label><input type="checkbox"><strong>Learn More section</strong> — page-level section with links to the Mayor’s NRI legislation, key APS budget/planning documents, GBPI reports, and other relevant sources.</label></li>
+<li><label><input type="checkbox"><strong>Feedback section</strong> — small section inviting users to send feedback (email link or simple form).</label></li>
+</ul>
+</section>
+<section id="phase-4-design-polish" class="level3">
+<h3 class="anchored" data-anchor-id="phase-4-design-polish">Phase 4 — Design Polish</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="">Sidebar preset button active states (filled color when selected)</label></li>
+<li><label><input type="checkbox" checked="">Growth rate buttons styled as stacked toggle group</label></li>
+<li><label><input type="checkbox" checked="">Custom TAD closure and custom growth rate collapse panels</label></li>
+<li><label><input type="checkbox"><strong>Overall visual design brainstorm</strong> — review color scheme, fonts, background colors. Look at Atlanta-specific palette inspiration (not MARTA colors — too on the nose). Consider other interactive infographics/dashboards for reference.</label></li>
+<li><label><input type="checkbox"><strong>Typography hierarchy</strong> — ensure headers, callout numbers, and chart labels are visually distinct at a glance.</label></li>
+<li><label><input type="checkbox"><strong>Responsive layout check</strong> at 1280px.</label></li>
+<li><label><input type="checkbox"><strong>Page-level TAD explainer</strong> — brief intro text about what TADs are and why this app exists; currently a stub in the header.</label></li>
+</ul>
+</section>
+<section id="phase-5-social-media-ig-slides-narrative-taking-shape" class="level3">
+<h3 class="anchored" data-anchor-id="phase-5-social-media-ig-slides-narrative-taking-shape">Phase 5 — Social Media / IG Slides <em>(narrative taking shape)</em></h3>
+<p><strong>Planned slide series — working titles:</strong></p>
+<ol type="1">
+<li><p><strong>“Extending the TADs Will Imperil APS”</strong> — lead with the stakes. Cumulative diversion chart, big number, stark framing.</p></li>
+<li><p><strong>“Why APS Needs the TADs to Close On Time”</strong> — structural pressures: benefits costs up 78%, property tax revenue now legally capped at inflation, declining enrollment forcing school closures. APS is already in a hole; TAD revenue is not optional.</p></li>
+<li><p><strong>“Closing the TADs Unlocks the Future for APS”</strong> — the flip side. Revenue projections under the current plan, show the trajectory once TADs close.</p></li>
+<li><p><strong>“What APS Could Do with Revenue from Closed TADs”</strong> — Universal Pre-K for 3 &amp; 4-year-olds (APS Board goal), $100K average teacher salaries, Free MARTA for every APS student. Peer cities already doing this: DC, SF, Seattle. This isn’t a wish list — it’s a plan.</p></li>
+<li><p><strong>“APS Is Already at Huge Financial Risk”</strong> — benefits costs skyrocketing, property tax revenue constrained by SB 33, enrollment declining. The system is under pressure from every direction. TAD revenue arriving on schedule is the difference between managing it and a crisis.</p></li>
+<li><p><strong>“Investing in Schools, Teachers, and Students — or Private Developers?”</strong> — the narrative reframe. Great schools draw families into the city. Properly paid teachers can live where they teach. Universal Pre-K for 3 &amp; 4-year-olds sets kids up for academic success and saves parents thousands in childcare — freeing them to work and putting money back in their pockets. That <em>is</em> economic development. Stop pretending it isn’t.</p></li>
+<li><p><strong>“Don’t Fall for the Equity-Washing”</strong> — the Mayor’s office is using equity language to justify NRI extensions. Real inequities exist in Atlanta — no one disputes that. But the answer isn’t taking from schools to fund developer projects. Go to the voters with a bond proposal. Pass a new tax. Get creative. Stop raiding the schools.</p></li>
+</ol>
+<p><strong>Production checklist:</strong> - [ ] Finalize slide content and exact stats for each - [ ] Design slide template: large stat or headline, minimal supporting text, consistent brand palette - [ ] Decide on Atlanta-inspired color palette (not MARTA — too on the nose) - [ ] Generate programmatically with <code>{ggplot2}</code> + <code>{camcorder}</code> where charts are involved; static slides in design tool or R - [ ] Export at 1080×1080 (Instagram) and 1200×628 (Bluesky / Twitter card)</p>
+<hr>
+</section>
+<section id="phase-6-code-refactor-documentation-after-feature-completion" class="level3">
+<h3 class="anchored" data-anchor-id="phase-6-code-refactor-documentation-after-feature-completion">Phase 6 — Code Refactor &amp; Documentation <em>(after feature completion)</em></h3>
+<ul class="task-list">
+<li><label><input type="checkbox"><strong>Light code refactor</strong> — consider splitting stable/dense logic out of <code>app.R</code> into sourced files (e.g., <code>R/data.R</code>, <code>R/projections.R</code>, <code>R/theme.R</code>). Current file is ~2,000 lines; threshold for splitting is ~2,500–3,000 or when finding/editing specific logic becomes friction.</label></li>
+<li><label><input type="checkbox"><strong>Code explainer document</strong> — written guide to how the app fits together: the reactive graph, the cross-filtering pattern, the projection model, the ggiraph interactivity approach, the Bootstrap JS patterns used for the sidebar controls. Audience: future-you or a collaborator picking this up cold.</label></li>
+<li><label><input type="checkbox"><strong>Inline comment pass</strong> — ensure all non-obvious decisions have explanatory comments, particularly the JS/Shiny input wiring, the <code>closure_years()</code> fallback logic, and the custom growth rate reactive.</label></li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="technical-stack" class="level2">
+<h2 class="anchored" data-anchor-id="technical-stack">Technical Stack</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Tool</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>App framework</td>
+<td>R / Shiny</td>
+<td>Single-file <code>app.R</code></td>
+</tr>
+<tr class="even">
+<td>UI layout</td>
+<td><code>{bslib}</code></td>
+<td>Bootstrap 5; <code>page_sidebar</code>, <code>navset_card_tab</code>, <code>layout_columns</code>, <code>card</code></td>
+</tr>
+<tr class="odd">
+<td>Charts</td>
+<td><code>{ggplot2}</code> + <code>{ggiraph}</code></td>
+<td><code>ggiraph</code> adds click/hover via SVG-native interactive geoms</td>
+</tr>
+<tr class="even">
+<td>On-curve text labels</td>
+<td><code>{geomtextpath}</code></td>
+<td><code>geom_textline()</code> for scenario labels on the diversion chart</td>
+</tr>
+<tr class="odd">
+<td>Map</td>
+<td><code>{ggplot2}</code> + <code>geom_sf</code> + <code>{ggiraph}</code></td>
+<td>Programmatic basemap — no tile dependencies</td>
+</tr>
+<tr class="even">
+<td>Spatial data</td>
+<td><code>{sf}</code></td>
+<td>All shapefiles read with <code>st_read</code>, reprojected to WGS84</td>
+</tr>
+<tr class="odd">
+<td>Data wrangling</td>
+<td><code>{tidyverse}</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Custom theme</td>
+<td><code>theme_tad()</code> function</td>
+<td>Defined once, applied to all charts</td>
+</tr>
+<tr class="odd">
+<td>Static export / social slides</td>
+<td><code>{ggplot2}</code> + <code>{camcorder}</code></td>
+<td>Phase 5</td>
+</tr>
+<tr class="even">
+<td>Hosting</td>
+<td>Posit Connect</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="architecture-notes" class="level2">
+<h2 class="anchored" data-anchor-id="architecture-notes">Architecture Notes</h2>
+<p><strong>Cross-filtering:</strong> A single <code>reactiveVal</code> called <code>selected_tad</code> stores the currently highlighted TAD (or <code>NULL</code> for all). Map clicks, chart line clicks, and a “× Show all” link all write to this value. All three charts read it and re-render automatically via Shiny’s reactive graph. Blank-space clicks inside ggiraph containers are caught by a custom JavaScript listener that fires a <code>bg_click</code> Shiny input.</p>
+<p><strong>Dynamic UI:</strong> Per-TAD closure year sliders are built in <code>renderUI</code> (server-side). Preset buttons use <code>updateSliderInput</code> to batch-update all sliders. An <code>active_preset</code> reactiveVal tracks which preset (if any) is currently active; a custom JS message handler (<code>setActivePreset</code>) toggles Bootstrap button classes to show filled/outline state.</p>
+<p><strong>Preset button reactivity before slider render:</strong> The <code>closure_years</code> reactive reads slider inputs, but sliders don’t exist in the DOM until the custom accordion is opened. To ensure preset buttons update charts immediately (without requiring the user to open the accordion), <code>closure_years</code> checks <code>active_preset()</code> and uses the corresponding <code>tad_meta</code> column as a fallback when <code>input[[slider_id]]</code> is <code>NULL</code>.</p>
+<p><strong>Slider drift detection:</strong> An <code>observe()</code> reads all slider values and compares them against the active preset’s expected values. If any differ, <code>active_preset(NULL)</code> is set, which the JS handler uses to revert all buttons to outline state.</p>
+<p><strong>Diversion chart vs.&nbsp;projection chart:</strong> The projection chart responds to the sliders (custom closure dates). The diversion chart always shows the three named scenarios with their fixed closure dates from <code>tad_meta</code> — this keeps it as a clean comparison tool independent of slider state.</p>
+<p><strong>Active TAD filtering:</strong> The projection chart explicitly excludes Atlantic Station and Princeton Lake (confirmed closed) by name rather than relying on the <code>already_closed</code> flag, which had data-ambiguity issues with Stadium TAD.</p>
+<hr>
+</section>
+<section id="solved-technical-problems" class="level2">
+<h2 class="anchored" data-anchor-id="solved-technical-problems">Solved Technical Problems</h2>
+<section id="ggiraph-svg-clipping-clip-off-doesnt-work" class="level3">
+<h3 class="anchored" data-anchor-id="ggiraph-svg-clipping-clip-off-doesnt-work">ggiraph SVG clipping (<code>clip = "off"</code> doesn’t work)</h3>
+<p><strong>Problem:</strong> ggiraph renders ggplots as SVG and clips everything to the panel bounds, regardless of <code>clip = "off"</code> in <code>coord_cartesian</code>. Annotations outside the panel (bracket labels, end-of-line text) were being silently dropped.</p>
+<p><strong>Solution:</strong> Extend <code>coord_cartesian(xlim)</code> to cover the annotation zone, then add an <code>annotate("rect", xmin = 2055, xmax = Inf, fill = "white")</code> layer to mask gridlines in the extended zone. This keeps annotations within the SVG bounds while hiding the visual clutter of extended gridlines.</p>
+</section>
+<section id="dynamic-subheader-line-breaks" class="level3">
+<h3 class="anchored" data-anchor-id="dynamic-subheader-line-breaks">Dynamic subheader line breaks</h3>
+<p><strong>Problem:</strong> Building subheader text with Shiny’s <code>p()</code> + <code>strong()</code> + <code>tagList()</code> produced unwanted line breaks between elements. Shiny’s HTML serializer adds newline characters between sibling tag nodes, which some browsers render as visible whitespace.</p>
+<p><strong>Solution:</strong> Build the entire subheader as a single flat HTML string using <code>sprintf()</code> + <code>HTML()</code>. Text formatting (<code>&lt;strong&gt;</code>, <code>&lt;br&gt;</code>) is embedded directly in the string. The only non-string element (the inline year picker) is also built as an HTML string via <code>sprintf</code>, so everything concatenates cleanly with no tag-node boundaries.</p>
+</section>
+<section id="inline-year-picker" class="level3">
+<h3 class="anchored" data-anchor-id="inline-year-picker">Inline year picker</h3>
+<p><strong>Problem:</strong> Wanted a year selector embedded inline within subheader text that looks like part of the sentence (not a form field). Several approaches failed: - <strong>Shiny <code>selectInput</code></strong> — the <code>.form-group</code> wrapper and browser-native styling looked janky despite CSS overrides - <strong>Bootstrap dropdown with <code>data-bs-toggle</code></strong> — Bootstrap 5 doesn’t auto-initialize dropdowns on dynamically-injected content (added via <code>renderUI</code>), so the menu never opened - <strong>Custom CSS/JS dropdown</strong> — JS toggle fired but <code>renderUI</code> re-renders on every reactive change, destroying the <code>.open</code> class before the menu became visible</p>
+<p><strong>Solution:</strong> A native HTML <code>&lt;select&gt;</code> element built directly into the HTML string, with <code>onchange="Shiny.setInputValue('ref_year', parseInt(this.value), {priority:'event'})"</code>. Native <code>&lt;select&gt;</code> always works, opens reliably, and <code>onchange</code> fires before any Shiny re-render. CSS removes the border, adds a bottom underline, and matches the surrounding text weight/color. Two separate input IDs (<code>ref_year</code> for the projected revenue card, <code>ref_year_div</code> for the diversion card) prevent the two pickers from interfering.</p>
+</section>
+<section id="scenario-string-matching-with-apostrophes" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-string-matching-with-apostrophes">Scenario string matching with apostrophes</h3>
+<p><strong>Problem:</strong> Filtering <code>diversion_data()</code> by scenario name using <code>==</code> failed silently when Claude’s text editor introduced curly apostrophes (<code>'</code>) into string literals that the source data stored with straight apostrophes (<code>'</code>). The comparison returned zero rows, making all dynamic dollar values blank.</p>
+<p><strong>Solution:</strong> Use <code>grepl(..., fixed = TRUE)</code> for all scenario lookups (e.g., <code>grepl("Updated NRI", dd$scenario, fixed = TRUE)</code>). This is substring-based and encoding-agnostic, so it doesn’t depend on exact apostrophe type.</p>
+</section>
+<section id="on-curve-text-labels-diversion-chart" class="level3">
+<h3 class="anchored" data-anchor-id="on-curve-text-labels-diversion-chart">On-curve text labels (diversion chart)</h3>
+<p><strong>Problem:</strong> The three cumulative scenario lines needed labels that felt part of the chart, not a separate legend or cluttered end-of-line callouts (which already showed cumulative totals).</p>
+<p><strong>Solution:</strong> <code>geomtextpath::geom_textline()</code>, which draws both the line and its label in a single layer, with the text rotated to follow the line’s slope. Key parameters: - <code>offset = unit(5, "pt")</code> shifts labels above the line; negative offset for the bottom line (“Current Plan”) places it below - <code>gap = FALSE</code> keeps the line continuous beneath the text (setting <code>gap = TRUE</code> cut the line, which looked broken) - <code>offset</code> is not a mappable aesthetic, so two separate <code>geom_textline</code> calls are needed — one for Current Plan (negative offset) and one for the NRI scenarios (positive offset), using <code>data = ~ filter(.x, ...)</code> lambda syntax - A <code>geom_line_interactive(alpha = 0)</code> layer sits on top to preserve ggiraph hover events on the line</p>
+</section>
+<section id="projected-revenue-chart-empty-state" class="level3">
+<h3 class="anchored" data-anchor-id="projected-revenue-chart-empty-state">Projected revenue chart — empty state</h3>
+<p><strong>Problem:</strong> Under Mayor’s Original NRI, all TADs close after 2055, leaving <code>per_tad</code> empty. An empty ggplot with <code>scale_y_continuous(limits = c(0, NA))</code> errors because it can’t determine an upper bound from no data.</p>
+<p><strong>Solution:</strong> Early-return guard: <code>if (nrow(per_tad) == 0)</code> returns a styled empty chart with a brief annotation (“No TADs close before 2055 under this scenario”) and fixed y-axis limits, rather than allowing the render to error.</p>
+<hr>
+</section>
+</section>
+<section id="projection-methodology-as-implemented" class="level2">
+<h2 class="anchored" data-anchor-id="projection-methodology-as-implemented">Projection Methodology (as implemented)</h2>
+<p><strong>CAGR approach:</strong> For each TAD, compute a Compound Annual Growth Rate from the first to last observed assessed value. Project forward by applying that rate from the last known year to 2055.</p>
+<p>Four selectable methods (radio button in scenario controls):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>How it works</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>TAD 2007–2024 CAGR</td>
+<td>Each TAD uses its own CAGR from 2007 to 2024</td>
+<td>✅ Built</td>
+</tr>
+<tr class="even">
+<td>TAD Baseline–2024 CAGR</td>
+<td>Each TAD uses its own CAGR from its creation year / baseline value to 2024</td>
+<td>✅ Built</td>
+</tr>
+<tr class="odd">
+<td>Citywide average</td>
+<td>All TADs use the CAGR of the Atlanta column (total City property value from Fulton County tax digest)</td>
+<td>✅ Built</td>
+</tr>
+<tr class="even">
+<td>Optimistic</td>
+<td>All TADs use the average CAGR of Atlantic Station, Beltline, and Eastside</td>
+<td>✅ Built</td>
+</tr>
+</tbody>
+</table>
+<p><strong>APS revenue formula:</strong> <code>aps_annual_revenue = (projected_value - baseline) × APS_MILLAGE / 1000</code> where <code>APS_MILLAGE = 20.74</code> mills (assumed constant; update if rate changes).</p>
+<p><strong>Diversion formula:</strong> Same as APS revenue formula, but applied only to years when the TAD is <em>still open</em>.</p>
+<hr>
+</section>
+<section id="data-sources" class="level2">
+<h2 class="anchored" data-anchor-id="data-sources">Data Sources</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Data</th>
+<th>Source</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Historic TAD property values (2007–2024)</td>
+<td><code>TAD Basics.csv</code> — sourced from Invest Atlanta / Fulton County tax digest</td>
+<td>✅ In app</td>
+</tr>
+<tr class="even">
+<td>TAD baseline values</td>
+<td>Same CSV</td>
+<td>✅ In app</td>
+</tr>
+<tr class="odd">
+<td>TAD closure years — all three scenarios</td>
+<td>Same CSV</td>
+<td>✅ In app</td>
+</tr>
+<tr class="even">
+<td>TAD boundary shapefiles</td>
+<td>City of Atlanta Open Data</td>
+<td>✅ In app</td>
+</tr>
+<tr class="odd">
+<td>City of Atlanta boundary</td>
+<td><code>Official_Atlanta_City_Limits_-_Open_Data.shp</code></td>
+<td>✅ In app</td>
+</tr>
+<tr class="even">
+<td>Road centerlines (Fulton + DeKalb)</td>
+<td>US Census TIGER/Line 2023</td>
+<td>✅ In app</td>
+</tr>
+<tr class="odd">
+<td>Road centerlines (Cobb, Clayton, Henry)</td>
+<td>US Census TIGER/Line 2023</td>
+<td>⬜ Not yet added</td>
+</tr>
+<tr class="even">
+<td>APS millage rate</td>
+<td>Assumed 20.74 mills</td>
+<td>⚠️ Needs verification</td>
+</tr>
+<tr class="odd">
+<td>Eastside TAD PILOT payments</td>
+<td>Invest Atlanta / APS</td>
+<td>⬜ Not yet incorporated</td>
+</tr>
+<tr class="even">
+<td>Unit costs for “What Could This Fund?”</td>
+<td>Various — see outstanding items</td>
+<td>⚠️ Needs update</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

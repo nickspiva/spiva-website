@@ -131,11 +131,37 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 - [ ] **Responsive layout check** at 1280px.
 - [ ] **Page-level TAD explainer** — brief intro text about what TADs are and why this app exists; currently a stub in the header.
 
-### Phase 5 — Social Media Takeaways *(not yet started)*
-- [ ] Identify 4–6 headline findings (e.g., "Under the Mayor's NRI proposal, APS foregoes $X — enough to fund Y pre-K teachers for a year")
-- [ ] Design slide template: large stat, minimal text, consistent brand
-- [ ] Generate programmatically with `{ggplot2}` + `{camcorder}`
+### Phase 5 — Social Media / IG Slides *(narrative taking shape)*
+
+**Planned slide series — working titles:**
+
+1. **"Extending the TADs Will Imperil APS"** — lead with the stakes. Cumulative diversion chart, big number, stark framing.
+
+2. **"Why APS Needs the TADs to Close On Time"** — structural pressures: benefits costs up 78%, property tax revenue now legally capped at inflation, declining enrollment forcing school closures. APS is already in a hole; TAD revenue is not optional.
+
+3. **"Closing the TADs Unlocks the Future for APS"** — the flip side. Revenue projections under the current plan, show the trajectory once TADs close.
+
+4. **"What APS Could Do with Revenue from Closed TADs"** — Universal Pre-K for 3 & 4-year-olds (APS Board goal), $100K average teacher salaries, Free MARTA for every APS student. Peer cities already doing this: DC, SF, Seattle. This isn't a wish list — it's a plan.
+
+5. **"APS Is Already at Huge Financial Risk"** — benefits costs skyrocketing, property tax revenue constrained by SB 33, enrollment declining. The system is under pressure from every direction. TAD revenue arriving on schedule is the difference between managing it and a crisis.
+
+6. **"Investing in Schools, Teachers, and Students — or Private Developers?"** — the narrative reframe. Great schools draw families into the city. Properly paid teachers can live where they teach. Universal Pre-K for 3 & 4-year-olds sets kids up for academic success and saves parents thousands in childcare — freeing them to work and putting money back in their pockets. That *is* economic development. Stop pretending it isn't.
+
+7. **"Don't Fall for the Equity-Washing"** — the Mayor's office is using equity language to justify NRI extensions. Real inequities exist in Atlanta — no one disputes that. But the answer isn't taking from schools to fund developer projects. Go to the voters with a bond proposal. Pass a new tax. Get creative. Stop raiding the schools.
+
+**Production checklist:**
+- [ ] Finalize slide content and exact stats for each
+- [ ] Design slide template: large stat or headline, minimal supporting text, consistent brand palette
+- [ ] Decide on Atlanta-inspired color palette (not MARTA — too on the nose)
+- [ ] Generate programmatically with `{ggplot2}` + `{camcorder}` where charts are involved; static slides in design tool or R
 - [ ] Export at 1080×1080 (Instagram) and 1200×628 (Bluesky / Twitter card)
+
+---
+
+### Phase 6 — Code Refactor & Documentation *(after feature completion)*
+- [ ] **Light code refactor** — consider splitting stable/dense logic out of `app.R` into sourced files (e.g., `R/data.R`, `R/projections.R`, `R/theme.R`). Current file is ~2,000 lines; threshold for splitting is ~2,500–3,000 or when finding/editing specific logic becomes friction.
+- [ ] **Code explainer document** — written guide to how the app fits together: the reactive graph, the cross-filtering pattern, the projection model, the ggiraph interactivity approach, the Bootstrap JS patterns used for the sidebar controls. Audience: future-you or a collaborator picking this up cold.
+- [ ] **Inline comment pass** — ensure all non-obvious decisions have explanatory comments, particularly the JS/Shiny input wiring, the `closure_years()` fallback logic, and the custom growth rate reactive.
 
 ---
 
