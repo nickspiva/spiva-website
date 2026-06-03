@@ -8,7 +8,7 @@ An interactive R/Shiny application visualizing Tax Allocation District (TAD) pro
 
 **Audience:** Public advocacy and portfolio demonstration. Design and copy should be accessible to a general public audience, not just policy wonks.
 
----
+------------------------------------------------------------------------
 
 ## Background: How TAD Revenue Works
 
@@ -18,76 +18,57 @@ A TAD freezes the property tax base ("the base") at the moment it's created. All
 
 This dynamic — and how long TADs stay open — is the central policy question the app explores.
 
----
+------------------------------------------------------------------------
 
 ## Current App Layout (as built)
 
 Cards appear in this order, top to bottom:
 
 ### 1. Revenue Diverted from Schools & Kids / Projected APS Revenue — tabbed card ✅
+
 A `navset_card_tab` card with two tabs:
 
-**Tab A — Revenue Diverted from Schools & Kids**
-Cumulative line chart showing the total APS property tax revenue redirected to Invest Atlanta over time, under each of three fixed scenarios: Current Plan, Mayor's Original NRI, Mayor's Updated NRI. Three colored lines. Does not respond to sliders — always shows the three named scenarios for direct comparison. Scenario names are labeled directly on the curves using `geomtextpath::geom_textline()` (no legend). End-of-line labels at 2055 show each scenario's total cumulative cost. Dynamic subheader shows the gap between Updated NRI and Current Plan, plus an annual diversion figure at a user-selectable year.
+**Tab A — Revenue Diverted from Schools & Kids** Cumulative line chart showing the total APS property tax revenue redirected to Invest Atlanta over time, under each of three fixed scenarios: Current Plan, Mayor's Original NRI, Mayor's Updated NRI. Three colored lines. Does not respond to sliders — always shows the three named scenarios for direct comparison. Scenario names are labeled directly on the curves using `geomtextpath::geom_textline()` (no legend). End-of-line labels at 2055 show each scenario's total cumulative cost. Dynamic subheader shows the gap between Updated NRI and Current Plan, plus an annual diversion figure at a user-selectable year.
 
-**Tab B — Projected APS Revenue Coming from Closed TADs**
-Per-TAD line chart showing projected annual APS revenue starting from each TAD's closure year. Responds to sliders and projection method. Cross-filters with map and historic chart. Start-of-line labels for four individually named TADs (Beltline, Eastside, Westside, Perry Bolton); the four corridor TADs (Campbellton, Metropolitan, Stadium, Hollowell) are unlabeled (hover-only). Dynamic subheader shows a Beltline revenue example at a user-selectable year.
+**Tab B — Projected APS Revenue Coming from Closed TADs** Per-TAD line chart showing projected annual APS revenue starting from each TAD's closure year. Responds to sliders and projection method. Cross-filters with map and historic chart. Start-of-line labels for four individually named TADs (Beltline, Eastside, Westside, Perry Bolton); the four corridor TADs (Campbellton, Metropolitan, Stadium, Hollowell) are unlabeled (hover-only). Dynamic subheader shows a Beltline revenue example at a user-selectable year.
 
 ### 2. What Could This Fund? ✅ *(unit costs need updating — see outstanding items)*
+
 Cards showing what the projected annual APS revenue from closed TADs (in 2035) could purchase: pre-K teachers, school lunches, electric buses, playgrounds, neighborhood schools saved. Responds to the scenario sliders.
 
 ### 3. Map + Historic Property Values (side by side) ✅ *(map still has items outstanding)*
-- **Left:** TAD boundary map of Atlanta. Clicking a TAD cross-filters both charts. City of Atlanta boundary shown as mid-gray polygon. TAD polygons color-coded. Labels use `st_point_on_surface` with manual overrides for Beltline (NE arc) and Atlantic Station (nudged north). Major roads (interstates + primary) shown in white from TIGER/Line shapefiles.
-- **Right:** Historic assessed property values by TAD, 2007–2024. Per-year tooltips via `geom_point_interactive`. Tooltips display in billions when value ≥ $1B, millions otherwise.
 
----
+- **Left:** TAD boundary map of Atlanta. Clicking a TAD cross-filters both charts. City of Atlanta boundary shown as mid-gray polygon. TAD polygons color-coded. Labels use `st_point_on_surface` with manual overrides for Beltline (NE arc) and Atlantic Station (nudged north). Major roads (interstates + primary) shown in white from TIGER/Line shapefiles.
+- **Right:** Historic assessed property values by TAD, 2007–2024. Per-year tooltips via `geom_point_interactive`. Tooltips display in billions when value ≥ \$1B, millions otherwise.
+
+------------------------------------------------------------------------
 
 ## What's Been Built / Checked Off
 
-**Infrastructure**
-- [x] Shiny app scaffolded with `{bslib}` layout
-- [x] Real data loaded from `TAD Basics.csv` (historic property values 2007–2024, baselines, closure years for all three scenarios)
-- [x] TAD boundary shapefiles sourced and integrated
-- [x] City of Atlanta boundary shapefile sourced and integrated
-- [x] TIGER/Line road shapefiles (Fulton + DeKalb) sourced and integrated
-- [x] Consistent TAD color palette applied across all graphics
-- [x] Custom `theme_tad()` ggplot2 theme function
-- [x] `reactiveVal` cross-filtering wired across all charts and map
-- [x] Blank-space click to deselect (JavaScript + Shiny input)
-- [x] "× Show all" deselect link in map card header
+**Infrastructure** - \[x\] Shiny app scaffolded with `{bslib}` layout - \[x\] Real data loaded from `TAD Basics.csv` (historic property values 2007–2024, baselines, closure years for all three scenarios) - \[x\] TAD boundary shapefiles sourced and integrated - \[x\] City of Atlanta boundary shapefile sourced and integrated - \[x\] TIGER/Line road shapefiles (Fulton + DeKalb) sourced and integrated - \[x\] Consistent TAD color palette applied across all graphics - \[x\] Custom `theme_tad()` ggplot2 theme function - \[x\] `reactiveVal` cross-filtering wired across all charts and map - \[x\] Blank-space click to deselect (JavaScript + Shiny input) - \[x\] "× Show all" deselect link in map card header
 
-**Scenario Controls**
-- [x] Per-TAD closure year sliders with tick marks showing preset positions
-- [x] Three preset buttons with active-state highlighting (filled when selected, outlined when not)
-- [x] Preset buttons reactive even before the custom slider accordion is opened (fallback logic in `closure_years`)
-- [x] Projection methodology radio buttons (4 options including TAD baseline CAGR)
-- [x] Closure years for all three scenarios in `tad_meta`
+**Scenario Controls** - \[x\] Per-TAD closure year sliders with tick marks showing preset positions - \[x\] Three preset buttons with active-state highlighting (filled when selected, outlined when not) - \[x\] Preset buttons reactive even before the custom slider accordion is opened (fallback logic in `closure_years`) - \[x\] Projection methodology radio buttons (4 options including TAD baseline CAGR) - \[x\] Closure years for all three scenarios in `tad_meta`
 
-**Charts**
-- [x] Historic property value chart with smart B/M tooltip formatting
-- [x] TAD map with city boundary, roads, colored polygons, and labels
-- [x] Projected APS revenue chart — active TADs only, start-of-line labels for 4 named TADs, empty-state fallback when no TADs close before 2055
-- [x] Revenue diverted chart — on-curve labels via `geomtextpath`, end-of-line cumulative totals, no legend
-- [x] "What Could This Fund?" panel
-- [x] Both revenue charts share a `navset_card_tab` card
+**Charts** - \[x\] Historic property value chart with smart B/M tooltip formatting - \[x\] TAD map with city boundary, roads, colored polygons, and labels - \[x\] Projected APS revenue chart — active TADs only, start-of-line labels for 4 named TADs, empty-state fallback when no TADs close before 2055 - \[x\] Revenue diverted chart — on-curve labels via `geomtextpath`, end-of-line cumulative totals, no legend - \[x\] "What Could This Fund?" panel - \[x\] Both revenue charts share a `navset_card_tab` card
 
-**Dynamic Subheaders**
-- [x] Diversion chart: growth assumption name, cumulative gap vs. current plan, annual diversion at user-selectable year with inline picker
-- [x] Projected revenue chart: Beltline 2035 (or user-selected year) revenue example with inline picker, falls back gracefully when Beltline hasn't closed yet under the active scenario
+**Dynamic Subheaders** - \[x\] Diversion chart: growth assumption name, cumulative gap vs. current plan, annual diversion at user-selectable year with inline picker - \[x\] Projected revenue chart: Beltline 2035 (or user-selected year) revenue example with inline picker, falls back gracefully when Beltline hasn't closed yet under the active scenario
 
----
+------------------------------------------------------------------------
 
 ## Outstanding Items
 
 ### Sliders
+
 - [ ] **Tick marks on closure year sliders** — previous attempt used JavaScript to inject marks on the ion.rangeSlider track, but it wasn't working reliably. Either find a cleaner JS approach, use a custom slider widget, or document a simpler fallback (e.g., a small reference table showing the three years per TAD).
 
 ### Map
+
 - [ ] **Additional county road shapefiles** — currently only Fulton + DeKalb. Roads from Cobb, Clayton, and Henry counties cut off at county lines within the visible map extent. Add those TIGER/Line files and re-filter to S1100 + S1200.
 - [ ] **Map fills container** — remove white space between the gray map background and the card border so the map bleeds edge-to-edge within its card.
 - [ ] **Map card header polish** — "Click a district to highlight" subtext feels cluttered; consider removing or making it smaller/muted.
 
 ### Growth Assumption & Projection Methodology
+
 - [x] **Fix the citywide growth rate** — now uses the **Atlanta column** in `TAD Basics.csv` (total City of Atlanta property value from the Fulton County tax digest) rather than the TAD aggregate.
 - [x] **Redefine the "Optimistic" scenario** — now uses the average CAGR of the three demonstrably high-growth TADs (Atlantic Station, Beltline, Eastside) rather than the 75th percentile.
 - [ ] **Add growth rate explainers** — in-UI description of what CAGR is, how each method is computed, and what the options represent. Could live as a small accordion or tooltip beneath the sidebar growth buttons.
@@ -95,34 +76,40 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 - [ ] **Eastside TAD PILOT exception** — should be noted in the UI and may affect revenue calculations; not yet fully handled.
 
 ### "Why TAD Closures Matter" Panel
-- [x] Vision cards: Universal Pre-K ($78.2M), Free MARTA ($27.7M), Teacher salaries to $100K ($34.6M) — all with methodology accordions and sources
-- [x] Challenge cards: Healthcare costs (+$127M/+78%), Property tax revenue at risk (~3% cap / SB 33), Declining enrollment (2,398 students by 2030)
+
+- [x] Vision cards: Universal Pre-K (\$78.2M), Free MARTA (\$27.7M), Teacher salaries to \$100K (\$34.6M) — all with methodology accordions and sources
+- [x] Challenge cards: Healthcare costs (+\$127M/+78%), Property tax revenue at risk (\~3% cap / SB 33), Declining enrollment (2,398 students by 2030)
 - [x] Two-section layout: "What Becomes Possible" (teal) and "What's Already at Risk" (amber)
 - [ ] **"At Risk" card flip / more info** — descriptions are currently long. Explore a card-flip or "more info" expand so each card shows 1–2 sentences by default with full detail on interaction.
 - [ ] **Accordion padding** — the methodology accordions (Pre-K, MARTA, Teacher Salary) have too much vertical padding; tighten to reduce whitespace.
 
 ### Charts — Total Revenue Diverted
+
 - [x] Tab renamed to "Total Revenue Diverted from Schools"
-- [x] Y-axis drops decimal ($2B not $2.0B)
+- [x] Y-axis drops decimal (\$2B not \$2.0B)
 - [x] On-curve labels enlarged
 - [x] Chart fills container width
 - [ ] **2055 vertical line** — add a dotted vertical line at 2055 (amber/orange) with label "Extended TADs close / (NRI Proposals, 2055)" marking where the Mayor's proposals finally close all TADs.
 - [ ] **Tab header styling** — current teal color on active tab feels off; revisit to match overall color scheme.
 
 ### Charts — Projected Annual APS Revenue
+
 - [ ] **Tab title** — rename to "Projected Annual APS Revenue from Closed TADs" (add "Annual").
 - [ ] **Chart polish** — stretch chart height/width, consider removing or simplifying the y-axis label.
 - [ ] **Tab header styling** — same as above; revisit active tab color.
 
 ### Charts — Historic Property Values
+
 - [ ] **Remove "value" y-axis label** — redundant given context; clean up the chart margin.
 
 ### Explainer & Sources
+
 - [ ] **Growth rate explainer** — see Growth Assumption section above.
 - [ ] **Learn More section** — page-level section with links to the Mayor's NRI legislation, key APS budget/planning documents, GBPI reports, and other relevant sources.
 - [ ] **Feedback section** — small section inviting users to send feedback (email link or simple form).
 
 ### Phase 4 — Design Polish
+
 - [x] Sidebar preset button active states (filled color when selected)
 - [x] Growth rate buttons styled as stacked toggle group
 - [x] Custom TAD closure and custom growth rate collapse panels
@@ -135,52 +122,48 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 
 **Planned slide series — working titles:**
 
-1. **"Extending the TADs Will Imperil APS"** — lead with the stakes. Cumulative diversion chart, big number, stark framing.
+1.  **"Extending the TADs Will Imperil APS"** — lead with the stakes. Cumulative diversion chart, big number, stark framing.
 
-2. **"Why APS Needs the TADs to Close On Time"** — structural pressures: benefits costs up 78%, property tax revenue now legally capped at inflation, declining enrollment forcing school closures. APS is already in a hole; TAD revenue is not optional.
+2.  **"Why APS Needs the TADs to Close On Time"** — structural pressures: benefits costs up 78%, property tax revenue now legally capped at inflation, declining enrollment forcing school closures. APS is already in a hole; TAD revenue is not optional.
 
-3. **"Closing the TADs Unlocks the Future for APS"** — the flip side. Revenue projections under the current plan, show the trajectory once TADs close.
+3.  **"Closing the TADs Unlocks the Future for APS"** — the flip side. Revenue projections under the current plan, show the trajectory once TADs close.
 
-4. **"What APS Could Do with Revenue from Closed TADs"** — Universal Pre-K for 3 & 4-year-olds (APS Board goal), $100K average teacher salaries, Free MARTA for every APS student. Peer cities already doing this: DC, SF, Seattle. This isn't a wish list — it's a plan.
+4.  **"What APS Could Do with Revenue from Closed TADs"** — Universal Pre-K for 3 & 4-year-olds (APS Board goal), \$100K average teacher salaries, Free MARTA for every APS student. Peer cities already doing this: DC, SF, Seattle. This isn't a wish list — it's a plan.
 
-5. **"APS Is Already at Huge Financial Risk"** — benefits costs skyrocketing, property tax revenue constrained by SB 33, enrollment declining. The system is under pressure from every direction. TAD revenue arriving on schedule is the difference between managing it and a crisis.
+5.  **"APS Is Already at Huge Financial Risk"** — benefits costs skyrocketing, property tax revenue constrained by SB 33, enrollment declining. The system is under pressure from every direction. TAD revenue arriving on schedule is the difference between managing it and a crisis.
 
-6. **"Investing in Schools, Teachers, and Students — or Private Developers?"** — the narrative reframe. Great schools draw families into the city. Properly paid teachers can live where they teach. Universal Pre-K for 3 & 4-year-olds sets kids up for academic success and saves parents thousands in childcare — freeing them to work and putting money back in their pockets. That *is* economic development. Stop pretending it isn't.
+6.  **"Investing in Schools, Teachers, and Students — or Private Developers?"** — the narrative reframe. Great schools draw families into the city. Properly paid teachers can live where they teach. Universal Pre-K for 3 & 4-year-olds sets kids up for academic success and saves parents thousands in childcare — freeing them to work and putting money back in their pockets. That *is* economic development. Stop pretending it isn't.
 
-7. **"Don't Fall for the Equity-Washing"** — the Mayor's office is using equity language to justify NRI extensions. Real inequities exist in Atlanta — no one disputes that. But the answer isn't taking from schools to fund developer projects. Go to the voters with a bond proposal. Pass a new tax. Get creative. Stop raiding the schools.
+7.  **"Don't Fall for the Equity-Washing"** — the Mayor's office is using equity language to justify NRI extensions. Real inequities exist in Atlanta — no one disputes that. But the answer isn't taking from schools to fund developer projects. Go to the voters with a bond proposal. Pass a new tax. Get creative. Stop raiding the schools.
 
-**Production checklist:**
-- [ ] Finalize slide content and exact stats for each
-- [ ] Design slide template: large stat or headline, minimal supporting text, consistent brand palette
-- [ ] Decide on Atlanta-inspired color palette (not MARTA — too on the nose)
-- [ ] Generate programmatically with `{ggplot2}` + `{camcorder}` where charts are involved; static slides in design tool or R
-- [ ] Export at 1080×1080 (Instagram) and 1200×628 (Bluesky / Twitter card)
+**Production checklist:** - \[ \] Finalize slide content and exact stats for each - \[ \] Design slide template: large stat or headline, minimal supporting text, consistent brand palette - \[ \] Decide on Atlanta-inspired color palette (not MARTA — too on the nose) - \[ \] Generate programmatically with `{ggplot2}` + `{camcorder}` where charts are involved; static slides in design tool or R - \[ \] Export at 1080×1080 (Instagram) and 1200×628 (Bluesky / Twitter card)
 
----
+------------------------------------------------------------------------
 
 ### Phase 6 — Code Refactor & Documentation *(after feature completion)*
-- [ ] **Light code refactor** — consider splitting stable/dense logic out of `app.R` into sourced files (e.g., `R/data.R`, `R/projections.R`, `R/theme.R`). Current file is ~2,000 lines; threshold for splitting is ~2,500–3,000 or when finding/editing specific logic becomes friction.
+
+- [ ] **Light code refactor** — consider splitting stable/dense logic out of `app.R` into sourced files (e.g., `R/data.R`, `R/projections.R`, `R/theme.R`). Current file is \~2,000 lines; threshold for splitting is \~2,500–3,000 or when finding/editing specific logic becomes friction.
 - [ ] **Code explainer document** — written guide to how the app fits together: the reactive graph, the cross-filtering pattern, the projection model, the ggiraph interactivity approach, the Bootstrap JS patterns used for the sidebar controls. Audience: future-you or a collaborator picking this up cold.
 - [ ] **Inline comment pass** — ensure all non-obvious decisions have explanatory comments, particularly the JS/Shiny input wiring, the `closure_years()` fallback logic, and the custom growth rate reactive.
 
----
+------------------------------------------------------------------------
 
 ## Technical Stack
 
 | Layer | Tool | Notes |
-|---|---|---|
+|------------------------|------------------------|------------------------|
 | App framework | R / Shiny | Single-file `app.R` |
 | UI layout | `{bslib}` | Bootstrap 5; `page_sidebar`, `navset_card_tab`, `layout_columns`, `card` |
 | Charts | `{ggplot2}` + `{ggiraph}` | `ggiraph` adds click/hover via SVG-native interactive geoms |
 | On-curve text labels | `{geomtextpath}` | `geom_textline()` for scenario labels on the diversion chart |
 | Map | `{ggplot2}` + `geom_sf` + `{ggiraph}` | Programmatic basemap — no tile dependencies |
 | Spatial data | `{sf}` | All shapefiles read with `st_read`, reprojected to WGS84 |
-| Data wrangling | `{tidyverse}` | |
+| Data wrangling | `{tidyverse}` |  |
 | Custom theme | `theme_tad()` function | Defined once, applied to all charts |
 | Static export / social slides | `{ggplot2}` + `{camcorder}` | Phase 5 |
-| Hosting | Posit Connect | |
+| Hosting | Posit Connect |  |
 
----
+------------------------------------------------------------------------
 
 ## Architecture Notes
 
@@ -196,7 +179,7 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 
 **Active TAD filtering:** The projection chart explicitly excludes Atlantic Station and Princeton Lake (confirmed closed) by name rather than relying on the `already_closed` flag, which had data-ambiguity issues with Stadium TAD.
 
----
+------------------------------------------------------------------------
 
 ## Solved Technical Problems
 
@@ -214,10 +197,7 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 
 ### Inline year picker
 
-**Problem:** Wanted a year selector embedded inline within subheader text that looks like part of the sentence (not a form field). Several approaches failed:
-- **Shiny `selectInput`** — the `.form-group` wrapper and browser-native styling looked janky despite CSS overrides
-- **Bootstrap dropdown with `data-bs-toggle`** — Bootstrap 5 doesn't auto-initialize dropdowns on dynamically-injected content (added via `renderUI`), so the menu never opened
-- **Custom CSS/JS dropdown** — JS toggle fired but `renderUI` re-renders on every reactive change, destroying the `.open` class before the menu became visible
+**Problem:** Wanted a year selector embedded inline within subheader text that looks like part of the sentence (not a form field). Several approaches failed: - **Shiny `selectInput`** — the `.form-group` wrapper and browser-native styling looked janky despite CSS overrides - **Bootstrap dropdown with `data-bs-toggle`** — Bootstrap 5 doesn't auto-initialize dropdowns on dynamically-injected content (added via `renderUI`), so the menu never opened - **Custom CSS/JS dropdown** — JS toggle fired but `renderUI` re-renders on every reactive change, destroying the `.open` class before the menu became visible
 
 **Solution:** A native HTML `<select>` element built directly into the HTML string, with `onchange="Shiny.setInputValue('ref_year', parseInt(this.value), {priority:'event'})"`. Native `<select>` always works, opens reliably, and `onchange` fires before any Shiny re-render. CSS removes the border, adds a bottom underline, and matches the surrounding text weight/color. Two separate input IDs (`ref_year` for the projected revenue card, `ref_year_div` for the diversion card) prevent the two pickers from interfering.
 
@@ -231,11 +211,7 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 
 **Problem:** The three cumulative scenario lines needed labels that felt part of the chart, not a separate legend or cluttered end-of-line callouts (which already showed cumulative totals).
 
-**Solution:** `geomtextpath::geom_textline()`, which draws both the line and its label in a single layer, with the text rotated to follow the line's slope. Key parameters:
-- `offset = unit(5, "pt")` shifts labels above the line; negative offset for the bottom line ("Current Plan") places it below
-- `gap = FALSE` keeps the line continuous beneath the text (setting `gap = TRUE` cut the line, which looked broken)
-- `offset` is not a mappable aesthetic, so two separate `geom_textline` calls are needed — one for Current Plan (negative offset) and one for the NRI scenarios (positive offset), using `data = ~ filter(.x, ...)` lambda syntax
-- A `geom_line_interactive(alpha = 0)` layer sits on top to preserve ggiraph hover events on the line
+**Solution:** `geomtextpath::geom_textline()`, which draws both the line and its label in a single layer, with the text rotated to follow the line's slope. Key parameters: - `offset = unit(5, "pt")` shifts labels above the line; negative offset for the bottom line ("Current Plan") places it below - `gap = FALSE` keeps the line continuous beneath the text (setting `gap = TRUE` cut the line, which looked broken) - `offset` is not a mappable aesthetic, so two separate `geom_textline` calls are needed — one for Current Plan (negative offset) and one for the NRI scenarios (positive offset), using `data = ~ filter(.x, ...)` lambda syntax - A `geom_line_interactive(alpha = 0)` layer sits on top to preserve ggiraph hover events on the line
 
 ### Projected revenue chart — empty state
 
@@ -243,7 +219,7 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 
 **Solution:** Early-return guard: `if (nrow(per_tad) == 0)` returns a styled empty chart with a brief annotation ("No TADs close before 2055 under this scenario") and fixed y-axis limits, rather than allowing the render to error.
 
----
+------------------------------------------------------------------------
 
 ## Projection Methodology (as implemented)
 
@@ -252,23 +228,22 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 Four selectable methods (radio button in scenario controls):
 
 | Method | How it works | Status |
-|---|---|---|
+|------------------------|------------------------|------------------------|
 | TAD 2007–2024 CAGR | Each TAD uses its own CAGR from 2007 to 2024 | ✅ Built |
 | TAD Baseline–2024 CAGR | Each TAD uses its own CAGR from its creation year / baseline value to 2024 | ✅ Built |
 | Citywide average | All TADs use the CAGR of the Atlanta column (total City property value from Fulton County tax digest) | ✅ Built |
 | Optimistic | All TADs use the average CAGR of Atlantic Station, Beltline, and Eastside | ✅ Built |
 
-**APS revenue formula:** `aps_annual_revenue = (projected_value - baseline) × APS_MILLAGE / 1000`
-where `APS_MILLAGE = 20.74` mills (assumed constant; update if rate changes).
+**APS revenue formula:** `aps_annual_revenue = (projected_value - baseline) × APS_MILLAGE / 1000` where `APS_MILLAGE = 20.74` mills (assumed constant; update if rate changes).
 
 **Diversion formula:** Same as APS revenue formula, but applied only to years when the TAD is *still open*.
 
----
+------------------------------------------------------------------------
 
 ## Data Sources
 
 | Data | Source | Status |
-|---|---|---|
+|------------------------|------------------------|------------------------|
 | Historic TAD property values (2007–2024) | `TAD Basics.csv` — sourced from Invest Atlanta / Fulton County tax digest | ✅ In app |
 | TAD baseline values | Same CSV | ✅ In app |
 | TAD closure years — all three scenarios | Same CSV | ✅ In app |

@@ -114,7 +114,7 @@ vision_items <- list(
 #   Last 2 cols = COA + All-TADs aggregates (excluded below)
 
 raw <- read_csv(
-  "../TAD Basics.csv",
+  "TAD Basics.csv",
   col_names = FALSE,
   show_col_types = FALSE
 )
@@ -338,11 +338,11 @@ LAST_CLOSURE_CURRENT <- max(
 # § 4  SHAPEFILES ----
 # ════════════════════════════════════════════════════════════
 
-tad_sf <- st_read("../TAD_shapefiles/Tax_Allocation_District.shp", quiet = TRUE)
+tad_sf <- st_read("TAD_shapefiles/Tax_Allocation_District.shp", quiet = TRUE)
 
 roads_sf <- bind_rows(
-  st_read("../Road_shapefiles/tl_2023_13121_roads.shp", quiet = TRUE),
-  st_read("../Road_shapefiles/tl_2023_13089_roads.shp", quiet = TRUE)
+  st_read("Road_shapefiles/tl_2023_13121_roads.shp", quiet = TRUE),
+  st_read("Road_shapefiles/tl_2023_13089_roads.shp", quiet = TRUE)
 ) |>
   filter(MTFCC %in% c("S1100", "S1200")) |> # S1100 = highways, S1200 = major roads
   st_transform(4326)
@@ -375,7 +375,7 @@ tad_sf <- st_transform(tad_sf, 4326)
 
 # City of Atlanta boundary — used as a mid-gray polygon under the TADs
 city_sf <- st_read(
-  "../City_shapefile/Official_Atlanta_City_Limits_-_Open_Data.shp",
+  "City_shapefile/Official_Atlanta_City_Limits_-_Open_Data.shp",
   quiet = TRUE
 ) |>
   st_transform(4326)
