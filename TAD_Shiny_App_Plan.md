@@ -84,42 +84,55 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 
 ### Map
 - [ ] **Additional county road shapefiles** — currently only Fulton + DeKalb. Roads from Cobb, Clayton, and Henry counties cut off at county lines within the visible map extent. Add those TIGER/Line files and re-filter to S1100 + S1200.
-- [ ] **Further map polish** — label positions, polygon styling, and surrounding area context can still be refined.
+- [ ] **Map fills container** — remove white space between the gray map background and the card border so the map bleeds edge-to-edge within its card.
+- [ ] **Map card header polish** — "Click a district to highlight" subtext feels cluttered; consider removing or making it smaller/muted.
 
 ### Growth Assumption & Projection Methodology
-
 - [x] **Fix the citywide growth rate** — now uses the **Atlanta column** in `TAD Basics.csv` (total City of Atlanta property value from the Fulton County tax digest) rather than the TAD aggregate.
-
 - [x] **Redefine the "Optimistic" scenario** — now uses the average CAGR of the three demonstrably high-growth TADs (Atlantic Station, Beltline, Eastside) rather than the 75th percentile.
-
-- [ ] **Dual-phase growth rate model** — a new projection scenario where each TAD uses its historical CAGR while open (TAD investment driving faster growth), then switches to citywide average CAGR after closure (reflecting slower, stabilized growth once development incentives end). Requires updating `build_projections()` to accept per-TAD closure years and a post-closure rate override, then wiring up a new radio button option.
-
-- [ ] **Add a growth rate table as an accordion** — an expandable section showing each TAD's projected growth rate under each scenario. Rows = projection methods, columns = TAD names. Serves as methodology explainer.
-
-- [ ] **Add explainer text** describing the projection methodology: what CAGR is, how it's computed per TAD, and what the four options represent.
-
+- [ ] **Add growth rate explainers** — in-UI description of what CAGR is, how each method is computed, and what the options represent. Could live as a small accordion or tooltip beneath the sidebar growth buttons.
+- [ ] **Dual-phase growth rate model** — projection scenario where each TAD uses its historical CAGR while open, then switches to citywide average after closure. Requires updating `build_projections()` and adding a new sidebar option.
 - [ ] **Eastside TAD PILOT exception** — should be noted in the UI and may affect revenue calculations; not yet fully handled.
 
-### "What Could This Fund?" Panel
-- [ ] **Fix reactivity — decouple from sliders.** The panel should always show what could be funded under the *current planned closure timeline*, not the slider state. Replace `closure_years()` dependency with the fixed `diversion_scenarios[["Current Plan"]]` closure dates.
-- [ ] **Teacher cost** — update to reflect APS's stated goal of $100k average annual salary by 2030, plus benefits (typically 30–35%). Current placeholder is too low.
-- [ ] **Add infrastructure line items** — e.g., sidewalks and bike lanes near schools.
-- [ ] **Review all other items** — verify free school lunch cost against current USDA data, check electric bus cost against recent Atlanta/Georgia purchases, update playground cost range.
-- [ ] **Add source citations** for each unit cost, ideally linkable.
+### "Why TAD Closures Matter" Panel
+- [x] Vision cards: Universal Pre-K ($78.2M), Free MARTA ($27.7M), Teacher salaries to $100K ($34.6M) — all with methodology accordions and sources
+- [x] Challenge cards: Healthcare costs (+$127M/+78%), Property tax revenue at risk (~3% cap / SB 33), Declining enrollment (2,398 students by 2030)
+- [x] Two-section layout: "What Becomes Possible" (teal) and "What's Already at Risk" (amber)
+- [ ] **"At Risk" card flip / more info** — descriptions are currently long. Explore a card-flip or "more info" expand so each card shows 1–2 sentences by default with full detail on interaction.
+- [ ] **Accordion padding** — the methodology accordions (Pre-K, MARTA, Teacher Salary) have too much vertical padding; tighten to reduce whitespace.
+
+### Charts — Total Revenue Diverted
+- [x] Tab renamed to "Total Revenue Diverted from Schools"
+- [x] Y-axis drops decimal ($2B not $2.0B)
+- [x] On-curve labels enlarged
+- [x] Chart fills container width
+- [ ] **2055 vertical line** — add a dotted vertical line at 2055 (amber/orange) with label "Extended TADs close / (NRI Proposals, 2055)" marking where the Mayor's proposals finally close all TADs.
+- [ ] **Tab header styling** — current teal color on active tab feels off; revisit to match overall color scheme.
+
+### Charts — Projected Annual APS Revenue
+- [ ] **Tab title** — rename to "Projected Annual APS Revenue from Closed TADs" (add "Annual").
+- [ ] **Chart polish** — stretch chart height/width, consider removing or simplifying the y-axis label.
+- [ ] **Tab header styling** — same as above; revisit active tab color.
+
+### Charts — Historic Property Values
+- [ ] **Remove "value" y-axis label** — redundant given context; clean up the chart margin.
 
 ### Explainer & Sources
-- [ ] **In-card explainer functionality** — collapsible `bslib::accordion` panels with data source, methodology, and caveats for each chart.
-- [ ] **Footnotes section** at page bottom with numbered references for all charts and data sources.
+- [ ] **Growth rate explainer** — see Growth Assumption section above.
+- [ ] **Learn More section** — page-level section with links to the Mayor's NRI legislation, key APS budget/planning documents, GBPI reports, and other relevant sources.
+- [ ] **Feedback section** — small section inviting users to send feedback (email link or simple form).
 
-### Phase 4 — Design Polish *(partially complete)*
-- [x] Sidebar preset button active states
-- [ ] Typography hierarchy — ensure headers, labels, and callout numbers are visually distinct
-- [ ] Responsive layout check at 1280px
-- [ ] Tighten chart whitespace and legend placement
-- [ ] Add brief page-level explainer text about what TADs are
+### Phase 4 — Design Polish
+- [x] Sidebar preset button active states (filled color when selected)
+- [x] Growth rate buttons styled as stacked toggle group
+- [x] Custom TAD closure and custom growth rate collapse panels
+- [ ] **Overall visual design brainstorm** — review color scheme, fonts, background colors. Look at Atlanta-specific palette inspiration (not MARTA colors — too on the nose). Consider other interactive infographics/dashboards for reference.
+- [ ] **Typography hierarchy** — ensure headers, callout numbers, and chart labels are visually distinct at a glance.
+- [ ] **Responsive layout check** at 1280px.
+- [ ] **Page-level TAD explainer** — brief intro text about what TADs are and why this app exists; currently a stub in the header.
 
 ### Phase 5 — Social Media Takeaways *(not yet started)*
-- [ ] Identify 4–6 headline findings
+- [ ] Identify 4–6 headline findings (e.g., "Under the Mayor's NRI proposal, APS foregoes $X — enough to fund Y pre-K teachers for a year")
 - [ ] Design slide template: large stat, minimal text, consistent brand
 - [ ] Generate programmatically with `{ggplot2}` + `{camcorder}`
 - [ ] Export at 1080×1080 (Instagram) and 1200×628 (Bluesky / Twitter card)

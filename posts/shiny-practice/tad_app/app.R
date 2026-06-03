@@ -508,6 +508,8 @@ ui <- page_sidebar(
     .nav-tabs .nav-link.active { font-weight: 700; }
     .collapse-caret { display: inline-block; transition: transform 0.2s ease; font-size: 0.65rem; }
     [aria-expanded='true'] .collapse-caret { transform: rotate(180deg); }
+    .sidebar .btn-outline-secondary { color: #495057; }
+    .sidebar .btn-outline-secondary:hover { color: #fff; background-color: #6c757d; border-color: #6c757d; }
   "
   )),
 
@@ -633,9 +635,11 @@ ui <- page_sidebar(
           bootstrap.Collapse.getInstance(el).hide();
         }
       });
-      // Custom panel opens: activate custom mode, deselect radios
+      // Custom panel opens: capture prev method, activate custom, deselect radios
       $(document).on('show.bs.collapse', '#growth-sliders-collapse', function() {
+        var prevMethod = $('input[name=\"proj_method_grp\"]:checked').val() || 'tad';
         Shiny.setInputValue('proj_method', 'custom', {priority: 'event'});
+        Shiny.setInputValue('custom_growth_opened', prevMethod, {priority: 'event'});
         $('input[name=\"proj_method_grp\"]').prop('checked', false);
       });
       // Custom panel closes: restore whichever radio is checked (or default tad)
@@ -1068,6 +1072,26 @@ server <- function(input, output, session) {
       )
     })
     div(class = "px-1 pb-1", tagList(sliders))
+  })
+
+  # When the custom growth panel opens, seed sliders with rates from the
+  # previously selected method — mirrors how closure sliders inherit preset dates.
+  observeEvent(input$custom_growth_opened, {
+    prev <- input$custom_growth_opened
+
+    rates <- switch(prev,
+      "tad"        = setNames(round(growth_rates$cagr * 100, 1),       growth_rates$tad_id),
+      "city"       = setNames(rep(round(citywide_cagr * 100, 1),       nrow(growth_rates)), growth_rates$tad_id),
+      "optimistic" = setNames(rep(round(optimistic_cagr * 100, 1),     nrow(growth_rates)), growth_rates$tad_id),
+      setNames(round(growth_rates$cagr * 100, 1), growth_rates$tad_id) # fallback to tad
+    )
+
+    walk(active_tads$tad_id, \(tid) {
+      val <- rates[[tid]]
+      if (!is.null(val) && !is.na(val)) {
+        updateSliderInput(session, paste0("gr_", make.names(tid)), value = val)
+      }
+    })
   })
 
   # ── 7c. Preset buttons ────────────────────────────────────
