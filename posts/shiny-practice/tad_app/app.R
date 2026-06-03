@@ -506,6 +506,8 @@ ui <- page_sidebar(
     select.inline-year-sel:focus { outline: none; border-bottom-color: #0d6efd; }
     .nav-tabs .nav-link { font-weight: 600; font-size: 0.95rem; }
     .nav-tabs .nav-link.active { font-weight: 700; }
+    .collapse-caret { display: inline-block; transition: transform 0.2s ease; font-size: 0.65rem; }
+    [aria-expanded='true'] .collapse-caret { transform: rotate(180deg); }
   "
   )),
 
@@ -536,7 +538,23 @@ ui <- page_sidebar(
         "btn_mayor2",
         "Mayor's Updated NRI",
         class = "btn btn-outline-danger btn-sm text-start"
+      ),
+      tags$button(
+        type = "button",
+        class = "btn btn-outline-secondary btn-sm text-start d-flex justify-content-between align-items-center",
+        `data-bs-toggle` = "collapse",
+        `data-bs-target` = "#tad-sliders-collapse",
+        `aria-expanded` = "false",
+        `aria-controls` = "tad-sliders-collapse",
+        span("Custom Selection"),
+        tags$span("▼", class = "collapse-caret")
       )
+    ),
+
+    div(
+      id = "tad-sliders-collapse",
+      class = "collapse mt-2",
+      uiOutput("tad_sliders")
     ),
 
     hr(class = "my-2"),
@@ -550,48 +568,83 @@ ui <- page_sidebar(
       class = "btn-group-vertical w-100 mb-1",
       role = "group",
       tags$input(
-        type = "radio", class = "btn-check", name = "proj_method_grp",
-        id = "proj_tad", value = "tad", autocomplete = "off",
+        type = "radio",
+        class = "btn-check",
+        name = "proj_method_grp",
+        id = "proj_tad",
+        value = "tad",
+        autocomplete = "off",
         checked = "checked"
       ),
       tags$label(
         class = "btn btn-outline-secondary btn-sm text-start",
-        `for` = "proj_tad", "Historic TAD Growth"
+        `for` = "proj_tad",
+        "Historic TAD Growth"
       ),
       tags$input(
-        type = "radio", class = "btn-check", name = "proj_method_grp",
-        id = "proj_city", value = "city", autocomplete = "off"
+        type = "radio",
+        class = "btn-check",
+        name = "proj_method_grp",
+        id = "proj_city",
+        value = "city",
+        autocomplete = "off"
       ),
       tags$label(
         class = "btn btn-outline-secondary btn-sm text-start",
-        `for` = "proj_city", "Citywide Average Growth"
+        `for` = "proj_city",
+        "Citywide Average Growth"
       ),
       tags$input(
-        type = "radio", class = "btn-check", name = "proj_method_grp",
-        id = "proj_optimistic", value = "optimistic", autocomplete = "off"
+        type = "radio",
+        class = "btn-check",
+        name = "proj_method_grp",
+        id = "proj_optimistic",
+        value = "optimistic",
+        autocomplete = "off"
       ),
       tags$label(
         class = "btn btn-outline-secondary btn-sm text-start",
-        `for` = "proj_optimistic", "Optimistic Growth"
+        `for` = "proj_optimistic",
+        "Optimistic Growth"
+      ),
+      tags$button(
+        type = "button",
+        id = "btn_custom_growth",
+        class = "btn btn-outline-secondary btn-sm text-start d-flex justify-content-between align-items-center",
+        `data-bs-toggle` = "collapse",
+        `data-bs-target` = "#growth-sliders-collapse",
+        `aria-expanded` = "false",
+        span("Custom Growth Rate"),
+        tags$span("▼", class = "collapse-caret")
       )
     ),
-    tags$script(HTML("
+    div(
+      id = "growth-sliders-collapse",
+      class = "collapse mt-1",
+      uiOutput("growth_sliders")
+    ),
+    tags$script(HTML(
+      "
+      // Preset radios: update Shiny + collapse custom panel if open
       $(document).on('change', 'input[name=\"proj_method_grp\"]', function() {
         Shiny.setInputValue('proj_method', this.value, {priority: 'event'});
+        var el = document.getElementById('growth-sliders-collapse');
+        if (el && el.classList.contains('show')) {
+          bootstrap.Collapse.getInstance(el).hide();
+        }
       });
-    ")),
-
-    hr(class = "my-2"),
-
-    # Per-TAD sliders live in a collapsed accordion so they don't
-    # overwhelm the sidebar — most users will use the presets above
-    accordion(
-      open = FALSE,
-      accordion_panel(
-        "Customize individual TAD closure years",
-        uiOutput("tad_sliders")
-      )
-    )
+      // Custom panel opens: activate custom mode, deselect radios
+      $(document).on('show.bs.collapse', '#growth-sliders-collapse', function() {
+        Shiny.setInputValue('proj_method', 'custom', {priority: 'event'});
+        $('input[name=\"proj_method_grp\"]').prop('checked', false);
+      });
+      // Custom panel closes: restore whichever radio is checked (or default tad)
+      $(document).on('hide.bs.collapse', '#growth-sliders-collapse', function() {
+        var checked = $('input[name=\"proj_method_grp\"]:checked').val() || 'tad';
+        Shiny.setInputValue('proj_method', checked, {priority: 'event'});
+      });
+    "
+    )),
   ),
 
   # ════════════════════════════════════════════════════════
@@ -639,7 +692,7 @@ ui <- page_sidebar(
         "How is the Pre-K estimate calculated?",
         p(
           strong("Scope:"),
-          " Annual staffing costs only — salaries plus employer benefits. Does not include capital costs, curriculum, materials, or transportation."
+          " Annual staffing costs only — salaries plus employer benefits. Does not include capital costs, curriculum, materials, or other associated expenses."
         ),
         p(strong("Seat gap:")),
         tags$ul(
@@ -659,7 +712,7 @@ ui <- page_sidebar(
           tags$li(
             "Class size: 18 (state cap is 20; 18 for inclusion classrooms)"
           ),
-          tags$li("Classrooms needed: ⌈6,006 ÷ 18⌉ = 334"),
+          tags$li("Classrooms needed: [6,006 ÷ 18] = 334"),
           tags$li(
             "334 lead teachers + 334 assistant teachers = 668 total new staff"
           )
@@ -991,6 +1044,32 @@ server <- function(input, output, session) {
     )
   })
 
+  # ── 7b-ii. Custom growth rate sliders ────────────────────
+  # One slider per active TAD; defaults to each TAD's historical CAGR.
+  # Only used when proj_method == "custom".
+  output$growth_sliders <- renderUI({
+    sliders <- map(active_tads$tad_id, \(tid) {
+      default_rate <- round(
+        growth_rates$cagr[growth_rates$tad_id == tid] * 100, 1
+      )
+      div(
+        tags$p(strong(tid), class = "mb-0 small"),
+        sliderInput(
+          inputId = paste0("gr_", make.names(tid)),
+          label   = NULL,
+          min     = 0,
+          max     = 15,
+          value   = default_rate,
+          step    = 0.1,
+          post    = "%",
+          sep     = "",
+          ticks   = FALSE
+        )
+      )
+    })
+    div(class = "px-1 pb-1", tagList(sliders))
+  })
+
   # ── 7c. Preset buttons ────────────────────────────────────
   # observeEvent runs exactly once each time the button is clicked.
   # updateSliderInput() programmatically sets a slider's value.
@@ -1059,11 +1138,30 @@ server <- function(input, output, session) {
   # reactive() creates a lazily-evaluated, cached expression.
   # Multiple outputs can read the same reactive without re-running it.
 
-  # Which projection dataset to use
-  # %||% "tad" guards against the brief moment on startup where the
-  # custom btn-check JS hasn't yet pushed a value to input$proj_method
+  # Which projection dataset to use.
+  # "custom" builds per-TAD projections from the growth-rate sliders;
+  # all other methods look up a pre-computed dataset in proj_list.
   proj_data <- reactive({
-    proj_list[[input$proj_method %||% "tad"]]
+    method <- input$proj_method %||% "tad"
+    if (method == "custom") {
+      map_dfr(seq_len(nrow(growth_rates)), \(i) {
+        g <- growth_rates[i, ]
+        rate_pct <- input[[paste0("gr_", make.names(g$tad_id))]]
+        r <- if (!is.null(rate_pct)) rate_pct / 100 else g$cagr
+        tibble(
+          year   = (g$last_year + 1):PROJ_END,
+          tad_id = g$tad_id,
+          value  = g$last_val * (1 + r)^seq_len(PROJ_END - g$last_year)
+        )
+      }) |>
+        left_join(tad_meta |> select(tad_id, baseline), by = "tad_id") |>
+        mutate(
+          increment          = pmax(value - baseline, 0),
+          aps_annual_revenue = increment * APS_MILLAGE / 1000
+        )
+    } else {
+      proj_list[[method]]
+    }
   })
 
   # Closure year for each TAD under the current slider/preset state
@@ -1130,10 +1228,10 @@ server <- function(input, output, session) {
   # and assumption name always match what's shown in the chart.
   output$diversion_subheader <- renderUI({
     proj_labels <- c(
-      "tad" = "individualized historic TAD growth (2007–2024)",
-      "tad_baseline" = "individualized TAD growth since creation of each TAD",
-      "city" = "citywide average growth (2007–2024)",
-      "optimistic" = "optimistic (average of high-growth TADs - Beltline, Eastside, & Atlantic Station)"
+      "tad"      = "individualized historic TAD growth (2007–2024)",
+      "city"     = "citywide average growth (2007–2024)",
+      "optimistic" = "optimistic (average of high-growth TADs - Beltline, Eastside, & Atlantic Station)",
+      "custom"   = "custom per-TAD growth rates"
     )
     growth_name <- proj_labels[[input$proj_method %||% "tad"]]
     ref_year_div <- as.integer(input$ref_year_div %||% 2035)
@@ -1515,10 +1613,10 @@ server <- function(input, output, session) {
     ref_year <- as.integer(input$ref_year %||% 2035)
 
     growth_name <- c(
-      "tad" = "Historic TAD growth (2007–2024)",
-      "tad_baseline" = "TAD growth since inception",
-      "city" = "Citywide average growth",
-      "optimistic" = "Optimistic (high-growth TADs)"
+      "tad"       = "Historic TAD growth (2007–2024)",
+      "city"      = "Citywide average growth",
+      "optimistic" = "Optimistic (high-growth TADs)",
+      "custom"    = "Custom per-TAD growth rates"
     )[[input$proj_method %||% "tad"]]
 
     beltline_closure <- cy$closure_year[cy$tad_id == "Beltline"]
