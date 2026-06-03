@@ -504,6 +504,8 @@ ui <- page_sidebar(
       display: inline;
     }
     select.inline-year-sel:focus { outline: none; border-bottom-color: #0d6efd; }
+    .nav-tabs .nav-link { font-weight: 600; font-size: 0.95rem; }
+    .nav-tabs .nav-link.active { font-weight: 700; }
   "
   )),
 
@@ -537,17 +539,44 @@ ui <- page_sidebar(
     hr(class = "my-2"),
 
     h6("How fast will property values grow?", class = "fw-bold mb-1"),
-    radioButtons(
-      inputId = "proj_method",
-      label = NULL,
-      choices = c(
-        "Historic TAD growth (2007–2024)" = "tad",
-        "TAD growth since inception" = "tad_baseline",
-        "Citywide average growth" = "city",
-        "Optimistic (high-growth TADs)" = "optimistic"
+    # Growth rate toggle buttons — Bootstrap btn-check pattern.
+    # "TAD growth since inception" (tad_baseline) is intentionally omitted
+    # from the UI (projections look unrealistic) but the data remains in
+    # proj_list for future use.
+    tags$div(
+      class = "btn-group-vertical w-100 mb-1",
+      role = "group",
+      tags$input(
+        type = "radio", class = "btn-check", name = "proj_method_grp",
+        id = "proj_tad", value = "tad", autocomplete = "off",
+        checked = "checked"
       ),
-      selected = "tad"
+      tags$label(
+        class = "btn btn-outline-secondary btn-sm text-start",
+        `for` = "proj_tad", "Historic TAD Growth"
+      ),
+      tags$input(
+        type = "radio", class = "btn-check", name = "proj_method_grp",
+        id = "proj_city", value = "city", autocomplete = "off"
+      ),
+      tags$label(
+        class = "btn btn-outline-secondary btn-sm text-start",
+        `for` = "proj_city", "Citywide Average Growth"
+      ),
+      tags$input(
+        type = "radio", class = "btn-check", name = "proj_method_grp",
+        id = "proj_optimistic", value = "optimistic", autocomplete = "off"
+      ),
+      tags$label(
+        class = "btn btn-outline-secondary btn-sm text-start",
+        `for` = "proj_optimistic", "Optimistic Growth"
+      )
     ),
+    tags$script(HTML("
+      $(document).on('change', 'input[name=\"proj_method_grp\"]', function() {
+        Shiny.setInputValue('proj_method', this.value, {priority: 'event'});
+      });
+    ")),
 
     hr(class = "my-2"),
 
@@ -581,7 +610,7 @@ ui <- page_sidebar(
   # letting users flip between the two complementary views of TAD revenue.
   navset_card_tab(
     nav_panel(
-      "Revenue Diverted from Schools & Kids",
+      "Total Revenue Diverted from Schools",
       uiOutput("diversion_subheader"),
       girafeOutput("diversion_chart", height = "360px")
     ),
@@ -1028,8 +1057,10 @@ server <- function(input, output, session) {
   # Multiple outputs can read the same reactive without re-running it.
 
   # Which projection dataset to use
+  # %||% "tad" guards against the brief moment on startup where the
+  # custom btn-check JS hasn't yet pushed a value to input$proj_method
   proj_data <- reactive({
-    proj_list[[input$proj_method]]
+    proj_list[[input$proj_method %||% "tad"]]
   })
 
   # Closure year for each TAD under the current slider/preset state
@@ -1101,7 +1132,7 @@ server <- function(input, output, session) {
       "city" = "citywide average growth (2007–2024)",
       "optimistic" = "optimistic (average of high-growth TADs - Beltline, Eastside, & Atlantic Station)"
     )
-    growth_name <- proj_labels[[input$proj_method]]
+    growth_name <- proj_labels[[input$proj_method %||% "tad"]]
     ref_year_div <- as.integer(input$ref_year_div %||% 2035)
 
     dd <- diversion_data()
@@ -1152,7 +1183,7 @@ server <- function(input, output, session) {
     HTML(sprintf(
       '<p class="text-muted small px-3 pt-1 mt-1">%s<br><br>%s</p>',
       sprintf(
-        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward, while TADs remain open under each scenario. Under the current growth assumption — based on <strong>%s</strong> — the Mayor's Updated NRI proposal would divert an additional <strong>%s</strong> more than the current plan.",
+        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward, while TADs remain open under each scenario. Under the current growth assumption — based on %s — the Mayor's Updated NRI proposal would divert an additional <strong>%s</strong> more than the current plan over the next 30 years.",
         growth_name,
         gap_fmt
       ),
@@ -1215,19 +1246,19 @@ server <- function(input, output, session) {
         data = ~ filter(.x, grepl("Current Plan", scenario)),
         aes(label = scenario),
         linewidth = 1.3,
-        size = 2.6,
+        size = 3.5,
         fontface = "bold",
         hjust = 0.72,
         gap = FALSE,
         text_smoothing = 20,
-        offset = unit(-12, "pt")
+        offset = unit(-14, "pt")
       ) +
       # NRI scenario labels sit above their lines
       geom_textline(
         data = ~ filter(.x, !grepl("Current Plan", scenario)),
         aes(label = scenario),
         linewidth = 1.3,
-        size = 2.6,
+        size = 3.5,
         fontface = "bold",
         hjust = 0.72,
         gap = FALSE,
@@ -1269,7 +1300,7 @@ server <- function(input, output, session) {
       scale_size_identity() +
       scale_color_manual(values = SCENARIO_COLORS, name = NULL) +
       scale_y_continuous(
-        labels = label_dollar(scale = 1e-9, suffix = "B", accuracy = 0.1),
+        labels = label_dollar(scale = 1e-9, suffix = "B", accuracy = 1),
         limits = c(0, NA),
         expand = expansion(mult = c(0, 0.12))
       ) +
@@ -1287,6 +1318,7 @@ server <- function(input, output, session) {
       width_svg = 9,
       height_svg = 4,
       options = list(
+        opts_sizing(rescale = TRUE, width = 1),
         opts_selection(type = "none"),
         opts_hover(css = "cursor:default; opacity:1; stroke-width:2.5px;"),
         opts_tooltip(
@@ -1484,7 +1516,7 @@ server <- function(input, output, session) {
       "tad_baseline" = "TAD growth since inception",
       "city" = "Citywide average growth",
       "optimistic" = "Optimistic (high-growth TADs)"
-    )[[input$proj_method]]
+    )[[input$proj_method %||% "tad"]]
 
     beltline_closure <- cy$closure_year[cy$tad_id == "Beltline"]
 
