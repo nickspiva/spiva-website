@@ -520,20 +520,23 @@ ui <- page_sidebar(
 
     h6("When will TADs close?", class = "fw-bold mb-1 mt-1"),
 
-    actionButton(
-      "btn_current",
-      "Current Plan in Place",
-      class = "btn btn-outline-primary btn-sm w-100 mb-1"
-    ),
-    actionButton(
-      "btn_mayor1",
-      "Mayor's Original NRI",
-      class = "btn btn-outline-warning btn-sm w-100 mb-1"
-    ),
-    actionButton(
-      "btn_mayor2",
-      "Mayor's Updated NRI",
-      class = "btn btn-outline-danger btn-sm w-100"
+    div(
+      class = "btn-group-vertical w-100",
+      actionButton(
+        "btn_current",
+        "Current Plan in Place",
+        class = "btn btn-outline-primary btn-sm text-start"
+      ),
+      actionButton(
+        "btn_mayor1",
+        "Mayor's Original NRI",
+        class = "btn btn-outline-warning btn-sm text-start"
+      ),
+      actionButton(
+        "btn_mayor2",
+        "Mayor's Updated NRI",
+        class = "btn btn-outline-danger btn-sm text-start"
+      )
     ),
 
     hr(class = "my-2"),
