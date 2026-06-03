@@ -58,7 +58,7 @@ library(geomtextpath)
 # APS can collect: increment × (APS_MILLAGE / 1000) each year.
 APS_MILLAGE <- 20.74
 PROJ_END <- 2055
-BUY_REF_YEAR <- 2035 # reference year for "what could this fund?" panel
+BUY_REF_YEAR <- 2030 # reference year for "what becomes possible" panel
 
 # One color per TAD — kept consistent across ALL graphics so the
 # reader can cross-reference without a legend on every chart.
@@ -75,14 +75,27 @@ TAD_PALETTE <- c(
   "Hollowell" = "#B5838D"
 )
 
-# Items for the "What Could This Fund?" panel.
-# cost_label controls the "@ X / unit" display line — lets us format large
-# costs like the pre-K program as "$78.2M" rather than the default k-scale.
-unit_costs <- tribble(
-  ~id           , ~label                                                   , ~cost    , ~unit          , ~cost_label          ,
-  "prek"        , "Universal Pre-K teaching staff\n(668 educators, 3K+4K)" , 78222968 , "full program" , "$78.2M / program"  ,
-  "marta"       , "Free MARTA passes\n(all APS students, K–12)"            , 27666054 , "full program" , "$27.7M / program"  ,
-  "teachers"    , "Raise all APS teachers\nto $100K average salary"        , 34575176 , "full program" , "$34.6M / year"
+# Static vision cards for the "What Becomes Possible" section.
+# Cards are goal-oriented, not reactive to growth scenarios.
+vision_items <- list(
+  list(
+    title = "Universal Pre-K",
+    subtitle = "for 3 & 4-Year Olds",
+    cost = "$78.2M / year",
+    note = "APS Strategic Plan · 2030 Goal"
+  ),
+  list(
+    title = "Free MARTA",
+    subtitle = "for all APS students, K–12",
+    cost = "$27.7M / year",
+    note = "Modeled on DC Kids Ride Free Program"
+  ),
+  list(
+    title = "$100K Average",
+    subtitle = "Teacher Salary",
+    cost = "$34.6M / year",
+    note = "APS Strategic Plan · 2030 Goal"
+  )
 )
 
 
@@ -657,136 +670,136 @@ ui <- page_sidebar(
           )
         )
       ),
-    accordion_panel(
-      "How is the free MARTA estimate calculated?",
-      p(
-        strong("Scope:"),
-        " Annual cost of providing year-round, unlimited MARTA access to all APS students K–12.",
-        " Modeled on DC's Kids Ride Free program, which covers all students ages 5–21 on all Metro/bus service."
-      ),
-      p(strong("Student count:")),
-      tags$ul(
-        tags$li("Total APS K–12 enrollment (October 2024): 44,876 students")
-      ),
-      p(strong("Cost calculation:")),
-      tags$ul(
-        tags$li(
-          "Base rate: MARTA UPass monthly unlimited pass at $68.50/month"
+      accordion_panel(
+        "How is the free MARTA estimate calculated?",
+        p(
+          strong("Scope:"),
+          " Annual cost of providing year-round, unlimited MARTA access to all APS students K–12.",
+          " Modeled on DC's Kids Ride Free program, which covers all students ages 5–21 on all Metro/bus service."
         ),
-        tags$li(
-          "Duration: 12 months (year-round — school year, summer school, summer jobs, etc.)"
+        p(strong("Student count:")),
+        tags$ul(
+          tags$li("Total APS K–12 enrollment (October 2024): 44,876 students")
         ),
-        tags$li(
-          "Bulk discount: 25% reduction assumed, reflecting negotiating leverage for a district-wide recurring contract of this scale"
+        p(strong("Cost calculation:")),
+        tags$ul(
+          tags$li(
+            "Base rate: MARTA UPass monthly unlimited pass at $68.50/month"
+          ),
+          tags$li(
+            "Duration: 12 months (year-round — school year, summer school, summer jobs, etc.)"
+          ),
+          tags$li(
+            "Bulk discount: 25% reduction assumed, reflecting negotiating leverage for a district-wide recurring contract of this scale"
+          ),
+          tags$li("44,876 × $68.50 × 12 × 0.75 ≈ $27.7M/year")
         ),
-        tags$li("44,876 × $68.50 × 12 × 0.75 ≈ $27.7M/year")
-      ),
-      p(strong("Limitations:")),
-      tags$ul(
-        tags$li(
-          "The 25% bulk discount is an assumption; actual negotiated rate could be higher or lower"
+        p(strong("Limitations:")),
+        tags$ul(
+          tags$li(
+            "The 25% bulk discount is an assumption; actual negotiated rate could be higher or lower"
+          ),
+          tags$li(
+            "UPass is a university product — APS would need a comparable institutional agreement with MARTA"
+          ),
+          tags$li(
+            "Uses 2024 enrollment data; does not project future student population"
+          ),
+          tags$li("Not all APS students live near high-frequency MARTA service")
         ),
-        tags$li(
-          "UPass is a university product — APS would need a comparable institutional agreement with MARTA"
+        p(strong("Comparable programs:")),
+        tags$ul(
+          tags$li(
+            tags$a(
+              "DC Kids Ride Free",
+              href = "https://ddot.dc.gov/page/kids-ride-free-program",
+              target = "_blank"
+            ),
+            ": all students ages 5–21 ride free on all Metro/bus service, city-funded"
+          ),
+          tags$li("San Francisco Muni: free for all riders 18 and under"),
+          tags$li("Seattle King County Metro: free for all riders 18 and under")
         ),
-        tags$li(
-          "Uses 2024 enrollment data; does not project future student population"
-        ),
-        tags$li("Not all APS students live near high-frequency MARTA service")
-      ),
-      p(strong("Comparable programs:")),
-      tags$ul(
-        tags$li(
+        p(
+          class = "text-muted small mt-2 mb-0",
+          tags$a(
+            "APS Insights — Enrollment Data 1994–2024",
+            href = "https://apsinsights.org/2025/03/13/aps-enrollment-data-1994-2024/",
+            target = "_blank"
+          ),
+          " · ",
+          tags$a(
+            "MARTA University Pass Program",
+            href = "https://itsmarta.com/university-program.aspx",
+            target = "_blank"
+          ),
+          " · ",
           tags$a(
             "DC Kids Ride Free",
             href = "https://ddot.dc.gov/page/kids-ride-free-program",
             target = "_blank"
+          )
+        )
+      ),
+      accordion_panel(
+        "How is the teacher salary estimate calculated?",
+        p(
+          strong("Scope:"),
+          " Additional annual employer cost of raising the average APS teacher salary from its current level to $100,000,",
+          " including the corresponding increase in employer pension contributions."
+        ),
+        p(strong("Inputs:")),
+        tags$ul(
+          tags$li(
+            "Current average APS teacher salary: $90,470 (APS Back to Basics 2030 KPI Dashboard)"
           ),
-          ": all students ages 5–21 ride free on all Metro/bus service, city-funded"
+          tags$li(
+            "Total APS classroom teachers: 2,976 (APS Back to Basics 2030 KPI Dashboard)"
+          ),
+          tags$li("Salary gap: $100,000 − $90,470 = $9,530 per teacher"),
+          tags$li("TRS of Georgia employer pension contribution rate: 21.91%")
         ),
-        tags$li("San Francisco Muni: free for all riders 18 and under"),
-        tags$li("Seattle King County Metro: free for all riders 18 and under")
-      ),
-      p(
-        class = "text-muted small mt-2 mb-0",
-        tags$a(
-          "APS Insights — Enrollment Data 1994–2024",
-          href = "https://apsinsights.org/2025/03/13/aps-enrollment-data-1994-2024/",
-          target = "_blank"
+        p(strong("Calculation:")),
+        tags$ul(
+          tags$li("Additional salary cost: 2,976 × $9,530 = $28,361,280"),
+          tags$li("Additional pension cost: $28,361,280 × 21.91% = $6,213,896"),
+          tags$li(strong("Total: ~$34.6M per year"))
         ),
-        " · ",
-        tags$a(
-          "MARTA University Pass Program",
-          href = "https://itsmarta.com/university-program.aspx",
-          target = "_blank"
+        p(strong("Assumptions & limitations:")),
+        tags$ul(
+          tags$li(
+            "Uses the average gap — assumes a uniform raise across all teachers.",
+            " In practice, teachers already above $100K need no raise, so actual cost may be modestly lower."
+          ),
+          tags$li(
+            "Does not include health insurance (no new hires; existing staff already covered)"
+          ),
+          tags$li(
+            "Assumes flat teacher headcount — cost rises if APS grows enrollment and adds staff"
+          ),
+          tags$li("Pension rate rises to 22.32% in 2028 (TRS of Georgia)")
         ),
-        " · ",
-        tags$a(
-          "DC Kids Ride Free",
-          href = "https://ddot.dc.gov/page/kids-ride-free-program",
-          target = "_blank"
+        p(
+          class = "text-muted small mt-2 mb-0",
+          tags$a(
+            "APS Back to Basics 2030 KPI Dashboard",
+            href = "https://www.atlantapublicschools.us/about/strategic-plan/key-performance-indicators",
+            target = "_blank"
+          ),
+          " · ",
+          tags$a(
+            "TRS of Georgia — Employer Contribution Rates",
+            href = "https://www.trsga.com/employer/contribution-rates/",
+            target = "_blank"
+          ),
+          " · ",
+          tags$a(
+            "GBPI — Retirement in Georgia's Public Schools",
+            href = "https://gbpi.org/retirement-in-georgias-public-schools/",
+            target = "_blank"
+          )
         )
       )
-    ),
-    accordion_panel(
-      "How is the teacher salary estimate calculated?",
-      p(
-        strong("Scope:"),
-        " Additional annual employer cost of raising the average APS teacher salary from its current level to $100,000,",
-        " including the corresponding increase in employer pension contributions."
-      ),
-      p(strong("Inputs:")),
-      tags$ul(
-        tags$li(
-          "Current average APS teacher salary: $90,470 (APS Back to Basics 2030 KPI Dashboard)"
-        ),
-        tags$li(
-          "Total APS classroom teachers: 2,976 (APS Back to Basics 2030 KPI Dashboard)"
-        ),
-        tags$li("Salary gap: $100,000 − $90,470 = $9,530 per teacher"),
-        tags$li("TRS of Georgia employer pension contribution rate: 21.91%")
-      ),
-      p(strong("Calculation:")),
-      tags$ul(
-        tags$li("Additional salary cost: 2,976 × $9,530 = $28,361,280"),
-        tags$li("Additional pension cost: $28,361,280 × 21.91% = $6,213,896"),
-        tags$li(strong("Total: ~$34.6M per year"))
-      ),
-      p(strong("Assumptions & limitations:")),
-      tags$ul(
-        tags$li(
-          "Uses the average gap — assumes a uniform raise across all teachers.",
-          " In practice, teachers already above $100K need no raise, so actual cost may be modestly lower."
-        ),
-        tags$li(
-          "Does not include health insurance (no new hires; existing staff already covered)"
-        ),
-        tags$li(
-          "Assumes flat teacher headcount — cost rises if APS grows enrollment and adds staff"
-        ),
-        tags$li("Pension rate rises to 22.32% in 2028 (TRS of Georgia)")
-      ),
-      p(
-        class = "text-muted small mt-2 mb-0",
-        tags$a(
-          "APS Back to Basics 2030 KPI Dashboard",
-          href = "https://www.atlantapublicschools.us/about/strategic-plan/key-performance-indicators",
-          target = "_blank"
-        ),
-        " · ",
-        tags$a(
-          "TRS of Georgia — Employer Contribution Rates",
-          href = "https://www.trsga.com/employer/contribution-rates/",
-          target = "_blank"
-        ),
-        " · ",
-        tags$a(
-          "GBPI — Retirement in Georgia's Public Schools",
-          href = "https://gbpi.org/retirement-in-georgias-public-schools/",
-          target = "_blank"
-        )
-      )
-    )
     ),
   ),
 
@@ -1715,25 +1728,22 @@ server <- function(input, output, session) {
   output$buy_panel <- renderUI({
     rev <- ref_revenue()
 
-    boxes <- map(seq_len(nrow(unit_costs)), \(i) {
-      item <- unit_costs[i, ]
-      n <- floor(rev / item$cost)
-
-      # Label may contain \n for line breaks — convert to HTML
-      label_html <- HTML(gsub("\n", "<br>", item$label))
-
+    boxes <- map(vision_items, \(item) {
       card(
         class = "text-center border-0 bg-light h-100",
         div(
-          class = "py-3",
+          class = "py-3 px-2",
           div(
-            style = "font-size:2rem; font-weight:700; color:#E63946; line-height:1;",
-            format(n, big.mark = ",")
+            style = "font-size:1.4rem; font-weight:700; color:#2A9D8F; line-height:1.25;",
+            item$title
           ),
-          tags$p(item$unit, class = "small text-muted mb-1"),
-          tags$hr(class = "mx-4 my-1"),
-          tags$p(label_html, class = "small fw-semibold mb-0"),
-          tags$p(item$cost_label, class = "small text-muted")
+          div(
+            style = "font-size:0.9rem; color:#555; margin-bottom:0.5rem; line-height:1.3;",
+            item$subtitle
+          ),
+          tags$hr(class = "mx-4 my-2"),
+          tags$p(item$cost, class = "fw-semibold small mb-1"),
+          tags$p(item$note, class = "small text-muted mb-0")
         )
       )
     })
@@ -1752,7 +1762,7 @@ server <- function(input, output, session) {
         ),
         tags$p(
           HTML(sprintf(
-            "With an estimated <strong>%s</strong> in annual APS revenue from closed TADs in %d (current plan), here's what becomes achievable for Atlanta's kids.",
+            "APS has committed to these goals by 2030 as part of its Back to Basics strategic plan. TADs closing on schedule will generate an estimated <strong>%s</strong> in annual revenue for schools by %d — putting all three within reach.",
             dollar(rev, scale = 1e-6, suffix = "M", accuracy = 0.1),
             BUY_REF_YEAR
           )),
@@ -1772,23 +1782,31 @@ server <- function(input, output, session) {
   output$challenge_panel <- renderUI({
     challenge_items <- list(
       list(
-        title = "Skyrocketing Healthcare Costs",
-        stat = "—",
-        stat_lbl = "increase since 2008",
+        title = "Benefits Costs Up 78%",
+        stat = "+$127M",
+        stat_lbl = "increase in annual benefits costs since FY2016",
         desc = paste0(
-          "Employee healthcare costs have grown dramatically and are largely outside APS control. ",
-          "The state provides no support for healthcare costs of many essential workers — ",
-          "including bus drivers, janitors, and food service staff."
+          "Employee healthcare and pension costs have grown dramatically and are largely outside APS control. ",
+          "The State Health Benefit Plan employer rate doubled from $11,340 to $22,620 between FY2021 and FY2026. ",
+          "Teacher Retirement System rates rose from 14% to 22% over the past decade. ",
+          "Neither is under APS's control, and both are projected to keep rising. ",
+          "Also, Georgia stopped providing funding in 2012 for healthcare costs of essential workers such as ",
+          " bus drivers, janitors, and food service staff, ",
+          "further burdening local school districts."
         )
       ),
       list(
         title = "Property Tax Revenue at Risk",
-        stat = "—",
-        stat_lbl = "via SB 33",
+        stat = "~3%",
+        stat_lbl = "cap on annual property assessment increases",
         desc = paste0(
-          "Georgia legislation sought to cap property tax revenue growth — threatening to widen the gap ",
-          "between unconstrained expense growth and constrained revenue, ",
-          "APS's single largest funding source."
+          "Georgia's legislature passed Senate Bill 33 this spring capping annual property assessment increases ",
+          "at the rate of inflation — currently around 3%. ",
+          "Property taxes are APS's primary revenue source, and legally capping revenue growth near inflation ",
+          "while underlying costs consistently grow faster creates a structural deficit that compounds over time. ",
+          "APS may have limited flexibility through millage rate increases, given that its rate has historically ",
+          "exceeded the state's 20-mill cap — but this legislation is part of a broader pattern of constraints ",
+          "on local districts' ability to fund public education."
         )
       ),
       list(
