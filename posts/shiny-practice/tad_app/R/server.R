@@ -448,27 +448,6 @@ server <- function(input, output, session) {
         size = 2.6,
         color = "#4a90d9"
       ) +
-      geom_vline(
-        xintercept = LAST_CLOSURE_NRI,
-        color = "#e9a514",
-        linetype = "dotted",
-        linewidth = 0.6,
-        alpha = 0.8
-      ) +
-      annotate(
-        "text",
-        x = LAST_CLOSURE_NRI - 0.4,
-        y = Inf,
-        label = paste0(
-          "All TADs closed\n(NRI Plans, ",
-          LAST_CLOSURE_NRI,
-          ")"
-        ),
-        hjust = 1,
-        vjust = 1.3,
-        size = 2.6,
-        color = "#e9a514"
-      ) +
       # ── Lines with on-curve scenario labels (geomtextpath) ───────────────
       # geom_textline draws the line AND places the label along the curve.
       # hjust controls where along the line the text sits (0=start, 1=end).
@@ -526,7 +505,7 @@ server <- function(input, output, session) {
         aes(label = lab),
         hjust = -0.15,
         vjust = 0.5,
-        size = 2.8,
+        size = 3.2,
         fontface = "bold",
         show.legend = FALSE
       ) +
@@ -892,7 +871,7 @@ server <- function(input, output, session) {
       mutate(rank_in_yr = row_number()) |>
       ungroup() |>
       mutate(
-        lbl_vjust = if_else(rank_in_yr %% 2 == 1, -0.7, 1.6),
+        lbl_vjust = 1.6,
         lbl_alpha = line_a
       )
 
@@ -950,7 +929,7 @@ server <- function(input, output, session) {
       scale_size_identity() +
       scale_alpha_identity() +
       scale_linewidth_identity() +
-      labs(y = "Annual APS Revenue") +
+      labs(y = "") +
       theme_tad() +
       theme(
         axis.title.y = element_text(size = 10, color = "grey40"),
@@ -1163,31 +1142,43 @@ server <- function(input, output, session) {
   })
 
   # ── 7j. Methodology reference tables ─────────────────────────────────────
-  output$hist_wide_table <- renderTable({
-    hist_data |>
-      select(year, tad_id, value) |>
-      mutate(value_fmt = if_else(
-        value >= 1e9,
-        dollar(value, scale = 1e-9, suffix = "B", accuracy = 0.01),
-        dollar(value, scale = 1e-6, suffix = "M", accuracy = 1)
-      )) |>
-      select(-value) |>
-      pivot_wider(names_from = tad_id, values_from = value_fmt) |>
-      arrange(year) |>
-      rename(Year = year)
-  }, striped = TRUE, width = "100%", align = "r", na = "—")
+  output$hist_wide_table <- renderTable(
+    {
+      hist_data |>
+        select(year, tad_id, value) |>
+        mutate(
+          value_fmt = if_else(
+            value >= 1e9,
+            dollar(value, scale = 1e-9, suffix = "B", accuracy = 0.01),
+            dollar(value, scale = 1e-6, suffix = "M", accuracy = 1)
+          )
+        ) |>
+        select(-value) |>
+        pivot_wider(names_from = tad_id, values_from = value_fmt) |>
+        arrange(year) |>
+        rename(Year = year)
+    },
+    striped = TRUE,
+    width = "100%",
+    align = "r",
+    na = "—"
+  )
 
-  output$growth_rate_table <- renderTable({
-    growth_rates |>
-      mutate(
-        period   = paste0(first_year, "–", last_year),
-        cagr_pct = paste0(round(cagr * 100, 1), "%")
-      ) |>
-      select(tad_id, period, cagr_pct) |>
-      rename(
-        "TAD"    = tad_id,
-        "Period" = period,
-        "CAGR"   = cagr_pct
-      )
-  }, striped = TRUE, width = "100%")
+  output$growth_rate_table <- renderTable(
+    {
+      growth_rates |>
+        mutate(
+          period = paste0(first_year, "–", last_year),
+          cagr_pct = paste0(round(cagr * 100, 1), "%")
+        ) |>
+        select(tad_id, period, cagr_pct) |>
+        rename(
+          "TAD" = tad_id,
+          "Period" = period,
+          "CAGR" = cagr_pct
+        )
+    },
+    striped = TRUE,
+    width = "100%"
+  )
 }
