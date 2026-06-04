@@ -438,7 +438,7 @@ ui <- page_sidebar(
           class = "fw-bold mb-1"
         ),
         p(
-          "Total assessed value within each TAD boundary. Only the increment above each TAD's original baseline flows to Invest Atlanta.",
+          "Total assessed value within each TAD boundary, in millions of dollars. Only the increment above each TAD's original baseline flows to Invest Atlanta.",
           class = "text-muted small mb-2"
         ),
         div(style = "overflow-x: auto;", tableOutput("hist_wide_table")),
@@ -478,6 +478,16 @@ ui <- page_sidebar(
                 "APS Back to Basics 2030 — KPI Dashboard",
                 href = "https://www.atlantapublicschools.us/about/strategic-plan/key-performance-indicators",
                 target = "_blank"
+              )),
+              tags$li(tags$a(
+                "ABOE TV — Budget Commission Meeting, Sep 30 2025",
+                href = "https://www.youtube.com/watch?v=LvB1r0vA_qU",
+                target = "_blank"
+              )),
+              tags$li(tags$a(
+                "APS Board Meeting Attachment (simbli)",
+                href = "https://simbli.eboardsolutions.com/Meetings/Attachment.aspx?S=36031014&AID=1824821&MID=123422",
+                target = "_blank"
               ))
             ),
             p(strong("Transit comparisons"), class = "mt-3 mb-1"),
@@ -493,7 +503,7 @@ ui <- page_sidebar(
                 href = "https://ddot.dc.gov/page/kids-ride-free-program",
                 target = "_blank"
               ))
-            )
+            ),
           ),
           div(
             p(strong("Georgia education finance"), class = "mb-1"),
@@ -518,6 +528,26 @@ ui <- page_sidebar(
                 "Georgia SB 33 — annual property assessment cap",
                 href = "https://legiscan.com/GA/bill/SB33/2025",
                 target = "_blank"
+              )),
+              tags$li(tags$a(
+                "WABE — Schools Could Lose Most If Property Tax Legislation Becomes Law",
+                href = "https://www.wabe.org/schools-could-lose-most-if-property-tax-legislation-becomes-law/",
+                target = "_blank"
+              )),
+              tags$li(tags$a(
+                "Georgia Recorder — Kemp Approves Property Tax Relief",
+                href = "https://georgiarecorder.com/2026/05/11/kemp-approves-property-tax-relief-for-georgia-homeowners-amid-concerns-over-local-revenues-process/",
+                target = "_blank"
+              )),
+              tags$li(tags$a(
+                "SaportaReport — Setting Teachers up for Success",
+                href = "https://saportareport.com/setting-teachers-up-for-success/columnists/guestcolumn/derek/",
+                target = "_blank"
+              )),
+              tags$li(tags$a(
+                "Hatcher — Restoring State Funding for State-Mandated Costs",
+                href = "https://www.kerryhatcher.com/restoring-state-funding-for-state-mandated-costs/",
+                target = "_blank"
               ))
             ),
             p(strong("Geospatial data"), class = "mt-3 mb-1"),
@@ -532,6 +562,15 @@ ui <- page_sidebar(
                 "Atlanta TAD boundaries — City of Atlanta Open Data Portal"
               ),
               tags$li("Atlanta city limits — City of Atlanta Open Data Portal")
+            ),
+            p(strong("Research"), class = "mt-3 mb-1"),
+            tags$ul(
+              class = "small",
+              tags$li(tags$a(
+                "Wen et al. — Students Lose Out as Cities Give Billions in Property Tax Breaks to Businesses (NEPC, 2024)",
+                href = "https://nepc.colorado.edu/publication/tax-abatement",
+                target = "_blank"
+              ))
             )
           )
         )
