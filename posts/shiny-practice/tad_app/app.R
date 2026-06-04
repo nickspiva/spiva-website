@@ -346,7 +346,8 @@ roads_sf <- bind_rows(
   st_read("Road_shapefiles/tl_2023_13067_roads.shp", quiet = TRUE), # Cobb
   st_read("Road_shapefiles/tl_2023_13151_roads.shp", quiet = TRUE), # Henry
   st_read("Road_shapefiles/tl_2023_13097_roads.shp", quiet = TRUE), # Douglas
-  st_read("Road_shapefiles/tl_2023_13063_roads.shp", quiet = TRUE) # Clayton
+  st_read("Road_shapefiles/tl_2023_13063_roads.shp", quiet = TRUE), # Clayton
+  st_read("Road_shapefiles/tl_2023_13051_roads.shp", quiet = TRUE)  # Cherokee
 ) |>
   filter(MTFCC %in% c("S1100", "S1200")) |> # S1100 = highways, S1200 = major roads
   st_transform(4326)
@@ -708,208 +709,7 @@ ui <- page_sidebar(
   card(
     card_header("Why TAD Closures Matter for APS Schools"),
     uiOutput("buy_panel"),
-    uiOutput("challenge_panel"),
-    accordion(
-      open = FALSE,
-      class = "mt-3 mx-2 mb-2",
-      accordion_panel(
-        "How is the Pre-K estimate calculated?",
-        p(
-          strong("Scope:"),
-          " Annual staffing costs only — salaries plus employer benefits. Does not include capital costs, curriculum, materials, or other associated expenses."
-        ),
-        p(strong("Seat gap:")),
-        tags$ul(
-          tags$li(
-            "APS kindergarten enrollment (2025–26): 3,620 — proxy for each age cohort"
-          ),
-          tags$li(
-            "Total seats needed for universal 3K + 4K: 7,240 (3,620 × 2 cohorts)"
-          ),
-          tags$li(
-            "Existing APS pre-K seats: 1,234 (GADOE via APS Insights; does not break out by age and may not fully reflect Head Start seats serving 3-year-olds)"
-          ),
-          tags$li(strong("Gap: 6,006 additional seats"))
-        ),
-        p(strong("Staffing:")),
-        tags$ul(
-          tags$li(
-            "Class size: 18 (state cap is 20; 18 for inclusion classrooms)"
-          ),
-          tags$li("Classrooms needed: [6,006 ÷ 18] = 334"),
-          tags$li(
-            "334 lead teachers + 334 assistant teachers = 668 total new staff"
-          )
-        ),
-        p(strong("Annual employer cost per employee:")),
-        tags$ul(
-          tags$li(
-            "Lead teacher: $100k salary + $22,620 health insurance + $21,910 pension (21.91%, TRS of Georgia) = $144,530"
-          ),
-          tags$li(
-            "Assistant teacher: $55k salary + $22,620 health insurance + $12,050 pension = $89,670"
-          ),
-          tags$li(
-            "Health insurance: $1,885/month × 12 = $22,620 — employer share (individual plan; family coverage would be higher)"
-          )
-        ),
-        p(strong("Total: 334 × $144,530 + 334 × $89,670 ≈ $78.2M/year")),
-        p(
-          class = "text-muted small mt-2 mb-1",
-          "Note: pension rises to 22.32% in 2028 (TRS of Georgia). Health insurance and salaries will grow over time. Capital costs for 334 new classrooms are not included."
-        ),
-        p(
-          class = "text-muted small mb-0",
-          tags$a(
-            "APS Insights",
-            href = "https://apsinsights.org/2026/02/23/aps-enrollment-1994-2026/",
-            target = "_blank"
-          ),
-          " · ",
-          tags$a(
-            "TRS of Georgia",
-            href = "https://www.trsga.com/employer/contribution-rates/",
-            target = "_blank"
-          ),
-          " · ",
-          tags$a(
-            "GBPI FY2027 K-12 overview",
-            href = "https://gbpi.org/overview-2027-fiscal-year-budget-for-k-12-education/",
-            target = "_blank"
-          )
-        )
-      ),
-      accordion_panel(
-        "How is the free MARTA estimate calculated?",
-        p(
-          strong("Scope:"),
-          " Annual cost of providing year-round, unlimited MARTA access to all APS students K–12.",
-          " Modeled on DC's Kids Ride Free program, which covers all students ages 5–21 on all Metro/bus service."
-        ),
-        p(strong("Student count:")),
-        tags$ul(
-          tags$li("Total APS K–12 enrollment (October 2024): 44,876 students")
-        ),
-        p(strong("Cost calculation:")),
-        tags$ul(
-          tags$li(
-            "Base rate: MARTA UPass monthly unlimited pass at $68.50/month"
-          ),
-          tags$li(
-            "Duration: 12 months (year-round — school year, summer school, summer jobs, etc.)"
-          ),
-          tags$li(
-            "Bulk discount: 25% reduction assumed, reflecting negotiating leverage for a district-wide recurring contract of this scale"
-          ),
-          tags$li("44,876 × $68.50 × 12 × 0.75 ≈ $27.7M/year")
-        ),
-        p(strong("Limitations:")),
-        tags$ul(
-          tags$li(
-            "The 25% bulk discount is an assumption; actual negotiated rate could be higher or lower"
-          ),
-          tags$li(
-            "UPass is a university product — APS would need a comparable institutional agreement with MARTA"
-          ),
-          tags$li(
-            "Uses 2024 enrollment data; does not project future student population"
-          ),
-          tags$li("Not all APS students live near high-frequency MARTA service")
-        ),
-        p(strong("Comparable programs:")),
-        tags$ul(
-          tags$li(
-            tags$a(
-              "DC Kids Ride Free",
-              href = "https://ddot.dc.gov/page/kids-ride-free-program",
-              target = "_blank"
-            ),
-            ": all students ages 5–21 ride free on all Metro/bus service, city-funded"
-          ),
-          tags$li("San Francisco Muni: free for all riders 18 and under"),
-          tags$li("Seattle King County Metro: free for all riders 18 and under")
-        ),
-        p(
-          class = "text-muted small mt-2 mb-0",
-          tags$a(
-            "APS Insights — Enrollment Data 1994–2024",
-            href = "https://apsinsights.org/2025/03/13/aps-enrollment-data-1994-2024/",
-            target = "_blank"
-          ),
-          " · ",
-          tags$a(
-            "MARTA University Pass Program",
-            href = "https://itsmarta.com/university-program.aspx",
-            target = "_blank"
-          ),
-          " · ",
-          tags$a(
-            "DC Kids Ride Free",
-            href = "https://ddot.dc.gov/page/kids-ride-free-program",
-            target = "_blank"
-          )
-        )
-      ),
-      accordion_panel(
-        "How is the teacher salary estimate calculated?",
-        p(
-          strong("Scope:"),
-          " Additional annual employer cost of raising the average APS teacher salary from its current level to $100,000,",
-          " including the corresponding increase in employer pension contributions."
-        ),
-        p(strong("Inputs:")),
-        tags$ul(
-          tags$li(
-            "Current average APS teacher salary: $90,470 (APS Back to Basics 2030 KPI Dashboard)"
-          ),
-          tags$li(
-            "Total APS classroom teachers: 2,976 (APS Back to Basics 2030 KPI Dashboard)"
-          ),
-          tags$li("Salary gap: $100,000 − $90,470 = $9,530 per teacher"),
-          tags$li("TRS of Georgia employer pension contribution rate: 21.91%")
-        ),
-        p(strong("Calculation:")),
-        tags$ul(
-          tags$li("Additional salary cost: 2,976 × $9,530 = $28,361,280"),
-          tags$li("Additional pension cost: $28,361,280 × 21.91% = $6,213,896"),
-          tags$li(strong("Total: ~$34.6M per year"))
-        ),
-        p(strong("Assumptions & limitations:")),
-        tags$ul(
-          tags$li(
-            "Uses the average gap — assumes a uniform raise across all teachers.",
-            " In practice, teachers already above $100K need no raise, so actual cost may be modestly lower."
-          ),
-          tags$li(
-            "Does not include health insurance (no new hires; existing staff already covered)"
-          ),
-          tags$li(
-            "Assumes flat teacher headcount — cost rises if APS grows enrollment and adds staff"
-          ),
-          tags$li("Pension rate rises to 22.32% in 2028 (TRS of Georgia)")
-        ),
-        p(
-          class = "text-muted small mt-2 mb-0",
-          tags$a(
-            "APS Back to Basics 2030 KPI Dashboard",
-            href = "https://www.atlantapublicschools.us/about/strategic-plan/key-performance-indicators",
-            target = "_blank"
-          ),
-          " · ",
-          tags$a(
-            "TRS of Georgia — Employer Contribution Rates",
-            href = "https://www.trsga.com/employer/contribution-rates/",
-            target = "_blank"
-          ),
-          " · ",
-          tags$a(
-            "GBPI — Retirement in Georgia's Public Schools",
-            href = "https://gbpi.org/retirement-in-georgias-public-schools/",
-            target = "_blank"
-          )
-        )
-      )
-    ),
+    uiOutput("challenge_panel")
   ),
 
   br(),
@@ -947,7 +747,6 @@ ui <- page_sidebar(
   navset_card_tab(
     title = "How is all this being calculated?",
 
-    # Tab 1: Estimates ─────────────────────────────────────────
     nav_panel(
       "Estimates",
       div(
@@ -985,7 +784,7 @@ ui <- page_sidebar(
           ),
           accordion_panel(
             "Free MARTA for K–12 Students  ·  $27.7M / year",
-            p(strong("Scope:"), " Year-round unlimited MARTA access for all APS K–12 students. Modeled on DC’s Kids Ride Free program (ages 5–21, all Metro/bus service)."),
+            p(strong("Scope:"), " Year-round unlimited MARTA access for all APS K–12 students. Modeled on DC's Kids Ride Free program (ages 5–21, all Metro/bus service)."),
             p(strong("Calculation:")),
             tags$ul(
               tags$li("44,876 APS K–12 students (October 2024 enrollment)"),
@@ -1023,25 +822,23 @@ ui <- page_sidebar(
       )
     ),
 
-    # Tab 2: TAD data tables ────────────────────────────────────
     nav_panel(
       "TAD Property Values & Growth Rates",
       div(
         class = "p-3",
         h6("Assessed Property Values by TAD, 2007–2024", class = "fw-bold mb-1"),
-        p("Total assessed value within each TAD boundary, in millions of dollars. Only the increment above each TAD’s original baseline flows to Invest Atlanta.", class = "text-muted small mb-2"),
+        p("Total assessed value within each TAD boundary, in millions of dollars. Only the increment above each TAD's original baseline flows to Invest Atlanta.", class = "text-muted small mb-2"),
         div(style = "overflow-x: auto;", tableOutput("hist_wide_table")),
         tags$hr(class = "my-4"),
         h6("Compound Annual Growth Rates (CAGR)", class = "fw-bold mb-1"),
         p(
-          HTML("CAGR = (ending value ÷ starting value)<sup>1 ÷ years</sup> − 1. Two versions shown: one from 2007 (when city-wide data begins) and one from each TAD’s creation year and baseline value, giving a longer-run picture for older TADs."),
+          HTML("CAGR = (ending value ÷ starting value)<sup>1 ÷ years</sup> − 1. Two versions shown: one from 2007 (when city-wide data begins) and one from each TAD's creation year and baseline value."),
           class = "text-muted small mb-2"
         ),
         div(style = "overflow-x: auto;", tableOutput("growth_rate_table"))
       )
     ),
 
-    # Tab 3: Sources ────────────────────────────────────────────
     nav_panel(
       "Sources",
       div(
@@ -1066,7 +863,7 @@ ui <- page_sidebar(
             tags$ul(class = "small",
               tags$li(tags$a("TRS of Georgia — Employer Contribution Rates", href = "https://www.trsga.com/employer/contribution-rates/", target = "_blank")),
               tags$li(tags$a("GBPI — FY2027 K-12 Budget Overview", href = "https://gbpi.org/overview-2027-fiscal-year-budget-for-k-12-education/", target = "_blank")),
-              tags$li(tags$a("GBPI — Retirement in Georgia’s Public Schools", href = "https://gbpi.org/retirement-in-georgias-public-schools/", target = "_blank")),
+              tags$li(tags$a("GBPI — Retirement in Georgia's Public Schools", href = "https://gbpi.org/retirement-in-georgias-public-schools/", target = "_blank")),
               tags$li("Georgia SB 33 (2025) — annual property assessment cap")
             ),
             p(strong("Geospatial data"), class = "mt-3 mb-1"),
@@ -2232,7 +2029,7 @@ server <- function(input, output, session) {
       mutate(value_fmt = if_else(
         value >= 1e9,
         dollar(value, scale = 1e-9, suffix = "B", accuracy = 0.01),
-        dollar(value, scale = 1e-6, suffix = "M",  accuracy = 1)
+        dollar(value, scale = 1e-6, suffix = "M", accuracy = 1)
       )) |>
       select(-value) |>
       pivot_wider(names_from = tad_id, values_from = value_fmt) |>
