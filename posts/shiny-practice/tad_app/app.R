@@ -341,8 +341,12 @@ LAST_CLOSURE_CURRENT <- max(
 tad_sf <- st_read("TAD_shapefiles/Tax_Allocation_District.shp", quiet = TRUE)
 
 roads_sf <- bind_rows(
-  st_read("Road_shapefiles/tl_2023_13121_roads.shp", quiet = TRUE),
-  st_read("Road_shapefiles/tl_2023_13089_roads.shp", quiet = TRUE)
+  st_read("Road_shapefiles/tl_2023_13121_roads.shp", quiet = TRUE), # Fulton
+  st_read("Road_shapefiles/tl_2023_13089_roads.shp", quiet = TRUE), # DeKalb
+  st_read("Road_shapefiles/tl_2023_13067_roads.shp", quiet = TRUE), # Cobb
+  st_read("Road_shapefiles/tl_2023_13151_roads.shp", quiet = TRUE), # Henry
+  st_read("Road_shapefiles/tl_2023_13097_roads.shp", quiet = TRUE), # Douglas
+  st_read("Road_shapefiles/tl_2023_13063_roads.shp", quiet = TRUE) # Clayton
 ) |>
   filter(MTFCC %in% c("S1100", "S1200")) |> # S1100 = highways, S1200 = major roads
   st_transform(4326)
@@ -510,6 +514,7 @@ ui <- page_sidebar(
     [aria-expanded='true'] .collapse-caret { transform: rotate(180deg); }
     .sidebar .btn-outline-secondary { color: #495057; }
     .sidebar .btn-outline-secondary:hover { color: #fff; background-color: #6c757d; border-color: #6c757d; }
+    #tad_map, #tad_map .girafe_container_std, #tad_map svg { width: 100% !important; display: block; }
   "
   )),
 
@@ -902,7 +907,7 @@ ui <- page_sidebar(
       card_header(
         div(
           class = "d-flex justify-content-between align-items-center w-100",
-          span("TAD Boundaries  ·  Click a district to highlight"),
+          span("TAD Boundaries"),
           actionLink(
             "clear_sel",
             "× Show all",
@@ -910,7 +915,10 @@ ui <- page_sidebar(
           )
         )
       ),
-      girafeOutput("tad_map", height = "460px")
+      card_body(
+        class = "p-0",
+        girafeOutput("tad_map", height = "460px")
+      )
     ),
     card(
       card_header("Historic Property Values  ·  2007–2024"),
