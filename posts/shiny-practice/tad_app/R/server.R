@@ -448,6 +448,27 @@ server <- function(input, output, session) {
         size = 2.6,
         color = "#4a90d9"
       ) +
+      geom_vline(
+        xintercept = 2055,
+        color = "#da9124",
+        linetype = "dotted",
+        linewidth = 0.6,
+        alpha = 0.8
+      ) +
+      annotate(
+        "text",
+        x = 2055 - 0.4,
+        y = Inf,
+        label = paste0(
+          "All TADs closed\n(NRI Plans, ",
+          2055,
+          ")"
+        ),
+        hjust = 1,
+        vjust = 1.3,
+        size = 2.6,
+        color = "#da9124"
+      ) +
       # ── Lines with on-curve scenario labels (geomtextpath) ───────────────
       # geom_textline draws the line AND places the label along the curve.
       # hjust controls where along the line the text sits (0=start, 1=end).
