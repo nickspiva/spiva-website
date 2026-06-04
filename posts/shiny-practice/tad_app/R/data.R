@@ -163,9 +163,6 @@ growth_rates <- hist_data |>
     cagr_baseline = (last_val / baseline)^(1 / (last_year - year_created)) - 1
   )
 
-glimpse(growth_rates)
-
-glimpse(hist_data) # opens the data viewer tab
 
 atl_col <- which(as.character(raw[1, ]) == "ATLANTA")
 if (length(atl_col) == 0) {
@@ -300,7 +297,7 @@ roads_sf <- bind_rows(
   st_read("Road_shapefiles/tl_2023_13151_roads.shp", quiet = TRUE), # Henry
   st_read("Road_shapefiles/tl_2023_13097_roads.shp", quiet = TRUE), # Douglas
   st_read("Road_shapefiles/tl_2023_13063_roads.shp", quiet = TRUE), # Clayton
-  st_read("Road_shapefiles/tl_2023_13051_roads.shp", quiet = TRUE)  # Cherokee
+  st_read("Road_shapefiles/tl_2023_13051_roads.shp", quiet = TRUE) # Cherokee
 ) |>
   filter(MTFCC %in% c("S1100", "S1200")) |> # S1100 = highways, S1200 = major roads
   st_transform(4326)
