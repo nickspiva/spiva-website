@@ -317,7 +317,7 @@ ui <- page_sidebar(
         class = "p-3",
         p(
           HTML(
-            "These cost figures are approximations — solid napkin math grounded in real, publicly available data, but <strong>not official APS projections</strong>. Each gives a realistic order-of-magnitude sense of what TAD revenue could support."
+            "These cost figures are approximations. Napkin math grounded in publicly available data, but <strong>not official APS projections</strong>. Each gives a realistic order-of-magnitude sense of what TAD revenue could support."
           ),
           class = "text-muted small mb-3"
         ),
@@ -327,12 +327,12 @@ ui <- page_sidebar(
             "Universal Pre-K Staffing  ·  $78.2M / year",
             p(
               strong("Scope:"),
-              " Annual staffing costs only — salaries plus employer benefits. Excludes capital costs, curriculum, and materials."
+              " Annual staffing costs only: salaries plus employer benefits. Excludes capital costs, curriculum, and materials."
             ),
             p(strong("Seat gap:")),
             tags$ul(
               tags$li(
-                "APS kindergarten enrollment (2025–26): 3,620 — proxy for each age cohort"
+                "APS kindergarten enrollment (2025–26): 3,620. This is the proxy for each age cohort"
               ),
               tags$li(
                 "Total seats needed for universal 3K + 4K: 7,240 (3,620 × 2 cohorts)"
@@ -340,7 +340,7 @@ ui <- page_sidebar(
               tags$li(
                 "Existing APS pre-K seats: 1,234 (GADOE via APS Insights; may not fully reflect Head Start seats for 3-year-olds)"
               ),
-              tags$li(strong("Gap: 6,006 additional seats"))
+              tags$li(strong("Gap: ~6,006 additional seats"))
             ),
             p(strong("Staffing:")),
             tags$ul(
@@ -374,7 +374,7 @@ ui <- page_sidebar(
             "Free MARTA for K–12 Students  ·  $27.7M / year",
             p(
               strong("Scope:"),
-              " Year-round unlimited MARTA access for all APS K–12 students. Modeled on DC's Kids Ride Free program (ages 5–21, all Metro/bus service)."
+              " Year-round unlimited MARTA access for all APS K–12 students (younger kids already ride free). Modeled on DC's Kids Ride Free program (ages 5–21, all Metro/bus service)."
             ),
             p(strong("Calculation:")),
             tags$ul(
@@ -389,7 +389,7 @@ ui <- page_sidebar(
             p(strong("Limitations:")),
             tags$ul(
               tags$li(
-                "The 25% bulk discount is an assumption — actual negotiated rate may differ"
+                "The 25% bulk discount is an assumption, the actual negotiated rate may differ"
               ),
               tags$li(
                 "UPass is a university product; APS would need a comparable institutional agreement"
@@ -421,7 +421,7 @@ ui <- page_sidebar(
               tags$li(strong("Total: ~$34.6M / year"))
             ),
             p(
-              "Uses the average gap — teachers already above $100k need no raise, so actual cost may be modestly lower. Pension rises to 22.32% in 2028.",
+              "Pension rises to 22.32% in 2028.",
               class = "text-muted small mt-2 mb-0"
             )
           )
@@ -438,7 +438,7 @@ ui <- page_sidebar(
           class = "fw-bold mb-1"
         ),
         p(
-          "Total assessed value within each TAD boundary, in millions of dollars. Only the increment above each TAD's original baseline flows to Invest Atlanta.",
+          "Total assessed value within each TAD boundary. Only the increment above each TAD's original baseline flows to Invest Atlanta.",
           class = "text-muted small mb-2"
         ),
         div(style = "overflow-x: auto;", tableOutput("hist_wide_table")),

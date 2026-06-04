@@ -283,6 +283,10 @@ LAST_CLOSURE_CURRENT <- max(
   na.rm = TRUE
 )
 
+# Last year any TAD closes under the NRI proposals — used to annotate
+# the point where the NRI lines go flat on the diversion chart
+LAST_CLOSURE_NRI <- 2055
+
 
 # ════════════════════════════════════════════════════════════
 # § 4  SHAPEFILES ----
