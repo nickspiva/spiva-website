@@ -490,6 +490,15 @@ ui <- page_sidebar(
   "
   )),
 
+  # ── JS: "What's at Risk" card flip ───────────────────────────────────────
+  tags$script(HTML(
+    "
+    $(document).on('click', '.risk-flip-card', function() {
+      $(this).toggleClass('flipped');
+    });
+  "
+  )),
+
   # ── CSS: inline year select ───────────────────────────────────────────────
   tags$style(HTML(
     "
@@ -515,6 +524,12 @@ ui <- page_sidebar(
     .sidebar .btn-outline-secondary { color: #495057; }
     .sidebar .btn-outline-secondary:hover { color: #fff; background-color: #6c757d; border-color: #6c757d; }
     #tad_map, #tad_map .girafe_container_std, #tad_map svg { width: 100% !important; display: block; }
+    .risk-flip-card { perspective: 1200px; cursor: pointer; height: 250px; }
+    .risk-flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.5s ease; }
+    .risk-flip-card.flipped .risk-flip-inner { transform: rotateY(180deg); }
+    .risk-flip-front, .risk-flip-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 0.375rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; overflow: hidden; }
+    .risk-flip-back { transform: rotateY(180deg); overflow-y: auto; justify-content: flex-start; align-items: flex-start; }
+    .risk-flip-hint { font-size: 0.65rem; color: #adb5bd; margin-top: auto; padding-top: 6px; user-select: none; width: 100%; text-align: center; flex-shrink: 0; }
   "
   )),
 
@@ -1936,7 +1951,7 @@ server <- function(input, output, session) {
         ),
         tags$p(
           HTML(sprintf(
-            "APS has committed to these goals by 2030 as part of its Back to Basics strategic plan. TADs closing on schedule will generate an estimated <strong>%s</strong> in annual revenue for schools by %d — putting all three within reach.",
+            "APS has committed to several goals by 2030 as part of its Back to Basics strategic plan. TADs closing on schedule will generate an estimated <strong>%s</strong> in annual revenue for schools by %d, putting these aspirations within reach.",
             dollar(rev, scale = 1e-6, suffix = "M", accuracy = 0.1),
             BUY_REF_YEAR
           )),
@@ -1959,6 +1974,7 @@ server <- function(input, output, session) {
         title = "Benefits Costs Up 78%",
         stat = "+$127M",
         stat_lbl = "increase in annual benefits costs since FY2016",
+        short_desc = "Healthcare and pension costs have grown dramatically and are largely outside APS control. The State Health Benefit Plan employer rate doubled between FY2021 and FY2026, and teacher pension contributions have risen from 14% to 22% over the past decade.",
         desc = paste0(
           "Employee healthcare and pension costs have grown dramatically and are largely outside APS control. ",
           "The State Health Benefit Plan employer rate doubled from $11,340 to $22,620 between FY2021 and FY2026. ",
@@ -1973,6 +1989,7 @@ server <- function(input, output, session) {
         title = "Property Tax Revenue at Risk",
         stat = "~3%",
         stat_lbl = "cap on annual property assessment increases",
+        short_desc = "Georgia's legislature capped annual property assessment increases at ~3% this spring, constraining APS's primary revenue source to grow near inflation while underlying costs consistently outpace it.",
         desc = paste0(
           "Georgia's legislature passed Senate Bill 33 this spring capping annual property assessment increases ",
           "at the rate of inflation — currently around 3%. ",
@@ -1985,34 +2002,53 @@ server <- function(input, output, session) {
       ),
       list(
         title = "Declining Enrollment",
-        stat = "2,398",
+        stat = "-2,398",
         stat_lbl = "projected student decline by 2030",
+        short_desc = "APS enrollment is projected to fall by 2,398 students by 2030. Last December, the Board cited declining enrollment in its vote to close 16 schools. Fewer students mean less revenue, and potentially more closures.",
         desc = paste0(
           "APS enrollment is projected to fall from 49,944 students in 2024–25 to 47,546 in 2029–30. ",
-          "The district cited this trend in its decision last fall to close 16 neighborhood schools — ",
-          "including high-academic-growth schools like Dunbar. ",
-          "TAD revenue could change the calculus on which schools can stay open and fully resourced."
+          "The district cited this trend in its decision last fall to close 16 neighborhood schools,",
+          " including high-academic-growth schools like Dunbar. ",
+          "TAD revenue could change the calculus on which schools can stay open and fully resourced moving forward."
         )
       )
     )
 
     challenge_cards <- map(challenge_items, \(item) {
-      card(
-        class = "text-center border-0 h-100",
-        style = "background-color:#fff8e1;",
+      div(
+        class = "risk-flip-card",
         div(
-          class = "py-3 px-2",
+          class = "risk-flip-inner",
+          # Front face — stat + title + short summary
           div(
-            style = "font-size:2rem; font-weight:700; color:#e8a020; line-height:1;",
-            item$stat
+            class = "risk-flip-front text-center",
+            style = "background-color:#fff8e1;",
+            div(
+              style = "font-size:2rem; font-weight:700; color:#e8a020; line-height:1;",
+              item$stat
+            ),
+            tags$p(item$stat_lbl, class = "small text-muted mb-1"),
+            tags$hr(class = "mx-4 my-1 w-100"),
+            tags$p(item$title, class = "small fw-semibold mb-1"),
+            tags$p(
+              item$short_desc,
+              style = "font-size:0.75rem; color:#555; line-height:1.4; margin-bottom:0;"
+            ),
+            div(class = "risk-flip-hint", "learn more ↻")
           ),
-          tags$p(item$stat_lbl, class = "small text-muted mb-1"),
-          tags$hr(class = "mx-4 my-1"),
-          tags$p(item$title, class = "small fw-semibold mb-1"),
-          tags$p(
-            item$desc,
-            class = "text-muted",
-            style = "font-size:0.75rem; line-height:1.4;"
+          # Back face — full description
+          div(
+            class = "risk-flip-back",
+            style = "background-color:#fff8e1;",
+            tags$p(
+              item$title,
+              class = "small fw-semibold mb-2 text-center w-100"
+            ),
+            tags$p(
+              item$desc,
+              style = "font-size:0.72rem; color:#555; line-height:1.45; margin-bottom:0;"
+            ),
+            div(class = "risk-flip-hint", "↺ flip back")
           )
         )
       )
