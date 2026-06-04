@@ -79,7 +79,7 @@ TAD_PALETTE <- c(
 # Cards are goal-oriented, not reactive to growth scenarios.
 vision_items <- list(
   list(
-    title = "Universal Pre-K",
+    title = "Universal Pre-K Staffing",
     subtitle = "for 3 & 4-Year Olds",
     cost = "$78.2M / year",
     note = "APS Strategic Plan · 2030 Goal"
@@ -1054,20 +1054,21 @@ server <- function(input, output, session) {
   output$growth_sliders <- renderUI({
     sliders <- map(active_tads$tad_id, \(tid) {
       default_rate <- round(
-        growth_rates$cagr[growth_rates$tad_id == tid] * 100, 1
+        growth_rates$cagr[growth_rates$tad_id == tid] * 100,
+        1
       )
       div(
         tags$p(strong(tid), class = "mb-0 small"),
         sliderInput(
           inputId = paste0("gr_", make.names(tid)),
-          label   = NULL,
-          min     = 0,
-          max     = 15,
-          value   = default_rate,
-          step    = 0.1,
-          post    = "%",
-          sep     = "",
-          ticks   = FALSE
+          label = NULL,
+          min = 0,
+          max = 15,
+          value = default_rate,
+          step = 0.1,
+          post = "%",
+          sep = "",
+          ticks = FALSE
         )
       )
     })
@@ -1079,10 +1080,17 @@ server <- function(input, output, session) {
   observeEvent(input$custom_growth_opened, {
     prev <- input$custom_growth_opened
 
-    rates <- switch(prev,
-      "tad"        = setNames(round(growth_rates$cagr * 100, 1),       growth_rates$tad_id),
-      "city"       = setNames(rep(round(citywide_cagr * 100, 1),       nrow(growth_rates)), growth_rates$tad_id),
-      "optimistic" = setNames(rep(round(optimistic_cagr * 100, 1),     nrow(growth_rates)), growth_rates$tad_id),
+    rates <- switch(
+      prev,
+      "tad" = setNames(round(growth_rates$cagr * 100, 1), growth_rates$tad_id),
+      "city" = setNames(
+        rep(round(citywide_cagr * 100, 1), nrow(growth_rates)),
+        growth_rates$tad_id
+      ),
+      "optimistic" = setNames(
+        rep(round(optimistic_cagr * 100, 1), nrow(growth_rates)),
+        growth_rates$tad_id
+      ),
       setNames(round(growth_rates$cagr * 100, 1), growth_rates$tad_id) # fallback to tad
     )
 
@@ -1173,14 +1181,14 @@ server <- function(input, output, session) {
         rate_pct <- input[[paste0("gr_", make.names(g$tad_id))]]
         r <- if (!is.null(rate_pct)) rate_pct / 100 else g$cagr
         tibble(
-          year   = (g$last_year + 1):PROJ_END,
+          year = (g$last_year + 1):PROJ_END,
           tad_id = g$tad_id,
-          value  = g$last_val * (1 + r)^seq_len(PROJ_END - g$last_year)
+          value = g$last_val * (1 + r)^seq_len(PROJ_END - g$last_year)
         )
       }) |>
         left_join(tad_meta |> select(tad_id, baseline), by = "tad_id") |>
         mutate(
-          increment          = pmax(value - baseline, 0),
+          increment = pmax(value - baseline, 0),
           aps_annual_revenue = increment * APS_MILLAGE / 1000
         )
     } else {
@@ -1252,10 +1260,10 @@ server <- function(input, output, session) {
   # and assumption name always match what's shown in the chart.
   output$diversion_subheader <- renderUI({
     proj_labels <- c(
-      "tad"      = "individualized historic TAD growth (2007–2024)",
-      "city"     = "citywide average growth (2007–2024)",
+      "tad" = "individualized historic TAD growth (2007–2024)",
+      "city" = "citywide average growth (2007–2024)",
       "optimistic" = "optimistic (average of high-growth TADs - Beltline, Eastside, & Atlantic Station)",
-      "custom"   = "custom per-TAD growth rates"
+      "custom" = "custom per-TAD growth rates"
     )
     growth_name <- proj_labels[[input$proj_method %||% "tad"]]
     ref_year_div <- as.integer(input$ref_year_div %||% 2035)
@@ -1507,6 +1515,7 @@ server <- function(input, output, session) {
       scale_y_continuous(labels = label_dollar(scale = 1e-9, suffix = "B")) +
       scale_alpha_identity() +
       scale_linewidth_identity() +
+      labs(y = "") +
       theme_tad()
 
     girafe(
@@ -1637,10 +1646,10 @@ server <- function(input, output, session) {
     ref_year <- as.integer(input$ref_year %||% 2035)
 
     growth_name <- c(
-      "tad"       = "Historic TAD growth (2007–2024)",
-      "city"      = "Citywide average growth",
+      "tad" = "Historic TAD growth (2007–2024)",
+      "city" = "Citywide average growth",
       "optimistic" = "Optimistic (high-growth TADs)",
-      "custom"    = "Custom per-TAD growth rates"
+      "custom" = "Custom per-TAD growth rates"
     )[[input$proj_method %||% "tad"]]
 
     beltline_closure <- cy$closure_year[cy$tad_id == "Beltline"]

@@ -73,7 +73,7 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 - [x] **Redefine the "Optimistic" scenario** — now uses the average CAGR of the three demonstrably high-growth TADs (Atlantic Station, Beltline, Eastside) rather than the 75th percentile.
 - [ ] **Add growth rate explainers** — in-UI description of what CAGR is, how each method is computed, and what the options represent. Could live as a small accordion or tooltip beneath the sidebar growth buttons.
 - [ ] **Dual-phase growth rate model** — projection scenario where each TAD uses its historical CAGR while open, then switches to citywide average after closure. Requires updating `build_projections()` and adding a new sidebar option.
-- [ ] **Eastside TAD PILOT exception** — should be noted in the UI and may affect revenue calculations; not yet fully handled.
+- [ ] **Eastside TAD PILOT exception — per-TAD APS participation % slider** — the Eastside TAD currently returns its full increment to APS via PILOT payments even while open, which the model doesn't reflect. Under the Mayor's original NRI, this arrangement was going to continue even with the TAD extended. One approach: add a per-TAD "APS participation %" slider (0–100%) in the custom closure accordion, defaulting to 0% (TAD open, revenue diverted) for all TADs except Eastside (100%). This lets users model the nuance without making the default view confusing. Caveat: this adds significant UI complexity — evaluate whether the policy specificity is worth the added friction for general audiences.
 
 ### "Why TAD Closures Matter" Panel
 
@@ -108,6 +108,14 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 - [ ] **Learn More section** — page-level section with links to the Mayor's NRI legislation, key APS budget/planning documents, GBPI reports, and other relevant sources.
 - [ ] **Feedback section** — small section inviting users to send feedback (email link or simple form).
 
+### QA & Verification *(before public launch)*
+
+- [ ] **Dynamic text spot-check** — audit every reactive dollar figure and number that appears in subheaders, card labels, and inline text. Verify each one against a manual calculation using known inputs (e.g., set all sliders to Current Plan, select Historic TAD Growth, and hand-check the subheader gap figure, the annual diversion number, and the Beltline 2035 revenue example).
+- [ ] **Chart data point verification** — hover over specific data points on each chart and cross-reference against the raw CSV and projection model. Priority: cumulative diversion endpoints at 2055, first-year revenue figures for each TAD after closure, historic property values for 2024.
+- [ ] **Vision card cost figures** — re-verify the three static cost estimates (Pre-K $78.2M, MARTA $27.7M, Teacher Salaries $34.6M) once any enrollment, salary, or rate data is updated.
+- [ ] **Scenario consistency** — confirm that preset buttons (Current Plan, Mayor's Original NRI, Mayor's Updated NRI) produce the same outputs across all three charts. The diversion chart uses fixed scenario dates; the projection chart uses sliders — verify they agree when sliders are set to a matching preset.
+- [ ] **Edge cases** — test slider extremes (all TADs set to 2055, all set to 2025), custom growth rates at 0% and 15%, and the custom closure panel with mixed years. Confirm no chart errors or blank states appear unexpectedly.
+
 ### Phase 4 — Design Polish
 
 - [x] Sidebar preset button active states (filled color when selected)
@@ -140,9 +148,17 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 
 ------------------------------------------------------------------------
 
-### Phase 6 — Code Refactor & Documentation *(after feature completion)*
+### Phase 6 — Performance, Refactor & Documentation *(after feature completion)*
 
-- [ ] **Light code refactor** — consider splitting stable/dense logic out of `app.R` into sourced files (e.g., `R/data.R`, `R/projections.R`, `R/theme.R`). Current file is \~2,000 lines; threshold for splitting is \~2,500–3,000 or when finding/editing specific logic becomes friction.
+**Performance optimization:**
+- [ ] **Profile slow reactives** — use `profvis::profvis({ shiny::runApp("posts/shiny-practice/tad_app") })` to identify which reactive expressions take longest. Prime suspects: shapefile rendering on the map (re-renders on every `selected_tad` change), custom growth rate projection (recomputes on every slider move).
+- [ ] **Debounce custom sliders** — wrap high-frequency slider inputs (closure year and growth rate sliders) in `debounce()` so projections only recompute after the user stops dragging, not on every tick. Reduces server load significantly.
+- [ ] **Cache shapefile transforms** — the map renders `tad_sf`, `roads_sf`, and `city_sf` into SVG on every click interaction. Pre-computing and storing the base map layers (city boundary + roads) as a static rendered element could reduce per-interaction render time.
+- [ ] **Pre-compute diversion data** — `diversion_data()` currently recomputes all three scenario lines when the growth method changes. Since the scenario closure dates are fixed, this could be pre-computed for all four growth methods at startup and looked up rather than recalculated reactively.
+- [ ] **shinyapps.io instance sizing** — free tier uses a small instance. If load times are slow under real traffic, evaluate whether upgrading to a larger instance (or Posit Connect) is worthwhile.
+
+**Code refactor:**
+- [ ] **Light code refactor** — consider splitting stable/dense logic out of `app.R` into sourced files (e.g., `R/data.R`, `R/projections.R`, `R/theme.R`). Current file is ~2,000+ lines; threshold for splitting is ~2,500–3,000 or when finding specific logic becomes friction.
 - [ ] **Code explainer document** — written guide to how the app fits together: the reactive graph, the cross-filtering pattern, the projection model, the ggiraph interactivity approach, the Bootstrap JS patterns used for the sidebar controls. Audience: future-you or a collaborator picking this up cold.
 - [ ] **Inline comment pass** — ensure all non-obvious decisions have explanatory comments, particularly the JS/Shiny input wiring, the `closure_years()` fallback logic, and the custom growth rate reactive.
 
