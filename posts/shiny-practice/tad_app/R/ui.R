@@ -504,6 +504,13 @@ ui <- page_sidebar(
                 target = "_blank"
               ))
             ),
+            p(strong("Historic Property Values"), class = "mt-3 mb-1"),
+            tags$ul(
+              class = "small",
+              tags$li(
+                "Fulton & DeKalb Property Tax Digests"
+              )
+            ),
           ),
           div(
             p(strong("Georgia education finance"), class = "mb-1"),
