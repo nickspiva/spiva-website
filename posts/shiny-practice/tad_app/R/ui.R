@@ -241,7 +241,7 @@ ui <- page_sidebar(
     p(
       "While this app gives a picture of the revenue implications of extended TADs for APS, ",
       "the reality of what is being considered often gets even wonkier! ",
-      "APS has previously, and may again, negotiated with the City and ",
+      "APS has previously, and may again, negotiate with the City and ",
       "Invest Atlanta to partially participate in individual TADs.",
       class = "small text-muted mb-2"
     ),
@@ -250,7 +250,7 @@ ui <- page_sidebar(
         "Currently, APS receives the <strong>full increment</strong> for the
         <strong>Eastside TAD</strong> via PILOT payments, even though it remains open.
         APS contributions for the <strong>Corridor TADs</strong> (Campbellton, Hollowell,
-        Metropolitan Pkwy, &amp; Stadium) are capped at $6.5M from 2029&ndash;2050."
+        Metropolitan Pkwy, &amp; Stadium) are capped at $6.5M from 2029&ndash;2050. Please note these caps are not reflected in the charts currently."
       ),
       class = "small text-muted mb-2"
     ),
@@ -262,6 +262,33 @@ ui <- page_sidebar(
         would have continued."
       ),
       class = "small text-muted mb-0"
+    ),
+
+    hr(class = "my-2"),
+
+    h6(
+      "Will APS partially participate in any TADs?",
+      class = "fw-bold mb-1 mt-1"
+    ),
+    p(
+      "By default, APS receives no increment while TADs are open. ",
+      "Use these sliders to model what-if PILOT scenarios.",
+      class = "small text-muted mb-2"
+    ),
+    tags$button(
+      type = "button",
+      id = "btn_custom_pilot",
+      class = "btn btn-outline-secondary btn-sm text-start w-100 d-flex justify-content-between align-items-center",
+      `data-bs-toggle` = "collapse",
+      `data-bs-target` = "#pilot-sliders-collapse",
+      `aria-expanded` = "false",
+      span("Custom Participation Rates"),
+      tags$span("▼", class = "collapse-caret")
+    ),
+    div(
+      id = "pilot-sliders-collapse",
+      class = "collapse mt-1",
+      uiOutput("pilot_sliders")
     ),
   ),
 
@@ -380,9 +407,11 @@ ui <- page_sidebar(
               tags$li(
                 class = "mb-2",
                 strong("APS revenue:"),
-                HTML(" The projected increment is multiplied by APS's current millage rate
+                HTML(
+                  " The projected increment is multiplied by APS's current millage rate
                 (<strong>20.5 mills</strong>) to estimate what APS would collect if the
-                TAD were closed and the increment returned to the tax digest.")
+                TAD were closed and the increment returned to the tax digest."
+                )
               ),
               tags$li(
                 class = "mb-2",

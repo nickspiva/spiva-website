@@ -240,10 +240,30 @@ diversion_scenarios <- list(
 # While a TAD is OPEN (year < closure_year), its annual APS increment revenue
 # goes to Invest Atlanta instead of schools. Summing and cumsumming gives the
 # running total of what schools have missed.
-compute_diverted <- function(proj_df, closure_df) {
-  result <- proj_df |>
+#
+# pilot_df: optional tibble with columns tad_id and pilot_pct (0–1).
+#   For any TAD listed, that fraction of the increment is returned to APS
+#   even while the TAD is open, reducing the diverted total accordingly.
+#   Used to bake scenario-specific PILOT assumptions into the three fixed
+#   scenario lines; NOT driven by user slider inputs.
+compute_diverted <- function(proj_df, closure_df, pilot_df = NULL) {
+  base <- proj_df |>
+    # Drop any user-slider pilot columns so scenario rates take precedence
+    select(-any_of(c("pilot_pct", "aps_revenue_open"))) |>
     left_join(closure_df, by = "tad_id") |>
-    filter(year < closure_year) |> # open = still diverting
+    filter(year < closure_year) # open = still diverting
+
+  if (!is.null(pilot_df)) {
+    base <- base |>
+      left_join(pilot_df, by = "tad_id") |>
+      mutate(
+        pilot_pct = replace_na(pilot_pct, 0),
+        # Net diverted = only the portion NOT returned to APS via PILOT
+        aps_annual_revenue = aps_annual_revenue * (1 - pilot_pct)
+      )
+  }
+
+  result <- base |>
     group_by(year) |>
     summarise(
       annual = sum(aps_annual_revenue, na.rm = TRUE),

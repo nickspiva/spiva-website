@@ -154,6 +154,39 @@ server <- function(input, output, session) {
     div(class = "px-1 pb-1", tagList(sliders))
   })
 
+  # ── 7b-iii. PILOT participation sliders ─────────────────────
+  # One slider per active TAD: 0–100% of the open-year increment returned to APS.
+  # Defaults to 0% (no participation). Does NOT affect the diversion chart,
+  # which uses hardcoded scenario-specific PILOT assumptions.
+  output$pilot_sliders <- renderUI({
+    sliders <- map(active_tads$tad_id, \(tid) {
+      div(
+        tags$p(strong(tid), class = "mb-0 small"),
+        sliderInput(
+          inputId = paste0("pilot_", make.names(tid)),
+          label = NULL,
+          min = 0,
+          max = 100,
+          value = 0,
+          step = 5,
+          post = "%",
+          sep = "",
+          ticks = FALSE
+        )
+      )
+    })
+    div(class = "px-1 pb-1", tagList(sliders))
+  })
+
+  # Reads pilot slider inputs; returns 0 for any TAD whose slider hasn't
+  # been rendered yet (panel still collapsed).
+  pilot_rates <- reactive({
+    map_dfr(active_tads$tad_id, \(tid) {
+      val <- input[[paste0("pilot_", make.names(tid))]]
+      tibble(tad_id = tid, pilot_pct = if (!is.null(val)) val / 100 else 0)
+    })
+  })
+
   # When the custom growth panel opens, seed sliders with rates from the
   # previously selected method — mirrors how closure sliders inherit preset dates.
   observeEvent(input$custom_growth_opened, {
@@ -196,16 +229,28 @@ server <- function(input, output, session) {
     })
   }
 
+  # Sets PILOT sliders to match a named scenario. pilot_overrides is a named
+  # list of tad_id → pct (0–100); all other active TADs are reset to 0.
+  apply_pilot_preset <- function(pilot_overrides = list()) {
+    walk(active_tads$tad_id, \(tid) {
+      val <- if (!is.null(pilot_overrides[[tid]])) pilot_overrides[[tid]] else 0
+      updateSliderInput(session, paste0("pilot_", make.names(tid)), value = val)
+    })
+  }
+
   observeEvent(input$btn_current, {
     apply_preset("year_end_current")
+    apply_pilot_preset()                          # all PILOTs → 0%
     active_preset("current")
   })
   observeEvent(input$btn_mayor1, {
     apply_preset("year_end_mayor1")
+    apply_pilot_preset(list("Eastside" = 100))    # Eastside → 100%, rest → 0%
     active_preset("mayor1")
   })
   observeEvent(input$btn_mayor2, {
     apply_preset("year_end_mayor2")
+    apply_pilot_preset()                          # all PILOTs → 0%
     active_preset("mayor2")
   })
 
@@ -252,9 +297,11 @@ server <- function(input, output, session) {
   # Which projection dataset to use.
   # "custom" builds per-TAD projections from the growth-rate sliders;
   # all other methods look up a pre-computed dataset in proj_list.
+  # Either way, pilot_rates() is joined in so proj_data always carries
+  # pilot_pct and aps_revenue_open for the projection chart to use.
   proj_data <- reactive({
     method <- input$proj_method %||% "tad"
-    if (method == "custom") {
+    base <- if (method == "custom") {
       map_dfr(seq_len(nrow(growth_rates)), \(i) {
         g <- growth_rates[i, ]
         rate_pct <- input[[paste0("gr_", make.names(g$tad_id))]]
@@ -273,6 +320,14 @@ server <- function(input, output, session) {
     } else {
       proj_list[[method]]
     }
+
+    # Attach user PILOT rates; aps_revenue_open is the pre-closure APS share
+    base |>
+      left_join(pilot_rates(), by = "tad_id") |>
+      mutate(
+        pilot_pct = replace_na(pilot_pct, 0),
+        aps_revenue_open = increment * APS_MILLAGE / 1000 * pilot_pct
+      )
   })
 
   # Closure year for each TAD under the current slider/preset state
@@ -324,11 +379,25 @@ server <- function(input, output, session) {
   })
 
   # Cumulative diversion data: re-computes when the projection method changes
-  # (the three scenario closure dates are fixed, not driven by sliders)
+  # (the three scenario closure dates are fixed, not driven by sliders).
+  # Each scenario carries hardcoded PILOT assumptions — user PILOT sliders
+  # do NOT affect this chart. compute_diverted() drops any user pilot columns
+  # from proj_data() before applying the scenario-specific rates.
+  #
+  # Scenario PILOT assumptions:
+  #   Current Plan:        Eastside 100% — existing IGA remains in effect
+  #   Mayor's Original NRI: Eastside 100% — existing IGA continues under this proposal
+  #   Mayor's Updated NRI:  no PILOTs — full increment stays with Invest Atlanta
   diversion_data <- reactive({
     pd <- proj_data()
+    eastside_pilot <- tibble(tad_id = "Eastside", pilot_pct = 1.0)
+    scenario_pilots <- list(
+      "Current Plan"          = eastside_pilot,
+      "Mayor's Original NRI"  = eastside_pilot,
+      "Mayor's Updated NRI"   = NULL
+    )
     map_dfr(names(diversion_scenarios), \(nm) {
-      compute_diverted(pd, diversion_scenarios[[nm]]) |>
+      compute_diverted(pd, diversion_scenarios[[nm]], scenario_pilots[[nm]]) |>
         mutate(scenario = nm)
     }) |>
       mutate(scenario = factor(scenario, levels = names(diversion_scenarios)))
@@ -835,10 +904,22 @@ server <- function(input, output, session) {
         line_w = if (is.null(sel)) 0.8 else if_else(tad_id == sel, 1.4, 0.45)
       )
 
+    # Pre-closure PILOT segments: shown only for TADs where pilot_pct > 0.
+    # Uses aps_revenue_open (increment × millage × pilot_pct) as the y value.
+    # Rendered as lighter dashed lines to distinguish from post-closure revenue.
+    pilot_tad <- pd |>
+      left_join(cy, by = "tad_id") |>
+      filter(tad_id %in% active_tad_ids, year < closure_year, pilot_pct > 0) |>
+      mutate(
+        aps_annual_revenue = aps_revenue_open,
+        line_a = if (is.null(sel)) 0.4 else if_else(tad_id == sel, 0.55, 0.06),
+        line_w = if (is.null(sel)) 0.55 else if_else(tad_id == sel, 1.0, 0.3)
+      )
+
     # ── Empty-state guard ─────────────────────────────────────────────────
     # Under scenarios where all TADs close after 2055, per_tad has no rows.
     # Return a blank chart with proper axes rather than letting ggplot error.
-    if (nrow(per_tad) == 0) {
+    if (nrow(per_tad) == 0 && nrow(pilot_tad) == 0) {
       p_empty <- ggplot(
         data.frame(year = c(2025, PROJ_END), rev = c(0, 0)),
         aes(x = year, y = rev)
@@ -907,6 +988,24 @@ server <- function(input, output, session) {
         linewidth = 0.35,
         alpha = 0.45
       ) +
+      # Pre-closure PILOT lines — lighter, dashed; only drawn when pilot_pct > 0
+      {if (nrow(pilot_tad) > 0)
+        geom_line_interactive(
+          data = pilot_tad,
+          aes(
+            alpha = line_a,
+            linewidth = line_w,
+            data_id = tad_id,
+            tooltip = paste0(
+              "<b>", tad_id, "</b> (PILOT, TAD still open)<br>",
+              year, "<br>",
+              "Revenue to APS: ",
+              dollar(aps_annual_revenue, scale = 1e-6, suffix = "M", accuracy = 0.1)
+            )
+          ),
+          linetype = "dashed"
+        )
+      } +
       geom_line_interactive(
         aes(
           alpha = line_a,
@@ -1078,6 +1177,9 @@ server <- function(input, output, session) {
         )
       ),
       list(
+        title = "Declining Enrollment",
+        stat = "-2,398",
+        stat_lbl = "projected student decline by 2030",
         title = "Declining Enrollment",
         stat = "-2,398",
         stat_lbl = "projected student decline by 2030",
