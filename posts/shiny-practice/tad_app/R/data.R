@@ -1,6 +1,17 @@
 # ── Data loading, projection model, shapefiles, theme ────────────────────────
 # Sourced by app.R before ui.R and server.R
 
+# Explicit loads so this file is self-contained regardless of what app.R
+# has attached — guards against shinyapps.io load-order surprises.
+library(readr)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(stringr)
+library(ggplot2)
+library(sf)
+library(scales)
+
 # ════════════════════════════════════════════════════════════
 # § 1  CONSTANTS ----
 # ════════════════════════════════════════════════════════════
