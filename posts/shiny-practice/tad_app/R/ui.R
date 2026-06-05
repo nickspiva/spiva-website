@@ -15,6 +15,12 @@ ui <- page_sidebar(
   theme = bs_theme(bootswatch = "flatly"),
   fillable = FALSE, # let cards take their natural height; main area scrolls
 
+  # ── Google Fonts ─────────────────────────────────────────
+  tags$head(tags$link(
+    rel  = "stylesheet",
+    href = "https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fira+Sans+Condensed:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+  )),
+
   # ── JS: background-click deselect ────────────────────────
   tags$script(HTML(
     "
@@ -67,6 +73,17 @@ ui <- page_sidebar(
   # ── CSS: inline year select ───────────────────────────────────────────────
   tags$style(HTML(
     "
+    body, p, li, td, th, label, .btn, .small, .text-muted,
+    .shiny-input-container, input, select, textarea {
+      font-family: 'Barlow', sans-serif !important;
+      font-size: 15.5px;
+    }
+    h1, h2, h3, h4, h5, h6,
+    .h1, .h2, .h3, .h4, .h5, .h6,
+    .card-header, .navbar-brand, .sidebar-title,
+    .nav-link, .accordion-button {
+      font-family: 'Fira Sans Condensed', sans-serif !important;
+    }
     select.inline-year-sel {
       -webkit-appearance: auto;
       appearance: auto;
