@@ -1,5 +1,8 @@
 # ── UI definition ────────────────────────────────────────────────────────────
 # Sourced by app.R; depends on globals defined in R/data.R
+library(shiny)
+library(bslib)
+library(ggiraph)
 
 # ════════════════════════════════════════════════════════════
 # § 6  UI ----

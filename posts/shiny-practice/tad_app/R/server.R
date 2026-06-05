@@ -1,5 +1,13 @@
 # ── Server function ──────────────────────────────────────────────────────────
 # Sourced by app.R; depends on globals defined in R/data.R
+library(shiny)
+library(bslib)
+library(dplyr)
+library(purrr)
+library(ggplot2)
+library(ggiraph)
+library(scales)
+library(geomtextpath)
 
 # ════════════════════════════════════════════════════════════
 # § 7  SERVER ----
