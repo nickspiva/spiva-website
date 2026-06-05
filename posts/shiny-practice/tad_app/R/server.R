@@ -1192,11 +1192,11 @@ server <- function(input, output, session) {
         short_desc = "Georgia's legislature capped annual property assessment increases at ~3% this spring, constraining APS's primary revenue source to grow near inflation while underlying costs consistently outpace it.",
         desc = paste0(
           "Georgia's legislature passed Senate Bill 33 this spring capping annual property assessment increases ",
-          "at the rate of inflation — currently around 3%. ",
+          "at the rate of inflation (currently around 3%). ",
           "Property taxes are APS's primary revenue source, and legally capping revenue growth near inflation ",
           "while underlying costs consistently grow faster creates a structural deficit that compounds over time. ",
           "APS may have limited flexibility through millage rate increases, given that its rate has historically ",
-          "exceeded the state's 20-mill cap — but this legislation is part of a broader pattern of constraints ",
+          "exceeded the state's 20-mill cap, but this legislation is part of a broader pattern of constraints ",
           "on local districts' ability to fund public education."
         )
       ),
@@ -1272,8 +1272,7 @@ server <- function(input, output, session) {
         ),
         tags$p(
           paste0(
-            "TAD revenue arriving on time doesn't just unlock a wish list — ",
-            "it helps APS navigate structural financial pressures that threaten the system regardless."
+            "APS faces structural financial pressures threatening its system in the years to come. TAD revenue is crucial to navigating these challenges."
           ),
           class = "text-muted small mb-0"
         )

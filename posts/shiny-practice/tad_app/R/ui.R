@@ -394,7 +394,7 @@ ui <- page_sidebar(
         class = "p-3",
         p(
           HTML(
-            "These cost figures are approximations. Napkin math grounded in publicly available data, but <strong>not official APS projections</strong>. Each gives a realistic order-of-magnitude sense of what TAD revenue could support."
+            "These cost figures are approximations. Napkin math grounded in publicly available data, but <strong>not official APS projections</strong>. Each gives a rough sense of what TAD revenue could support."
           ),
           class = "text-muted small mb-3"
         ),
@@ -422,7 +422,7 @@ ui <- page_sidebar(
                 strong("Annual projection:"),
                 " Each subsequent year's assessed value is estimated by multiplying the
                 prior year's value by (1 + growth rate). The growth rate depends on the
-                scenario selected in the sidebar — Historic TAD Growth, Citywide Average,
+                scenario selected in the sidebar: Historic TAD Growth, Citywide Average,
                 Optimistic, or a custom rate."
               ),
               tags$li(
@@ -438,7 +438,7 @@ ui <- page_sidebar(
                 class = "mb-2",
                 strong("Repeat through closure year:"),
                 " Steps 2 and 3 repeat annually from 2025 through the year each TAD closes
-                under the selected scenario. Revenue in years before closure is $0 — that
+                under the selected scenario. Revenue in years before closure is $0; that
                 increment still flows to Invest Atlanta."
               )
             ),
@@ -486,7 +486,7 @@ ui <- page_sidebar(
                 "Assistant: $55k salary + $22,620 health + $12,050 pension = $89,670"
               ),
               tags$li(
-                "Health insurance: $1,885/month × 12 — employer share, individual plan"
+                "Health insurance: $1,885/month × 12 (employer share, individual plan)"
               )
             ),
             p(strong("Total: 334 × $144,530 + 334 × $89,670 ≈ $78.2M / year")),
