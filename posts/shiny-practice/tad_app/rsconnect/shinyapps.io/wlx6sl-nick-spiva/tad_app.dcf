@@ -5,6 +5,6 @@ account: wlx6sl-nick-spiva
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 17461447
-bundleId: 12085947
+bundleId: 12085989
 url: https://wlx6sl-nick-spiva.shinyapps.io/tad_app/
 version: 1

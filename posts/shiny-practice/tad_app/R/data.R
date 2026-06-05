@@ -20,7 +20,7 @@ library(scales)
 # The *increment* — assessed value above the TAD baseline — currently
 # flows to Invest Atlanta while the TAD is open.  Once a TAD closes,
 # APS can collect: increment × (APS_MILLAGE / 1000) each year.
-APS_MILLAGE <- 20.74
+APS_MILLAGE <- 20.5
 PROJ_END <- 2055
 BUY_REF_YEAR <- 2030 # reference year for "what becomes possible" panel
 
@@ -311,16 +311,20 @@ SCENARIO_COLORS <- c(
 # Stored here so both the pre-computed diversion_list and the server's
 # custom-growth fallback use the same values.
 SCENARIO_PILOTS <- list(
-  "Current Plan"          = tibble(tad_id = "Eastside", pilot_pct = 1.0),
-  "Mayor's Original NRI"  = tibble(tad_id = "Eastside", pilot_pct = 1.0),
-  "Mayor's Updated NRI"   = NULL
+  "Current Plan" = tibble(tad_id = "Eastside", pilot_pct = 1.0),
+  "Mayor's Original NRI" = tibble(tad_id = "Eastside", pilot_pct = 1.0),
+  "Mayor's Updated NRI" = NULL
 )
 
 # Compute all three scenario diversion lines from a given proj_df.
 # Used at startup (for pre-computed list) and at runtime (custom growth only).
 make_diversion_data <- function(proj_df) {
   map_dfr(names(diversion_scenarios), \(nm) {
-    compute_diverted(proj_df, diversion_scenarios[[nm]], SCENARIO_PILOTS[[nm]]) |>
+    compute_diverted(
+      proj_df,
+      diversion_scenarios[[nm]],
+      SCENARIO_PILOTS[[nm]]
+    ) |>
       mutate(scenario = nm)
   }) |>
     mutate(scenario = factor(scenario, levels = names(diversion_scenarios)))
@@ -330,9 +334,9 @@ make_diversion_data <- function(proj_df) {
 # The diversion chart uses fixed closure dates, so these never need recomputing
 # unless the user switches to custom growth rates.
 diversion_list <- list(
-  tad          = make_diversion_data(proj_list[["tad"]]),
-  city         = make_diversion_data(proj_list[["city"]]),
-  optimistic   = make_diversion_data(proj_list[["optimistic"]]),
+  tad = make_diversion_data(proj_list[["tad"]]),
+  city = make_diversion_data(proj_list[["city"]]),
+  optimistic = make_diversion_data(proj_list[["optimistic"]]),
   tad_baseline = make_diversion_data(proj_list[["tad_baseline"]])
 )
 
