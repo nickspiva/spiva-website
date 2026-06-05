@@ -546,6 +546,10 @@ ui <- page_sidebar(
           class = "text-muted small mb-2"
         ),
         div(style = "overflow-x: auto;", tableOutput("hist_wide_table")),
+        p(
+          HTML("<em>Note: Atlanta property values reflect the Fulton County portion of the City of Atlanta.</em>"),
+          class = "small text-muted mt-1 mb-0"
+        ),
         tags$hr(class = "my-4"),
         h6("Compound Annual Growth Rates (CAGR)", class = "fw-bold mb-1"),
         p(

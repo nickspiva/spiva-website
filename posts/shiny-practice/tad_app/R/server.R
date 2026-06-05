@@ -1280,6 +1280,7 @@ server <- function(input, output, session) {
     {
       hist_data |>
         select(year, tad_id, value) |>
+        bind_rows(atl_series |> mutate(tad_id = "Atlanta")) |>
         mutate(
           value_fmt = if_else(
             value >= 1e9,
@@ -1306,10 +1307,15 @@ server <- function(input, output, session) {
           cagr_pct = paste0(round(cagr * 100, 1), "%")
         ) |>
         select(tad_id, period, cagr_pct) |>
+        bind_rows(tibble(
+          tad_id   = "Atlanta (citywide)",
+          period   = paste0(min(atl_series$year), "–", max(atl_series$year)),
+          cagr_pct = paste0(round(citywide_cagr * 100, 1), "%")
+        )) |>
         rename(
-          "TAD" = tad_id,
+          "TAD"    = tad_id,
           "Period" = period,
-          "CAGR" = cagr_pct
+          "CAGR"   = cagr_pct
         )
     },
     striped = TRUE,
