@@ -296,6 +296,35 @@ SCENARIO_COLORS <- c(
   "Mayor's Updated NRI" = "#e74c3c"
 )
 
+# Hardcoded PILOT assumptions for each named scenario (not user-driven).
+# Stored here so both the pre-computed diversion_list and the server's
+# custom-growth fallback use the same values.
+SCENARIO_PILOTS <- list(
+  "Current Plan"          = tibble(tad_id = "Eastside", pilot_pct = 1.0),
+  "Mayor's Original NRI"  = tibble(tad_id = "Eastside", pilot_pct = 1.0),
+  "Mayor's Updated NRI"   = NULL
+)
+
+# Compute all three scenario diversion lines from a given proj_df.
+# Used at startup (for pre-computed list) and at runtime (custom growth only).
+make_diversion_data <- function(proj_df) {
+  map_dfr(names(diversion_scenarios), \(nm) {
+    compute_diverted(proj_df, diversion_scenarios[[nm]], SCENARIO_PILOTS[[nm]]) |>
+      mutate(scenario = nm)
+  }) |>
+    mutate(scenario = factor(scenario, levels = names(diversion_scenarios)))
+}
+
+# Pre-compute diversion data for all four static growth scenarios at startup.
+# The diversion chart uses fixed closure dates, so these never need recomputing
+# unless the user switches to custom growth rates.
+diversion_list <- list(
+  tad          = make_diversion_data(proj_list[["tad"]]),
+  city         = make_diversion_data(proj_list[["city"]]),
+  optimistic   = make_diversion_data(proj_list[["optimistic"]]),
+  tad_baseline = make_diversion_data(proj_list[["tad_baseline"]])
+)
+
 # Last year any TAD closes under the current plan — used to annotate the
 # point where the Current Plan line goes flat on the diversion chart
 LAST_CLOSURE_CURRENT <- max(

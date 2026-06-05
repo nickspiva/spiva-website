@@ -683,6 +683,52 @@ ui <- page_sidebar(
                 href = "https://www.kerryhatcher.com/restoring-state-funding-for-state-mandated-costs/",
                 target = "_blank"
               ))
+            )
+          ),
+          div(
+            p(strong("Georgia education finance"), class = "mb-1"),
+            tags$ul(
+              class = "small",
+              tags$li(tags$a(
+                "TRS of Georgia — Employer Contribution Rates",
+                href = "https://www.trsga.com/employer/contribution-rates/",
+                target = "_blank"
+              )),
+              tags$li(tags$a(
+                "GBPI — FY2027 K-12 Budget Overview",
+                href = "https://gbpi.org/overview-2027-fiscal-year-budget-for-k-12-education/",
+                target = "_blank"
+              )),
+              tags$li(tags$a(
+                "GBPI — Retirement in Georgia's Public Schools",
+                href = "https://gbpi.org/retirement-in-georgias-public-schools/",
+                target = "_blank"
+              )),
+              tags$li(tags$a(
+                "Georgia SB 33 — annual property assessment cap",
+                href = "https://legiscan.com/GA/bill/SB33/2025",
+                target = "_blank"
+              )),
+              tags$li(tags$a(
+                "WABE — Schools Could Lose Most If Property Tax Legislation Becomes Law",
+                href = "https://www.wabe.org/schools-could-lose-most-if-property-tax-legislation-becomes-law/",
+                target = "_blank"
+              )),
+              tags$li(tags$a(
+                "Georgia Recorder — Kemp Approves Property Tax Relief",
+                href = "https://georgiarecorder.com/2026/05/11/kemp-approves-property-tax-relief-for-georgia-homeowners-amid-concerns-over-local-revenues-process/",
+                target = "_blank"
+              )),
+              tags$li(tags$a(
+                "SaportaReport — Setting Teachers up for Success",
+                href = "https://saportareport.com/setting-teachers-up-for-success/columnists/guestcolumn/derek/",
+                target = "_blank"
+              )),
+              tags$li(tags$a(
+                "Hatcher — Restoring State Funding for State-Mandated Costs",
+                href = "https://www.kerryhatcher.com/restoring-state-funding-for-state-mandated-costs/",
+                target = "_blank"
+              ))
             ),
             p(strong("Geospatial data"), class = "mt-3 mb-1"),
             tags$ul(

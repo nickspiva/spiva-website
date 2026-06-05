@@ -179,13 +179,15 @@ server <- function(input, output, session) {
   })
 
   # Reads pilot slider inputs; returns 0 for any TAD whose slider hasn't
-  # been rendered yet (panel still collapsed).
-  pilot_rates <- reactive({
+  # been rendered yet (panel still collapsed). Debounced so dragging a slider
+  # doesn't trigger proj_chart re-renders on every pixel.
+  pilot_rates_raw <- reactive({
     map_dfr(active_tads$tad_id, \(tid) {
       val <- input[[paste0("pilot_", make.names(tid))]]
       tibble(tad_id = tid, pilot_pct = if (!is.null(val)) val / 100 else 0)
     })
   })
+  pilot_rates <- pilot_rates_raw |> debounce(350)
 
   # When the custom growth panel opens, seed sliders with rates from the
   # previously selected method — mirrors how closure sliders inherit preset dates.
@@ -295,13 +297,11 @@ server <- function(input, output, session) {
   # Multiple outputs can read the same reactive without re-running it.
 
   # Which projection dataset to use.
-  # "custom" builds per-TAD projections from the growth-rate sliders;
-  # all other methods look up a pre-computed dataset in proj_list.
-  # Either way, pilot_rates() is joined in so proj_data always carries
-  # pilot_pct and aps_revenue_open for the projection chart to use.
-  proj_data <- reactive({
+  # Growth-rate-only projections — no PILOT. Used by diversion_data so that
+  # moving PILOT sliders doesn't trigger the diversion chart to recompute.
+  proj_data_base <- reactive({
     method <- input$proj_method %||% "tad"
-    base <- if (method == "custom") {
+    if (method == "custom") {
       map_dfr(seq_len(nrow(growth_rates)), \(i) {
         g <- growth_rates[i, ]
         rate_pct <- input[[paste0("gr_", make.names(g$tad_id))]]
@@ -320,9 +320,12 @@ server <- function(input, output, session) {
     } else {
       proj_list[[method]]
     }
+  })
 
-    # Attach user PILOT rates; aps_revenue_open is the pre-closure APS share
-    base |>
+  # Full projections: base + PILOT rates. Used by proj_chart and proj_subheader.
+  # PILOT slider changes only invalidate this, not proj_data_base or diversion_data.
+  proj_data <- reactive({
+    proj_data_base() |>
       left_join(pilot_rates(), by = "tad_id") |>
       mutate(
         pilot_pct = replace_na(pilot_pct, 0),
@@ -330,8 +333,10 @@ server <- function(input, output, session) {
       )
   })
 
-  # Closure year for each TAD under the current slider/preset state
-  closure_years <- reactive({
+  # Closure year for each TAD under the current slider/preset state.
+  # _raw fires immediately on every slider tick; the debounced version waits
+  # until the user stops dragging so the chart only re-renders once per gesture.
+  closure_years_raw <- reactive({
     # Already-closed TADs: use their actual historical end year
     closed <- tad_meta |>
       filter(already_closed) |>
@@ -365,6 +370,7 @@ server <- function(input, output, session) {
 
     bind_rows(closed, open)
   })
+  closure_years <- closure_years_raw |> debounce(400)
 
   # Annual APS revenue summed across all TADs, accounting for closure years
   aps_revenue <- reactive({
@@ -378,29 +384,18 @@ server <- function(input, output, session) {
       )
   })
 
-  # Cumulative diversion data: re-computes when the projection method changes
-  # (the three scenario closure dates are fixed, not driven by sliders).
-  # Each scenario carries hardcoded PILOT assumptions — user PILOT sliders
-  # do NOT affect this chart. compute_diverted() drops any user pilot columns
-  # from proj_data() before applying the scenario-specific rates.
-  #
-  # Scenario PILOT assumptions:
-  #   Current Plan:        Eastside 100% — existing IGA remains in effect
-  #   Mayor's Original NRI: Eastside 100% — existing IGA continues under this proposal
-  #   Mayor's Updated NRI:  no PILOTs — full increment stays with Invest Atlanta
+  # Cumulative diversion data. For the four static growth methods the result is
+  # pre-computed in diversion_list (data.R) and looked up instantly.
+  # Only custom growth rates require on-the-fly computation — and even then,
+  # diversion_data depends on proj_data_base() not proj_data(), so PILOT slider
+  # changes never trigger a diversion recompute.
   diversion_data <- reactive({
-    pd <- proj_data()
-    eastside_pilot <- tibble(tad_id = "Eastside", pilot_pct = 1.0)
-    scenario_pilots <- list(
-      "Current Plan"          = eastside_pilot,
-      "Mayor's Original NRI"  = eastside_pilot,
-      "Mayor's Updated NRI"   = NULL
-    )
-    map_dfr(names(diversion_scenarios), \(nm) {
-      compute_diverted(pd, diversion_scenarios[[nm]], scenario_pilots[[nm]]) |>
-        mutate(scenario = nm)
-    }) |>
-      mutate(scenario = factor(scenario, levels = names(diversion_scenarios)))
+    method <- input$proj_method %||% "tad"
+    if (method == "custom") {
+      make_diversion_data(proj_data_base())
+    } else {
+      diversion_list[[method]]
+    }
   })
 
   # ── 7e-b. Diversion chart subheader (reactive) ───────────────────────────
