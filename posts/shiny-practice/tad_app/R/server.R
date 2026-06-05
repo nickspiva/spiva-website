@@ -242,17 +242,17 @@ server <- function(input, output, session) {
 
   observeEvent(input$btn_current, {
     apply_preset("year_end_current")
-    apply_pilot_preset()                          # all PILOTs → 0%
+    apply_pilot_preset() # all PILOTs → 0%
     active_preset("current")
   })
   observeEvent(input$btn_mayor1, {
     apply_preset("year_end_mayor1")
-    apply_pilot_preset(list("Eastside" = 100))    # Eastside → 100%, rest → 0%
+    apply_pilot_preset(list("Eastside" = 100)) # Eastside → 100%, rest → 0%
     active_preset("mayor1")
   })
   observeEvent(input$btn_mayor2, {
     apply_preset("year_end_mayor2")
-    apply_pilot_preset()                          # all PILOTs → 0%
+    apply_pilot_preset() # all PILOTs → 0%
     active_preset("mayor2")
   })
 
@@ -459,7 +459,7 @@ server <- function(input, output, session) {
     HTML(sprintf(
       '<p class="text-muted small px-3 pt-1 mt-1">%s<br><br>%s</p>',
       sprintf(
-        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward, while TADs remain open under each scenario. Under the current growth assumption — based on %s — the Mayor's Updated NRI proposal would divert an additional <strong>%s</strong> more than the current plan over the next 30 years.",
+        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward, while TADs remain open under each scenario. Under the current growth assumption, based on %s, the Mayor's Updated NRI proposal would divert an additional <strong>%s</strong> more than the current plan over the next 30 years.",
         growth_name,
         gap_fmt
       ),
@@ -984,33 +984,43 @@ server <- function(input, output, session) {
         alpha = 0.45
       ) +
       # Pre-closure PILOT lines & points — lighter, dashed; only drawn when pilot_pct > 0
-      {if (nrow(pilot_tad) > 0)
-        list(
-          geom_line_interactive(
-            data = pilot_tad,
-            aes(
-              alpha = line_a,
-              linewidth = line_w,
-              data_id = tad_id,
-              tooltip = tad_id
+      {
+        if (nrow(pilot_tad) > 0) {
+          list(
+            geom_line_interactive(
+              data = pilot_tad,
+              aes(
+                alpha = line_a,
+                linewidth = line_w,
+                data_id = tad_id,
+                tooltip = tad_id
+              ),
+              linetype = "dashed"
             ),
-            linetype = "dashed"
-          ),
-          geom_point_interactive(
-            data = pilot_tad,
-            aes(
-              alpha = line_a,
-              size = line_w,
-              data_id = tad_id,
-              tooltip = paste0(
-                "<b>", tad_id, "</b> (PILOT, TAD still open)<br>",
-                year, "<br>",
-                "PILOT revenue to APS: ",
-                dollar(aps_annual_revenue, scale = 1e-6, suffix = "M", accuracy = 0.1)
+            geom_point_interactive(
+              data = pilot_tad,
+              aes(
+                alpha = line_a,
+                size = line_w,
+                data_id = tad_id,
+                tooltip = paste0(
+                  "<b>",
+                  tad_id,
+                  "</b> (PILOT, TAD still open)<br>",
+                  year,
+                  "<br>",
+                  "PILOT revenue to APS: ",
+                  dollar(
+                    aps_annual_revenue,
+                    scale = 1e-6,
+                    suffix = "M",
+                    accuracy = 0.1
+                  )
+                )
               )
             )
           )
-        )
+        }
       } +
       geom_line_interactive(
         aes(
@@ -1303,14 +1313,14 @@ server <- function(input, output, session) {
         ) |>
         select(tad_id, period, cagr_pct) |>
         bind_rows(tibble(
-          tad_id   = "Atlanta (citywide)",
-          period   = paste0(min(atl_series$year), "–", max(atl_series$year)),
+          tad_id = "Atlanta (citywide)",
+          period = paste0(min(atl_series$year), "–", max(atl_series$year)),
           cagr_pct = paste0(round(citywide_cagr * 100, 1), "%")
         )) |>
         rename(
-          "TAD"    = tad_id,
+          "TAD" = tad_id,
           "Period" = period,
-          "CAGR"   = cagr_pct
+          "CAGR" = cagr_pct
         )
     },
     striped = TRUE,

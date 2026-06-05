@@ -81,7 +81,8 @@ ui <- page_sidebar(
     h1, h2, h3, h4, h5, h6,
     .h1, .h2, .h3, .h4, .h5, .h6,
     .card-header, .navbar-brand, .sidebar-title,
-    .nav-link, .accordion-button {
+    .nav-link, .accordion-button,
+    [style*='font-weight:700'], [style*='font-weight: 700'] {
       font-family: 'Fira Sans Condensed', sans-serif !important;
     }
     select.inline-year-sel {
