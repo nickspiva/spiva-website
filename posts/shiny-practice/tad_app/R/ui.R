@@ -234,6 +234,35 @@ ui <- page_sidebar(
       });
     "
     )),
+
+    hr(class = "my-2"),
+
+    h6("Intergovernmental Agreements", class = "fw-bold mb-1 mt-1"),
+    p(
+      "While this app gives a picture of the revenue implications of extended TADs for APS, ",
+      "the reality of what is being considered often gets even wonkier! ",
+      "APS has previously, and may again, negotiated with the City and ",
+      "Invest Atlanta to partially participate in individual TADs.",
+      class = "small text-muted mb-2"
+    ),
+    p(
+      HTML(
+        "Currently, APS receives the <strong>full increment</strong> for the
+        <strong>Eastside TAD</strong> via PILOT payments, even though it remains open.
+        APS contributions for the <strong>Corridor TADs</strong> (Campbellton, Hollowell,
+        Metropolitan Pkwy, &amp; Stadium) are capped at $6.5M from 2029&ndash;2050."
+      ),
+      class = "small text-muted mb-2"
+    ),
+    p(
+      HTML(
+        "Under the <strong>Mayor's updated NRI</strong>, the Eastside PILOT would end and
+        the full increment would flow to Invest Atlanta through 2055. Under the
+        <strong>Mayor's original NRI</strong>, existing agreements (PILOTs &amp; caps)
+        would have continued."
+      ),
+      class = "small text-muted mb-0"
+    ),
   ),
 
   # ════════════════════════════════════════════════════════
@@ -323,6 +352,52 @@ ui <- page_sidebar(
         ),
         accordion(
           open = FALSE,
+          accordion_panel(
+            "TAD Increment Projections",
+            p(
+              "Each TAD's projected APS revenue is calculated by compounding property values
+              forward from a 2024 baseline, then applying the APS millage rate to the
+              increment above the original baseline.",
+              class = "small text-muted mb-3"
+            ),
+            tags$ol(
+              class = "small text-muted ps-3",
+              tags$li(
+                class = "mb-2",
+                strong("Baseline increment:"),
+                " The 2024 assessed value minus each TAD's original baseline value gives
+                the current taxable increment — the portion of property value that would
+                return to APS if the TAD closed today."
+              ),
+              tags$li(
+                class = "mb-2",
+                strong("Annual projection:"),
+                " Each subsequent year's assessed value is estimated by multiplying the
+                prior year's value by (1 + growth rate). The growth rate depends on the
+                scenario selected in the sidebar — Historic TAD Growth, Citywide Average,
+                Optimistic, or a custom rate."
+              ),
+              tags$li(
+                class = "mb-2",
+                strong("APS revenue:"),
+                HTML(" The projected increment is multiplied by APS's current millage rate
+                (<strong>20.5 mills</strong>) to estimate what APS would collect if the
+                TAD were closed and the increment returned to the tax digest.")
+              ),
+              tags$li(
+                class = "mb-2",
+                strong("Repeat through closure year:"),
+                " Steps 2 and 3 repeat annually from 2025 through the year each TAD closes
+                under the selected scenario. Revenue in years before closure is $0 — that
+                increment still flows to Invest Atlanta."
+              )
+            ),
+            p(
+              "These are projections, not forecasts. They assume constant growth and
+              millage rates over the projection period.",
+              class = "small text-muted fst-italic mb-0"
+            )
+          ),
           accordion_panel(
             "Universal Pre-K Staffing  ·  $78.2M / year",
             p(
@@ -455,7 +530,7 @@ ui <- page_sidebar(
     ),
 
     nav_panel(
-      "Sources",
+      "Relevant Links",
       div(
         class = "p-3",
         layout_columns(
@@ -504,13 +579,15 @@ ui <- page_sidebar(
                 target = "_blank"
               ))
             ),
-            p(strong("Historic Property Values"), class = "mt-3 mb-1"),
+            p(strong("APS budget & policy"), class = "mt-3 mb-1"),
             tags$ul(
               class = "small",
-              tags$li(
-                "Fulton & DeKalb Property Tax Digests"
-              )
-            ),
+              tags$li(tags$a(
+                "Hatcher — Restoring State Funding for State-Mandated Costs",
+                href = "https://www.kerryhatcher.com/restoring-state-funding-for-state-mandated-costs/",
+                target = "_blank"
+              ))
+            )
           ),
           div(
             p(strong("Georgia education finance"), class = "mb-1"),
