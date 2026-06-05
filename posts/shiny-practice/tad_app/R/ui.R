@@ -20,7 +20,7 @@ ui <- page_sidebar(
 
   # ── Google Fonts ─────────────────────────────────────────
   tags$head(tags$link(
-    rel  = "stylesheet",
+    rel = "stylesheet",
     href = "https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fira+Sans+Condensed:ital,wght@0,400;0,600;0,700;1,400&display=swap"
   )),
 
@@ -268,18 +268,18 @@ ui <- page_sidebar(
     ),
     p(
       HTML(
-        "Currently, APS receives the <strong>full increment</strong> for the
-        <strong>Eastside TAD</strong> via PILOT payments, even though it remains open.
-        APS contributions for the <strong>Corridor TADs</strong> (Campbellton, Hollowell,
+        "Currently, APS receives the full increment for the
+        Eastside TAD via PILOT payments, even though it remains open.
+        APS contributions for the Corridor TADs (Campbellton, Hollowell,
         Metropolitan Pkwy, &amp; Stadium) are capped at $6.5M from 2029&ndash;2050. Please note these caps are not reflected in the charts currently."
       ),
       class = "small text-muted mb-2"
     ),
     p(
       HTML(
-        "Under the <strong>Mayor's updated NRI</strong>, the Eastside PILOT would end and
+        "Under the Mayor's updated NRI, the Eastside PILOT would end and
         the full increment would flow to Invest Atlanta through 2055. Under the
-        <strong>Mayor's original NRI</strong>, existing agreements (PILOTs &amp; caps)
+        Mayor's original NRI, existing agreements (PILOTs &amp; caps)
         would have continued."
       ),
       class = "small text-muted mb-0"
@@ -568,7 +568,9 @@ ui <- page_sidebar(
         ),
         div(style = "overflow-x: auto;", tableOutput("hist_wide_table")),
         p(
-          HTML("<em>Note: Atlanta property values reflect the Fulton County portion of the City of Atlanta.</em>"),
+          HTML(
+            "<em>Note: Atlanta property values reflect the Fulton County portion of the City of Atlanta.</em>"
+          ),
           class = "small text-muted mt-1 mb-0"
         ),
         tags$hr(class = "my-4"),
