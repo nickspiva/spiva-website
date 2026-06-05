@@ -988,22 +988,33 @@ server <- function(input, output, session) {
         linewidth = 0.35,
         alpha = 0.45
       ) +
-      # Pre-closure PILOT lines — lighter, dashed; only drawn when pilot_pct > 0
+      # Pre-closure PILOT lines & points — lighter, dashed; only drawn when pilot_pct > 0
       {if (nrow(pilot_tad) > 0)
-        geom_line_interactive(
-          data = pilot_tad,
-          aes(
-            alpha = line_a,
-            linewidth = line_w,
-            data_id = tad_id,
-            tooltip = paste0(
-              "<b>", tad_id, "</b> (PILOT, TAD still open)<br>",
-              year, "<br>",
-              "Revenue to APS: ",
-              dollar(aps_annual_revenue, scale = 1e-6, suffix = "M", accuracy = 0.1)
-            )
+        list(
+          geom_line_interactive(
+            data = pilot_tad,
+            aes(
+              alpha = line_a,
+              linewidth = line_w,
+              data_id = tad_id,
+              tooltip = tad_id
+            ),
+            linetype = "dashed"
           ),
-          linetype = "dashed"
+          geom_point_interactive(
+            data = pilot_tad,
+            aes(
+              alpha = line_a,
+              size = line_w,
+              data_id = tad_id,
+              tooltip = paste0(
+                "<b>", tad_id, "</b> (PILOT, TAD still open)<br>",
+                year, "<br>",
+                "PILOT revenue to APS: ",
+                dollar(aps_annual_revenue, scale = 1e-6, suffix = "M", accuracy = 0.1)
+              )
+            )
+          )
         )
       } +
       geom_line_interactive(
