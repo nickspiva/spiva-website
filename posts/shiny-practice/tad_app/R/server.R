@@ -250,7 +250,7 @@ server <- function(input, output, session) {
 
   observeEvent(input$btn_current, {
     apply_preset("year_end_current")
-    apply_pilot_preset() # all PILOTs → 0%
+    apply_pilot_preset(list("Eastside" = 100)) # Eastside → 100%, rest → 0%
     active_preset("current")
   })
   observeEvent(input$btn_mayor1, {
