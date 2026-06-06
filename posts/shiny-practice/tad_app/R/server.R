@@ -446,7 +446,7 @@ server <- function(input, output, session) {
     # Inline year picker (same native <select> pattern as projected revenue card)
     options_html <- paste(
       vapply(
-        2025:(PROJ_END - 1),
+        2030:(PROJ_END - 1),
         function(yr) {
           sprintf(
             '<option value="%d"%s>%d</option>',
