@@ -467,7 +467,7 @@ server <- function(input, output, session) {
     HTML(sprintf(
       '<p class="text-muted small px-3 pt-1 mt-1">%s<br><br>%s</p>',
       sprintf(
-        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward, while TADs remain open under each scenario. Under the current growth assumption, based on %s, the Mayor's Updated NRI proposal would divert an additional <strong>%s</strong> more than the current plan over the next 30 years.",
+        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward. Under the current growth assumption, based on %s, the Mayor's Updated NRI proposal would divert an additional <strong>%s</strong> more than the current plan over the next 30 years.",
         growth_name,
         gap_fmt
       ),
