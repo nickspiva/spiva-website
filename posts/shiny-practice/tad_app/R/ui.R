@@ -258,35 +258,6 @@ ui <- page_sidebar(
 
     hr(class = "my-2"),
 
-    h6("Intergovernmental Agreements", class = "fw-bold mb-1 mt-1"),
-    p(
-      "While this app gives a picture of the revenue implications of extended TADs for APS, ",
-      "the reality of what is being considered often gets even wonkier! ",
-      "APS has previously, and may again, negotiate with the City and ",
-      "Invest Atlanta to partially participate in individual TADs.",
-      class = "small text-muted mb-2"
-    ),
-    p(
-      HTML(
-        "Currently, APS receives the full increment for the
-        Eastside TAD via PILOT payments, even though it remains open.
-        APS contributions for the Corridor TADs (Campbellton, Hollowell,
-        Metropolitan Pkwy, &amp; Stadium) are capped at $6.5M from 2029&ndash;2050. Please note these caps are not reflected in the charts currently."
-      ),
-      class = "small text-muted mb-2"
-    ),
-    p(
-      HTML(
-        "Under the Mayor's updated NRI, the Eastside PILOT would end and
-        the full increment would flow to Invest Atlanta through 2055. Under the
-        Mayor's original NRI, existing agreements (PILOTs &amp; caps)
-        would have continued."
-      ),
-      class = "small text-muted mb-0"
-    ),
-
-    hr(class = "my-2"),
-
     h6(
       "Will APS partially participate in any TADs?",
       class = "fw-bold mb-1 mt-1"
@@ -303,13 +274,55 @@ ui <- page_sidebar(
       `data-bs-toggle` = "collapse",
       `data-bs-target` = "#pilot-sliders-collapse",
       `aria-expanded` = "false",
-      span("Custom Participation Rates"),
+      span("Custom PILOT Rates"),
       tags$span("▼", class = "collapse-caret")
     ),
     div(
       id = "pilot-sliders-collapse",
       class = "collapse mt-1",
       uiOutput("pilot_sliders")
+    ),
+
+    hr(class = "my-2"),
+
+    tags$button(
+      type = "button",
+      class = "btn btn-link btn-sm text-start w-100 d-flex justify-content-between align-items-center px-0 fw-bold",
+      style = "color: inherit; text-decoration: none;",
+      `data-bs-toggle` = "collapse",
+      `data-bs-target` = "#iga-collapse",
+      `aria-expanded` = "false",
+      span("Intergovernmental Agreements", class = "h6 mb-0 fw-bold"),
+      tags$span("▼", class = "collapse-caret")
+    ),
+    div(
+      id = "iga-collapse",
+      class = "collapse mt-1",
+      p(
+        "While this app gives a picture of the revenue implications of extended TADs for APS, ",
+        "the reality of what is being considered often gets even wonkier! ",
+        "APS has previously, and may again, negotiate with the City and ",
+        "Invest Atlanta to partially participate in individual TADs.",
+        class = "small text-muted mb-2"
+      ),
+      p(
+        HTML(
+          "Currently, APS receives the full increment for the
+          Eastside TAD via PILOT payments, even though it remains open.
+          APS contributions for the Corridor TADs (Campbellton, Hollowell,
+          Metropolitan Pkwy, &amp; Stadium) are capped at $6.5M from 2029&ndash;2050. Please note these caps are not reflected in the charts currently."
+        ),
+        class = "small text-muted mb-2"
+      ),
+      p(
+        HTML(
+          "Under the Mayor's updated NRI, the Eastside PILOT would end and
+          the full increment would flow to Invest Atlanta through 2055. Under the
+          Mayor's original NRI, existing agreements (PILOTs &amp; caps)
+          would have continued."
+        ),
+        class = "small text-muted mb-0"
+      )
     ),
   ),
 
