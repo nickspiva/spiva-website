@@ -1064,7 +1064,7 @@ server <- function(input, output, session) {
         data = labels_individual,
         aes(label = tad_id, vjust = lbl_vjust, alpha = lbl_alpha),
         hjust = 0.5,
-        size = 2.4,
+        size = 3.2,
         fontface = "bold",
         show.legend = FALSE
       ) +
