@@ -318,29 +318,28 @@ ui <- page_sidebar(
   # ════════════════════════════════════════════════════════
 
   p(
-    "Atlanta's Tax Allocation Districts redirect property tax growth from ",
+    "Atlanta's Tax Allocation Districts (TADs) redirect property tax growth from ",
     "schools to fund development. While a TAD is open, all tax revenue on property value ",
     "above the original baseline goes to ",
     strong("Invest Atlanta"),
-    " — not Atlanta Public Schools, the City, or County. ",
+    " - not Atlanta Public Schools, the City, or County. ",
     "Use the controls on the left to explore different closure scenarios.",
     class = "text-muted mb-3"
   ),
 
-  # ── Revenue impact — side-by-side cards ──────────────────
-  layout_columns(
-    col_widths = c(6, 6),
-    gap = "1rem",
-    card(
-      card_header("Total Revenue Diverted from Schools"),
-      uiOutput("diversion_subheader"),
-      girafeOutput("diversion_chart", height = "380px")
-    ),
-    card(
-      card_header("Projected APS Revenue from Closed TADs"),
-      uiOutput("proj_subheader"),
-      girafeOutput("proj_chart", height = "380px")
-    )
+  # ── Revenue impact — stacked cards ───────────────────────
+  card(
+    card_header("Total Revenue Diverted from Schools"),
+    uiOutput("diversion_subheader"),
+    girafeOutput("diversion_chart", height = "380px")
+  ),
+
+  br(),
+
+  card(
+    card_header("Projected APS Revenue from Closed TADs"),
+    uiOutput("proj_subheader"),
+    girafeOutput("proj_chart", height = "380px")
   ),
 
   br(),
