@@ -465,14 +465,14 @@ server <- function(input, output, session) {
     )
 
     HTML(sprintf(
-      '<p class="text-muted small px-3 pt-1 mt-1">%s %s</p>',
+      '<p class="text-muted small px-3 pt-1 mt-1 subheader-text">%s %s</p>',
       sprintf(
-        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward. Under the current growth assumption, based on %s, the Mayor's Updated NRI proposal would divert an additional <strong>%s</strong> more than the current plan over the next 30 years.",
+        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward. Under the current growth assumption, based on <strong>%s</strong>, the Mayor's Updated NRI proposal would divert an additional <span class='dyn-val'>%s</span> more than the current plan over the next 30 years.",
         growth_name,
         gap_fmt
       ),
       sprintf(
-        "On just an annual basis, the Mayor's Updated NRI proposal would divert approximately <strong>%s</strong> from APS in %s, ballooning to <strong>%s</strong> per year by 2055.",
+        "On just an annual basis, the Mayor's Updated NRI proposal would divert approximately <span class='dyn-val'>%s</span> from APS in %s, ballooning to <span class='dyn-val'>%s</span> per year by 2055.",
         ann_ref_fmt,
         picker_html,
         ann_2055_fmt
@@ -863,7 +863,7 @@ server <- function(input, output, session) {
         dollar(rev_val, scale = 1e-6, suffix = "M", accuracy = 0.1)
       )
       sprintf(
-        " For example, in %s, tax on property in the former Beltline TAD area will generate <strong>%s</strong> of annual revenue for schools, using the <strong>%s</strong> growth assumption.",
+        " For example, in %s, tax on property in the former Beltline TAD area will generate <span class='dyn-val'>%s</span> of annual revenue for schools, using the <span class='dyn-val'>%s</span> growth assumption.",
         picker_html,
         rev_fmt,
         growth_name
@@ -876,7 +876,7 @@ server <- function(input, output, session) {
     }
 
     HTML(sprintf(
-      '<p class="text-muted small px-3 pt-1 mt-1">%s%s</p>',
+      '<p class="text-muted small px-3 pt-1 mt-1 subheader-text">%s%s</p>',
       "Hover over dots on the TAD revenue lines to see how much money APS will receive annually in property tax following the closure of each TAD.",
       example_html
     ))

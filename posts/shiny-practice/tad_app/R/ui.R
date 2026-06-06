@@ -116,6 +116,9 @@ ui <- page_sidebar(
     .risk-flip-front, .risk-flip-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 0.375rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; overflow: hidden; }
     .risk-flip-back { transform: rotateY(180deg); overflow-y: auto; justify-content: flex-start; align-items: flex-start; }
     .risk-flip-hint { font-size: 0.65rem; color: #adb5bd; margin-top: auto; padding-top: 6px; user-select: none; width: 100%; text-align: center; flex-shrink: 0; }
+    @keyframes subheader-fade { from { opacity: 0.45; } to { opacity: 1; } }
+    .subheader-text { animation: subheader-fade 0.5s ease-out; }
+    .dyn-val { background: rgba(74,144,217,0.12); border-radius: 3px; padding: 0 3px; font-weight: 600; }
   "
   )),
 
