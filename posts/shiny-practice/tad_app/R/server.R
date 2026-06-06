@@ -167,7 +167,11 @@ server <- function(input, output, session) {
   # Defaults to 0% (no participation). Does NOT affect the diversion chart,
   # which uses hardcoded scenario-specific PILOT assumptions.
   output$pilot_sliders <- renderUI({
+    # isolate() so re-clicking presets doesn't re-render and reset custom values;
+    # the initial render picks up whichever preset is active at open time.
+    preset <- isolate(active_preset()) %||% "current"
     sliders <- map(active_tads$tad_id, \(tid) {
+      default_pct <- if (tid == "Eastside" && preset %in% c("current", "mayor1")) 100 else 0
       div(
         tags$p(strong(tid), class = "mb-0 small"),
         sliderInput(
@@ -175,7 +179,7 @@ server <- function(input, output, session) {
           label = NULL,
           min = 0,
           max = 100,
-          value = 0,
+          value = default_pct,
           step = 5,
           post = "%",
           sep = "",
@@ -186,13 +190,21 @@ server <- function(input, output, session) {
     div(class = "px-1 pb-1", tagList(sliders))
   })
 
-  # Reads pilot slider inputs; returns 0 for any TAD whose slider hasn't
-  # been rendered yet (panel still collapsed). Debounced so dragging a slider
-  # doesn't trigger proj_chart re-renders on every pixel.
+  # Reads pilot slider inputs. When a slider hasn't been rendered yet (panel
+  # still collapsed), falls back to the active preset's assumed value rather
+  # than 0 — so Eastside starts at 100% under Current Plan on first load.
+  # Debounced so dragging doesn't trigger proj_chart re-renders on every pixel.
   pilot_rates_raw <- reactive({
+    preset <- active_preset() %||% "current"
     map_dfr(active_tads$tad_id, \(tid) {
       val <- input[[paste0("pilot_", make.names(tid))]]
-      tibble(tad_id = tid, pilot_pct = if (!is.null(val)) val / 100 else 0)
+      pct <- if (!is.null(val)) {
+        val / 100
+      } else {
+        # Pre-render fallback: match the hardcoded scenario PILOT assumptions
+        if (tid == "Eastside" && preset %in% c("current", "mayor1")) 1.0 else 0
+      }
+      tibble(tad_id = tid, pilot_pct = pct)
     })
   })
   pilot_rates <- pilot_rates_raw |> debounce(350)
