@@ -411,10 +411,10 @@ server <- function(input, output, session) {
   # and assumption name always match what's shown in the chart.
   output$diversion_subheader <- renderUI({
     proj_labels <- c(
-      "tad" = "individualized historic TAD growth (2007–2024)",
-      "city" = "citywide average growth (2007–2024)",
-      "optimistic" = "optimistic (average of high-growth TADs - Beltline, Eastside, & Atlantic Station)",
-      "custom" = "custom per-TAD growth rates"
+      "tad"       = "Historic TAD Growth",
+      "city"      = "Citywide Average Growth",
+      "optimistic" = "Optimistic Growth",
+      "custom"    = "Custom Growth Rate"
     )
     growth_name <- proj_labels[[input$proj_method %||% "tad"]]
     ref_year_div <- as.integer(input$ref_year_div %||% 2035)
@@ -467,7 +467,7 @@ server <- function(input, output, session) {
     HTML(sprintf(
       '<p class="text-muted small px-3 pt-1 mt-1 subheader-text">%s %s</p>',
       sprintf(
-        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward. Under the current growth assumption, based on <strong>%s</strong>, the Mayor's Updated NRI proposal would divert an additional <span class='dyn-val'>%s</span> more than the current plan over the next 30 years.",
+        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward. Under the current growth assumption, based on <span class='dyn-val'>%s</span>, the Mayor's Updated NRI proposal would divert an additional <span class='dyn-val'>%s</span> more than the current plan over the next 30 years.",
         growth_name,
         gap_fmt
       ),
@@ -818,10 +818,10 @@ server <- function(input, output, session) {
     ref_year <- as.integer(input$ref_year %||% 2035)
 
     growth_name <- c(
-      "tad" = "Historic TAD growth (2007–2024)",
-      "city" = "Citywide average growth",
-      "optimistic" = "Optimistic (high-growth TADs)",
-      "custom" = "Custom per-TAD growth rates"
+      "tad"        = "Historic TAD Growth",
+      "city"       = "Citywide Average Growth",
+      "optimistic" = "Optimistic Growth",
+      "custom"     = "Custom Growth Rate"
     )[[input$proj_method %||% "tad"]]
 
     beltline_closure <- cy$closure_year[cy$tad_id == "Beltline"]
