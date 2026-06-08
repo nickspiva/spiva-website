@@ -168,6 +168,49 @@ ui <- page_sidebar(
       uiOutput("tad_sliders")
     ),
 
+    tags$button(
+      type = "button",
+      class = "btn btn-link btn-sm text-start w-100 d-flex justify-content-between align-items-center px-0 fw-bold mt-2",
+      style = "color: inherit; text-decoration: none;",
+      `data-bs-toggle` = "collapse",
+      `data-bs-target` = "#plan-explainer-collapse",
+      `aria-expanded` = "false",
+      span("About These Plans", class = "h6 mb-0 fw-bold"),
+      tags$span("▼", class = "collapse-caret")
+    ),
+    div(
+      id = "plan-explainer-collapse",
+      class = "collapse mt-1",
+      p(
+        HTML(
+          "<strong>Current Plan:</strong> TADs close on time per the current agreements
+          between the City of Atlanta, Atlanta Public Schools, Fulton County,
+          and Invest Atlanta."
+        ),
+        class = "small text-muted mb-2"
+      ),
+      p(
+        HTML(
+          "<strong>Mayor's Original NRI:</strong> The Mayor's original Neighborhood
+          Reinvestment Initiative proposed extending all 8 active TADs through 2055."
+        ),
+        class = "small text-muted mb-2"
+      ),
+      p(
+        HTML(
+          "<strong>Mayor's Updated NRI:</strong> The Mayor's updated Neighborhood
+          Reinvestment Plan dropped the Beltline and Perry Bolton TADs from the list
+          of proposed extensions. You can read the updated NRI legislation "
+        ),
+        tags$a(
+          "here.",
+          href = "https://cityofatlanta-my.sharepoint.com/personal/mismith_atlantaga_gov/_layouts/15/onedrive.aspx?id=/personal/mismith_atlantaga_gov/Documents/NRI%20Attachments%20for%20Press&ga=1",
+          target = "_blank"
+        ),
+        class = "small text-muted mb-0"
+      )
+    ),
+
     hr(class = "my-2"),
 
     h6("How fast will property values grow?", class = "fw-bold mb-1"),
@@ -336,7 +379,7 @@ ui <- page_sidebar(
   p(
     "Atlanta's Tax Allocation Districts (TADs) redirect property tax growth from ",
     "schools to fund development. While a TAD is open, all tax revenue on property value ",
-    "above the original baseline goes to ",
+    "above the original baseline (known as the 'increment') goes to ",
     strong("Invest Atlanta"),
     " - not Atlanta Public Schools, the City, or County. ",
     "Use the controls on the left to explore different closure scenarios.",
