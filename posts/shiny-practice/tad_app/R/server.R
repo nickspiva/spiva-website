@@ -625,7 +625,7 @@ server <- function(input, output, session) {
       scale_size_identity() +
       scale_color_manual(values = SCENARIO_COLORS, name = NULL) +
       scale_y_continuous(
-        labels = label_dollar(scale = 1e-9, suffix = "B", accuracy = 1),
+        labels = \(x) ifelse(x == 0, "", label_dollar(scale = 1e-9, suffix = "B", accuracy = 1)(x)),
         limits = c(0, NA),
         expand = expansion(mult = c(0, 0.12))
       ) +
