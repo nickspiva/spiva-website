@@ -220,13 +220,18 @@ build_projections <- function(rate_override = NULL, rate_col = "cagr") {
     )
 }
 
-# Pre-compute all four so we only run the model once at startup
-proj_list <- list(
-  tad = build_projections(),
-  tad_baseline = build_projections(rate_col = "cagr_baseline"),
-  city = build_projections(citywide_cagr),
-  optimistic = build_projections(optimistic_cagr)
-)
+# Load pre-computed projections if available, otherwise compute on the fly.
+# Run precompute.R once locally to generate the cache before deploying.
+if (file.exists("precomputed/proj_list.rds")) {
+  proj_list <- readRDS("precomputed/proj_list.rds")
+} else {
+  proj_list <- list(
+    tad          = build_projections(),
+    tad_baseline = build_projections(rate_col = "cagr_baseline"),
+    city         = build_projections(citywide_cagr),
+    optimistic   = build_projections(optimistic_cagr)
+  )
+}
 
 # ── Diversion chart helpers ────────────────────────────────────────────────
 # Fixed closure year tables for each of the three named scenarios.
@@ -330,15 +335,17 @@ make_diversion_data <- function(proj_df) {
     mutate(scenario = factor(scenario, levels = names(diversion_scenarios)))
 }
 
-# Pre-compute diversion data for all four static growth scenarios at startup.
-# The diversion chart uses fixed closure dates, so these never need recomputing
-# unless the user switches to custom growth rates.
-diversion_list <- list(
-  tad = make_diversion_data(proj_list[["tad"]]),
-  city = make_diversion_data(proj_list[["city"]]),
-  optimistic = make_diversion_data(proj_list[["optimistic"]]),
-  tad_baseline = make_diversion_data(proj_list[["tad_baseline"]])
-)
+# Load pre-computed diversion data if available, otherwise compute on the fly.
+if (file.exists("precomputed/diversion_list.rds")) {
+  diversion_list <- readRDS("precomputed/diversion_list.rds")
+} else {
+  diversion_list <- list(
+    tad          = make_diversion_data(proj_list[["tad"]]),
+    city         = make_diversion_data(proj_list[["city"]]),
+    optimistic   = make_diversion_data(proj_list[["optimistic"]]),
+    tad_baseline = make_diversion_data(proj_list[["tad_baseline"]])
+  )
+}
 
 # Last year any TAD closes under the current plan — used to annotate the
 # point where the Current Plan line goes flat on the diversion chart
@@ -358,17 +365,21 @@ LAST_CLOSURE_NRI <- 2055
 
 tad_sf <- st_read("TAD_shapefiles/Tax_Allocation_District.shp", quiet = TRUE)
 
-roads_sf <- bind_rows(
-  st_read("Road_shapefiles/tl_2023_13121_roads.shp", quiet = TRUE), # Fulton
-  st_read("Road_shapefiles/tl_2023_13089_roads.shp", quiet = TRUE), # DeKalb
-  st_read("Road_shapefiles/tl_2023_13067_roads.shp", quiet = TRUE), # Cobb
-  st_read("Road_shapefiles/tl_2023_13151_roads.shp", quiet = TRUE), # Henry
-  st_read("Road_shapefiles/tl_2023_13097_roads.shp", quiet = TRUE), # Douglas
-  st_read("Road_shapefiles/tl_2023_13063_roads.shp", quiet = TRUE), # Clayton
-  st_read("Road_shapefiles/tl_2023_13051_roads.shp", quiet = TRUE) # Cherokee
-) |>
-  filter(MTFCC %in% c("S1100", "S1200")) |> # S1100 = highways, S1200 = major roads
-  st_transform(4326)
+if (file.exists("precomputed/roads_sf.rds")) {
+  roads_sf <- readRDS("precomputed/roads_sf.rds")
+} else {
+  roads_sf <- bind_rows(
+    st_read("Road_shapefiles/tl_2023_13121_roads.shp", quiet = TRUE), # Fulton
+    st_read("Road_shapefiles/tl_2023_13089_roads.shp", quiet = TRUE), # DeKalb
+    st_read("Road_shapefiles/tl_2023_13067_roads.shp", quiet = TRUE), # Cobb
+    st_read("Road_shapefiles/tl_2023_13151_roads.shp", quiet = TRUE), # Henry
+    st_read("Road_shapefiles/tl_2023_13097_roads.shp", quiet = TRUE), # Douglas
+    st_read("Road_shapefiles/tl_2023_13063_roads.shp", quiet = TRUE), # Clayton
+    st_read("Road_shapefiles/tl_2023_13051_roads.shp", quiet = TRUE)  # Cherokee
+  ) |>
+    filter(MTFCC %in% c("S1100", "S1200")) |>
+    st_transform(4326)
+}
 
 # TAD names are in ZONEDESC (ZONENAME just says "TAD" for every row).
 # Actual ZONEDESC values: "Beltline", "Westside", "Perry/Bolton",

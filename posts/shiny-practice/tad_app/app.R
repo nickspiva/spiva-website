@@ -41,7 +41,6 @@
 
 library(shiny)
 library(bslib)
-library(tidyverse)
 library(readr)
 library(dplyr)
 library(tidyr)
