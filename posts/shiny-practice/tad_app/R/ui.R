@@ -676,7 +676,7 @@ ui <- page_sidebar(
           class = "fw-bold mb-1"
         ),
         p(
-          "Total assessed value within each TAD boundary. Only the increment above each TAD's original baseline flows to Invest Atlanta.",
+          "Total assessed value within each TAD boundary. Only the increment - the tax revenue on property value above each TAD's original baseline - flows to Invest Atlanta.",
           class = "text-muted small mb-2"
         ),
         div(style = "overflow-x: auto;", tableOutput("hist_wide_table")),
