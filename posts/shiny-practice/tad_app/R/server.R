@@ -1354,4 +1354,25 @@ server <- function(input, output, session) {
     striped = TRUE,
     width = "100%"
   )
+
+  output$baseline_table <- renderTable(
+    {
+      tad_meta |>
+        select(tad_id, year_created, baseline) |>
+        mutate(
+          baseline_fmt = dollar(baseline, scale = 1e-6, suffix = "M", accuracy = 0.1)
+        ) |>
+        select(tad_id, year_created, baseline_fmt) |>
+        pivot_longer(cols = -tad_id, names_to = "row", values_to = "value") |>
+        pivot_wider(names_from = tad_id, values_from = value) |>
+        mutate(row = recode(row,
+          year_created  = "Baseline Year",
+          baseline_fmt  = "Baseline Value"
+        )) |>
+        rename(" " = row)
+    },
+    striped = TRUE,
+    width = "100%",
+    align = "r"
+  )
 }
