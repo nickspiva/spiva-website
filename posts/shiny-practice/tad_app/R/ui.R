@@ -208,6 +208,14 @@ ui <- page_sidebar(
           target = "_blank"
         ),
         class = "small text-muted mb-0"
+      ),
+      p(
+        tags$a(
+          "Click here for a more detailed explanation of how TADs work.",
+          href = "https://civicatlanta.org/blog/2025-10-17/tad-explainer",
+          target = "_blank",
+          class = "fw-semibold"
+        )
       )
     ),
 
@@ -302,6 +310,54 @@ ui <- page_sidebar(
     "
     )),
 
+    tags$button(
+      type = "button",
+      class = "btn btn-link btn-sm text-start w-100 d-flex justify-content-between align-items-center px-0 fw-bold mt-2",
+      style = "color: inherit; text-decoration: none;",
+      `data-bs-toggle` = "collapse",
+      `data-bs-target` = "#growth-explainer-collapse",
+      `aria-expanded` = "false",
+      span("About These Growth Rates", class = "h6 mb-0 fw-bold"),
+      tags$span("▼", class = "collapse-caret")
+    ),
+    div(
+      id = "growth-explainer-collapse",
+      class = "collapse mt-1",
+      p(
+        HTML(
+          "<strong>Historic TAD Growth:</strong> Each TAD is projected using its own
+          compound annual growth rate (CAGR) from 2007/08 to 2024. Reflects each TAD's
+          actual historical trajectory."
+        ),
+        class = "small text-muted mb-2"
+      ),
+      p(
+        HTML(
+          "<strong>Citywide Average:</strong> All TADs grow at the same rate: the
+          CAGR of total City of Atlanta assessed property value from the Fulton County
+          tax digest (2007–2024). A more conservative assumption."
+        ),
+        class = "small text-muted mb-2"
+      ),
+      p(
+        HTML(
+          "<strong>Optimistic:</strong> All TADs grow at the average CAGR of Atlanta's
+          three highest-growth TADs (Atlantic Station, Beltline, and Eastside).
+          Represents an upper-bound scenario."
+        ),
+        class = "small text-muted mb-2"
+      ),
+      p(
+        HTML(
+          "<em>Limitation: all methods apply a fixed annual growth rate through 2055.
+          In reality, growth rates fluctuate with market conditions, neighborhood
+          maturation, and broader economic cycles. A phased model (TAD-specific rate
+          while open, citywide rate after closure) is planned for a future version.</em>"
+        ),
+        class = "small text-muted fst-italic mb-0"
+      )
+    ),
+
     hr(class = "my-2"),
 
     h6(
@@ -379,11 +435,11 @@ ui <- page_sidebar(
   p(
     "Atlanta's Tax Allocation Districts (TADs) redirect property tax growth from ",
     "schools to fund development. While a TAD is open, all tax revenue on property value ",
-    "above the original baseline (known as the 'increment') goes to ",
-    strong("Invest Atlanta"),
-    " - not Atlanta Public Schools, the City, or County. ",
-    "Use the controls on the left to explore different closure scenarios.",
-    class = "text-muted mb-3"
+    "above the original baseline goes to Invest Atlanta,",
+    "not Atlanta Public Schools, the City, or County. ",
+    "Use the controls on the left to explore different scenarios.",
+    class = "text-muted mb-3",
+    style = "font-size: 17px;"
   ),
 
   # ── Revenue impact — stacked cards ───────────────────────
@@ -620,7 +676,7 @@ ui <- page_sidebar(
           class = "fw-bold mb-1"
         ),
         p(
-          "Total assessed value within each TAD boundary, in millions of dollars. Only the increment above each TAD's original baseline flows to Invest Atlanta.",
+          "Total assessed value within each TAD boundary. Only the increment above each TAD's original baseline flows to Invest Atlanta.",
           class = "text-muted small mb-2"
         ),
         div(style = "overflow-x: auto;", tableOutput("hist_wide_table")),

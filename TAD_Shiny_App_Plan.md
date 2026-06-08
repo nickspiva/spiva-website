@@ -45,19 +45,21 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 
 ## What's Been Built / Checked Off
 
-**Infrastructure** - \[x\] Shiny app scaffolded with `{bslib}` layout - \[x\] Real data loaded from `TAD Basics.csv` (historic property values 2007–2024, baselines, closure years for all three scenarios) - \[x\] TAD boundary shapefiles sourced and integrated - \[x\] City of Atlanta boundary shapefile sourced and integrated - \[x\] TIGER/Line road shapefiles (Fulton + DeKalb) sourced and integrated - \[x\] Consistent TAD color palette applied across all graphics - \[x\] Custom `theme_tad()` ggplot2 theme function - \[x\] `reactiveVal` cross-filtering wired across all charts and map - \[x\] Blank-space click to deselect (JavaScript + Shiny input) - \[x\] "× Show all" deselect link in map card header
+**Infrastructure** - \[x\] Shiny app scaffolded with `{bslib}` layout - \[x\] Real data loaded from `TAD Basics.csv` (historic property values 2007–2024, baselines, closure years for all three scenarios) - \[x\] TAD boundary shapefiles sourced and integrated - \[x\] City of Atlanta boundary shapefile sourced and integrated - \[x\] TIGER/Line road shapefiles (Fulton, DeKalb, Cobb, Clayton, Henry, Douglas, Cherokee) sourced and integrated - \[x\] Consistent TAD color palette applied across all graphics - \[x\] Custom `theme_tad()` ggplot2 theme function - \[x\] `reactiveVal` cross-filtering wired across all charts and map - \[x\] Blank-space click to deselect (JavaScript + Shiny input) - \[x\] "× Show all" deselect link in map card header - \[x\] `precompute.R` one-time script generates RDS cache files for expensive startup objects (`roads_sf`, `proj_list`, `diversion_list`); `data.R` loads from cache with `file.exists()` fallback for cold start
 
-**Scenario Controls** - \[x\] Per-TAD closure year sliders with tick marks showing preset positions - \[x\] Three preset buttons with active-state highlighting (filled when selected, outlined when not) - \[x\] Preset buttons reactive even before the custom slider accordion is opened (fallback logic in `closure_years`) - \[x\] Projection methodology radio buttons (4 options including TAD baseline CAGR) - \[x\] Closure years for all three scenarios in `tad_meta`
+**Scenario Controls** - \[x\] Per-TAD closure year sliders with tick marks showing preset positions - \[x\] Three preset buttons with active-state highlighting (filled when selected, outlined when not) - \[x\] Preset buttons reactive even before the custom slider accordion is opened (fallback logic in `closure_years`) - \[x\] Projection methodology radio buttons (4 options including TAD baseline CAGR) - \[x\] Closure years for all three scenarios in `tad_meta` - \[x\] "About These Plans" collapsible sidebar section explaining the three scenarios (what each one proposes and why they differ) - \[x\] Eastside PILOT exception modeled: per-TAD APS participation % — hardcoded per scenario (Eastside = 100% under Current Plan and Original NRI, 0% under Updated NRI); custom mode exposes per-TAD sliders; `compute_diverted()` and `proj_chart` both reflect PILOT rates
 
-**Charts** - \[x\] Historic property value chart with smart B/M tooltip formatting - \[x\] TAD map with city boundary, roads, colored polygons, and labels - \[x\] Projected APS revenue chart — active TADs only, start-of-line labels for 4 named TADs, empty-state fallback when no TADs close before 2055 - \[x\] Revenue diverted chart — on-curve labels via `geomtextpath`, end-of-line cumulative totals, no legend - \[x\] "What Could This Fund?" panel - \[x\] Both revenue charts share a `navset_card_tab` card
+**Charts** - \[x\] Historic property value chart with smart B/M tooltip formatting - \[x\] TAD map with city boundary, roads, colored polygons, and labels - \[x\] Projected APS revenue chart — active TADs only, start-of-line labels for 4 named TADs, empty-state fallback when no TADs close before 2055 - \[x\] Revenue diverted chart — on-curve labels via `geomtextpath`, end-of-line cumulative totals, no legend - \[x\] "What Could This Fund?" panel - \[x\] Both revenue charts share a `navset_card_tab` card - \[x\] Both charts start at 2030 (no pre-2030 display); cumulative diversion resets to zero at 2030 - \[x\] Diversion chart suppresses `$0B` y-axis label to avoid overlap with the 2030 x-axis label - \[x\] Lighter pre-closure line segments on projection chart for Eastside PILOT period
 
-**Dynamic Subheaders** - \[x\] Diversion chart: growth assumption name, cumulative gap vs. current plan, annual diversion at user-selectable year with inline picker - \[x\] Projected revenue chart: Beltline 2035 (or user-selected year) revenue example with inline picker, falls back gracefully when Beltline hasn't closed yet under the active scenario.
+**Dynamic Subheaders** - \[x\] Diversion chart: growth assumption name, cumulative gap vs. current plan (from 2030–2055), annual diversion at user-selectable year with inline picker - \[x\] Projected revenue chart: Beltline 2035 (or user-selected year) revenue example with inline picker, falls back gracefully when Beltline hasn't closed yet under the active scenario.
+
+**Relevant Links tab** - \[x\] NRI Information subsection with 4 links: Mayor's Updated NRI Legislation, Original NRI Legislation, Draft NRIC Final Report, NRI Website (Atlanta Neighborhoods) - \[x\] APS data, Georgia Education Finance, Geospatial data, and Research subsections (duplicate Georgia Education Finance divs removed)
 
 ------------------------------------------------------------------------
 
 ## Outstanding Items
 
-- [x] **Additional county road shapefiles** — currently only Fulton + DeKalb. Roads from Cobb, Clayton, and Henry counties cut off at county lines within the visible map extent. Add those TIGER/Line files and re-filter to S1100 + S1200.
+- [x] **Additional county road shapefiles** — added Cobb, Clayton, Henry, Douglas, and Cherokee TIGER/Line files. All 7 counties now loaded, filtered to S1100 + S1200, merged and reprojected. Replaced `st_read()` calls with RDS cache (`roads_sf.rds`) for fast startup.
 - [x] **Map fills container** — remove white space between the gray map background and the card border so the map bleeds edge-to-edge within its card.
 - [x] **Map card header polish** — "Click a district to highlight" subtext feels cluttered; consider removing or making it smaller/muted.
 
@@ -67,7 +69,7 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 - [x] **Redefine the "Optimistic" scenario** — now uses the average CAGR of the three demonstrably high-growth TADs (Atlantic Station, Beltline, Eastside) rather than the 75th percentile.
 - [x] **Add growth rate explainers** — in-UI description of what CAGR is, how each method is computed, and what the options represent. Could live as a small accordion or tooltip beneath the sidebar growth buttons.
 - [ ] **Dual-phase growth rate model** — projection scenario where each TAD uses its historical CAGR while open, then switches to citywide average after closure. Requires updating `build_projections()` and adding a new sidebar option.
-- [ ] **Eastside TAD PILOT exception — per-TAD APS participation % slider** — the Eastside TAD currently returns its full increment to APS via PILOT payments even while open, which the model doesn't reflect. Under the Mayor's original NRI, this arrangement was going to continue even with the TAD extended. One approach: add a per-TAD "APS participation %" slider (0–100%) in the custom closure accordion, defaulting to 0% (TAD open, revenue diverted) for all TADs except Eastside (100%). This lets users model the nuance without making the default view confusing. Caveat: this adds significant UI complexity — evaluate whether the policy specificity is worth the added friction for general audiences.
+- [x] **Eastside TAD PILOT exception — per-TAD APS participation % slider** — implemented. Hardcoded per scenario (Eastside = 100% under Current Plan and Original NRI, 0% under Updated NRI since Updated NRI dropped the Beltline and Perry Bolton TADs but also removed the Eastside PILOT arrangement). Custom mode exposes per-TAD participation sliders. `compute_diverted()` accepts a `pilot_df` argument; projection chart renders lighter pre-closure line segments for PILOT-paying TADs.
 
 ### "Why TAD Closures Matter" Panel
 
@@ -99,7 +101,7 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 ### Explainer & Sources
 
 - [x] **Growth rate explainer** — see Growth Assumption section above.
-- [ ] **Learn More section** — page-level section with links to the Mayor's NRI legislation, key APS budget/planning documents, GBPI reports, and other relevant sources.
+- [x] **Learn More / Relevant Links tab** — NRI Information, APS data, Georgia Education Finance, Geospatial data, and Research subsections with curated links. NRI Information includes Mayor's Updated NRI Legislation, Original NRI Legislation, Draft NRIC Final Report, and NRI Website.
 - [ ] **Feedback section** — small section inviting users to send feedback (email link or simple form).
 
 ### QA & Verification *(before public launch)*
@@ -144,7 +146,7 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 
 ### Phase 6 — Performance, Refactor & Documentation *(after feature completion)*
 
-**Performance optimization:** - \[ \] **Profile slow reactives** — use `profvis::profvis({ shiny::runApp("posts/shiny-practice/tad_app") })` to identify which reactive expressions take longest. Prime suspects: shapefile rendering on the map (re-renders on every `selected_tad` change), custom growth rate projection (recomputes on every slider move). - \[ \] **Debounce custom sliders** — wrap high-frequency slider inputs (closure year and growth rate sliders) in `debounce()` so projections only recompute after the user stops dragging, not on every tick. Reduces server load significantly. - \[ \] **Cache shapefile transforms** — the map renders `tad_sf`, `roads_sf`, and `city_sf` into SVG on every click interaction. Pre-computing and storing the base map layers (city boundary + roads) as a static rendered element could reduce per-interaction render time. - \[ \] **Pre-compute diversion data** — `diversion_data()` currently recomputes all three scenario lines when the growth method changes. Since the scenario closure dates are fixed, this could be pre-computed for all four growth methods at startup and looked up rather than recalculated reactively. - \[ \] **shinyapps.io instance sizing** — free tier uses a small instance. If load times are slow under real traffic, evaluate whether upgrading to a larger instance (or Posit Connect) is worthwhile.
+**Performance optimization:** - \[ \] **Profile slow reactives** — use `profvis::profvis({ shiny::runApp("posts/shiny-practice/tad_app") })` to identify which reactive expressions take longest. Prime suspects: shapefile rendering on the map (re-renders on every `selected_tad` change), custom growth rate projection (recomputes on every slider move). - \[ \] **Debounce custom sliders** — wrap high-frequency slider inputs (closure year and growth rate sliders) in `debounce()` so projections only recompute after the user stops dragging, not on every tick. Reduces server load significantly. - \[ \] **Cache shapefile transforms** — the map renders `tad_sf`, `roads_sf`, and `city_sf` into SVG on every click interaction. Pre-computing and storing the base map layers (city boundary + roads) as a static rendered element could reduce per-interaction render time. - \[x\] **Pre-compute expensive startup objects** — `precompute.R` (one-time local script) generates `roads_sf.rds`, `proj_list.rds`, and `diversion_list.rds` in a `precomputed/` directory inside the app folder. `data.R` loads these at startup via `readRDS()` with a `file.exists()` fallback that re-computes on the fly if the cache is missing. Run `source("posts/shiny-practice/tad_app/precompute.R")` from project root before each deploy. - \[ \] **shinyapps.io instance sizing** — free tier uses a small instance. If load times are slow under real traffic, evaluate whether upgrading to a larger instance (or Posit Connect) is worthwhile. - \[ \] **Debounce custom sliders** — wrap high-frequency slider inputs in `debounce()` so projections only recompute after the user stops dragging.
 
 **Code refactor:** - \[ \] **Light code refactor** — consider splitting stable/dense logic out of `app.R` into sourced files (e.g., `R/data.R`, `R/projections.R`, `R/theme.R`). Current file is \~2,000+ lines; threshold for splitting is \~2,500–3,000 or when finding specific logic becomes friction. - \[ \] **Code explainer document** — written guide to how the app fits together: the reactive graph, the cross-filtering pattern, the projection model, the ggiraph interactivity approach, the Bootstrap JS patterns used for the sidebar controls. Audience: future-you or a collaborator picking this up cold. - \[ \] **Inline comment pass** — ensure all non-obvious decisions have explanatory comments, particularly the JS/Shiny input wiring, the `closure_years()` fallback logic, and the custom growth rate reactive.
 
@@ -163,7 +165,7 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 | Data wrangling | `{tidyverse}` |  |
 | Custom theme | `theme_tad()` function | Defined once, applied to all charts |
 | Static export / social slides | `{ggplot2}` + `{camcorder}` | Phase 5 |
-| Hosting | Posit Connect |  |
+| Hosting | shinyapps.io (free tier) | Deploy: `rsconnect::deployApp("posts/shiny-practice/tad_app")` |
 
 ------------------------------------------------------------------------
 
@@ -215,6 +217,18 @@ Cards showing what the projected annual APS revenue from closed TADs (in 2035) c
 
 **Solution:** `geomtextpath::geom_textline()`, which draws both the line and its label in a single layer, with the text rotated to follow the line's slope. Key parameters: - `offset = unit(5, "pt")` shifts labels above the line; negative offset for the bottom line ("Current Plan") places it below - `gap = FALSE` keeps the line continuous beneath the text (setting `gap = TRUE` cut the line, which looked broken) - `offset` is not a mappable aesthetic, so two separate `geom_textline` calls are needed — one for Current Plan (negative offset) and one for the NRI scenarios (positive offset), using `data = ~ filter(.x, ...)` lambda syntax - A `geom_line_interactive(alpha = 0)` layer sits on top to preserve ggiraph hover events on the line
 
+### precompute.R — Positron working directory issues
+
+**Problem:** Running `precompute.R` from Positron's console hit a chain of working directory failures. Positron monkey-patches `source()`, wrapping it as `"original_source"`, so `setwd()` calls inside a sourced script don't persist after the call returns. Several approaches failed: `setwd()` before `source()`, `setwd()` + `on.exit()`, and `source(..., chdir = TRUE)` (which sets wd to the script's directory `R/`, not the app root, so relative paths like `TAD Basics.csv` still didn't resolve).
+
+**Solution:** `withr::with_dir(app_dir, source("R/data.R"))` — sets wd to the app root for the duration of the `source()` call, regardless of Positron's wrapping. The `app_dir` path is computed via `normalizePath(file.path(getwd(), "posts/shiny-practice/tad_app"))` rather than `rstudioapi::getSourceEditorContext()$path` (not available in Positron).
+
+### precompute.R — chicken-and-egg RDS problem
+
+**Problem:** After the working directory was fixed, `withr::with_dir()` successfully sourced `data.R` — but `data.R` now calls `readRDS("precomputed/proj_list.rds")` at the top level, which doesn't exist on the first run (the whole point of `precompute.R` is to create it). This caused a "cannot open compressed file" error, preventing `precompute.R` from ever generating the cache files.
+
+**Solution:** Wrapped all three `readRDS()` calls in `data.R` with `file.exists()` fallbacks. If the `.rds` file exists, load it; otherwise compute from scratch. This makes `data.R` self-contained for both cold-start (no cache) and warm-start (cache present) scenarios. `precompute.R` then runs cleanly: sources `data.R` (which computes fresh), then saves the results to `precomputed/`.
+
 ### Projected revenue chart — empty state
 
 **Problem:** Under Mayor's Original NRI, all TADs close after 2055, leaving `per_tad` empty. An empty ggplot with `scale_y_continuous(limits = c(0, NA))` errors because it can't determine an upper bound from no data.
@@ -251,8 +265,7 @@ Four selectable methods (radio button in scenario controls):
 | TAD closure years — all three scenarios | Same CSV | ✅ In app |
 | TAD boundary shapefiles | City of Atlanta Open Data | ✅ In app |
 | City of Atlanta boundary | `Official_Atlanta_City_Limits_-_Open_Data.shp` | ✅ In app |
-| Road centerlines (Fulton + DeKalb) | US Census TIGER/Line 2023 | ✅ In app |
-| Road centerlines (Cobb, Clayton, Henry) | US Census TIGER/Line 2023 | ⬜ Not yet added |
+| Road centerlines (7 counties: Fulton, DeKalb, Cobb, Clayton, Henry, Douglas, Cherokee) | US Census TIGER/Line 2023 | ✅ In app (cached as `roads_sf.rds`) |
 | APS millage rate | Assumed 20.74 mills | ⚠️ Needs verification |
 | Eastside TAD PILOT payments | Invest Atlanta / APS | ⬜ Not yet incorporated |
 | Unit costs for "What Could This Fund?" | Various — see outstanding items | ⚠️ Needs update |
