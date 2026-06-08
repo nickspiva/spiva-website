@@ -27,6 +27,10 @@ install.packages("geomtextpath")
 ```
 
 ```{r}
+install.packages("withr")
+```
+
+```{r}
 library(shiny)
 
 #runExample("shiny-dir/app.R")
@@ -102,4 +106,4 @@ ggplot(
   theme(legend.title = element_blank())
 ```
 
-Ok I've got the basic TAD property value chart going. Now to add a map of the TADs. 
+Ok I've got the basic TAD property value chart going. Now to add a map of the TADs.

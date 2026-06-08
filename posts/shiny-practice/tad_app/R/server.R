@@ -1358,17 +1358,19 @@ server <- function(input, output, session) {
   output$baseline_table <- renderTable(
     {
       tad_meta |>
-        select(tad_id, year_created, baseline) |>
+        select(tad_id, year_created, baseline, year_end_current) |>
         mutate(
-          year_created  = as.character(as.integer(year_created)),
-          baseline_fmt  = dollar(baseline, scale = 1e-6, suffix = "M", accuracy = 0.1)
+          year_created     = as.character(as.integer(year_created)),
+          baseline_fmt     = dollar(baseline, scale = 1e-6, suffix = "M", accuracy = 0.1),
+          year_end_current = as.character(as.integer(year_end_current))
         ) |>
-        select(tad_id, year_created, baseline_fmt) |>
+        select(tad_id, year_created, baseline_fmt, year_end_current) |>
         pivot_longer(cols = -tad_id, names_to = "row", values_to = "value") |>
         pivot_wider(names_from = tad_id, values_from = value) |>
         mutate(row = recode(row,
-          year_created  = "Baseline Year",
-          baseline_fmt  = "Baseline Value"
+          year_created     = "Baseline Year",
+          baseline_fmt     = "Baseline Value",
+          year_end_current = "Current Plan Closure Year"
         )) |>
         rename(" " = row)
     },

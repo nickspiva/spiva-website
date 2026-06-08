@@ -696,11 +696,12 @@ ui <- page_sidebar(
         ),
         div(style = "overflow-x: auto;", tableOutput("growth_rate_table")),
         tags$hr(class = "my-4"),
-        h6("Original TAD Property Tax Baselines", class = "fw-bold mb-1"),
+        h6("Original TAD Property Tax Baselines & Current Plan Closures", class = "fw-bold mb-1"),
         p(
           "The baseline is the assessed property value frozen at the time each TAD was created.
           Only the increment above this baseline flows to Invest Atlanta. The baseline itself
-          continues to generate tax revenue for APS, the City, and Fulton County.",
+          continues to generate tax revenue for APS, the City, and Fulton County.
+          Closure years shown are under the Current Plan.",
           class = "text-muted small mb-2"
         ),
         div(style = "overflow-x: auto;", tableOutput("baseline_table"))
