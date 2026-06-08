@@ -411,11 +411,19 @@ server <- function(input, output, session) {
   # changes never trigger a diversion recompute.
   diversion_data <- reactive({
     method <- input$proj_method %||% "tad"
-    if (method == "custom") {
+    raw <- if (method == "custom") {
       make_diversion_data(proj_data_base())
     } else {
       diversion_list[[method]]
     }
+    # All three scenarios are identical pre-2030 (no TADs close before then).
+    # Filter to 2030+ and reset cumulative from zero so the chart starts where
+    # the plans actually diverge.
+    raw |>
+      filter(year >= 2030) |>
+      group_by(scenario) |>
+      mutate(cumulative = cumsum(annual)) |>
+      ungroup()
   })
 
   # ── 7e-b. Diversion chart subheader (reactive) ───────────────────────────
@@ -479,7 +487,7 @@ server <- function(input, output, session) {
     HTML(sprintf(
       '<p class="text-muted small px-3 pt-1 mt-1 subheader-text">%s %s</p>',
       sprintf(
-        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2025 onward. Under the current growth assumption, based on <span class='dyn-val'>%s</span>, the Mayor's Updated NRI proposal would divert an additional <span class='dyn-val'>%s</span> more than the current plan over the next 30 years.",
+        "This chart projects the <strong>cumulative APS property tax revenue redirected to Invest Atlanta</strong> from 2030 onward. Under the current growth assumption, based on <span class='dyn-val'>%s</span>, the Mayor's Updated NRI proposal would divert an additional <span class='dyn-val'>%s</span> more than the current plan from 2030&ndash;2055.",
         growth_name,
         gap_fmt
       ),
@@ -622,7 +630,7 @@ server <- function(input, output, session) {
         expand = expansion(mult = c(0, 0.12))
       ) +
       scale_x_continuous(
-        breaks = seq(2025, 2055, by = 5),
+        breaks = seq(2030, 2055, by = 5),
         expand = expansion(add = c(0, 3))
       ) +
       coord_cartesian(clip = "off") +
@@ -924,7 +932,7 @@ server <- function(input, output, session) {
     # Rendered as lighter dashed lines to distinguish from post-closure revenue.
     pilot_tad <- pd |>
       left_join(cy, by = "tad_id") |>
-      filter(tad_id %in% active_tad_ids, year < closure_year, pilot_pct > 0) |>
+      filter(tad_id %in% active_tad_ids, year >= 2030, year < closure_year, pilot_pct > 0) |>
       mutate(
         aps_annual_revenue = aps_revenue_open,
         line_a = if (is.null(sel)) 0.4 else if_else(tad_id == sel, 0.55, 0.06),
@@ -936,12 +944,12 @@ server <- function(input, output, session) {
     # Return a blank chart with proper axes rather than letting ggplot error.
     if (nrow(per_tad) == 0 && nrow(pilot_tad) == 0) {
       p_empty <- ggplot(
-        data.frame(year = c(2025, PROJ_END), rev = c(0, 0)),
+        data.frame(year = c(2030, PROJ_END), rev = c(0, 0)),
         aes(x = year, y = rev)
       ) +
         annotate(
           "text",
-          x = mean(c(2025, PROJ_END)),
+          x = mean(c(2030, PROJ_END)),
           y = 0.5,
           label = "No active TADs close before 2055 under this scenario.\nRevenue to APS begins after 2055.",
           hjust = 0.5,
@@ -949,7 +957,7 @@ server <- function(input, output, session) {
           size = 3.2,
           color = "grey50"
         ) +
-        scale_x_continuous(breaks = seq(2025, PROJ_END, by = 5)) +
+        scale_x_continuous(breaks = seq(2030, PROJ_END, by = 5)) +
         scale_y_continuous(
           labels = label_dollar(scale = 1e-6, suffix = "M"),
           limits = c(0, 1)
@@ -972,7 +980,7 @@ server <- function(input, output, session) {
     vlines <- cy |>
       filter(
         tad_id %in% active_tad_ids,
-        closure_year >= 2025,
+        closure_year >= 2030,
         closure_year <= PROJ_END
       )
 
@@ -1081,6 +1089,7 @@ server <- function(input, output, session) {
         show.legend = FALSE
       ) +
       scale_color_manual(values = TAD_PALETTE, na.value = "grey70") +
+      scale_x_continuous(breaks = seq(2030, PROJ_END, by = 5)) +
       scale_y_continuous(labels = label_dollar(scale = 1e-6, suffix = "M")) +
       scale_size_identity() +
       scale_alpha_identity() +
