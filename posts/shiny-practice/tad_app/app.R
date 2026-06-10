@@ -29,14 +29,18 @@
 # input$<outputId>_selected = "Beltline" in the server,
 # which your reactive code can read like any other input.
 #
-# CROSS-FILTERING
+# CENTRAL STATE STORE
 # ─────────────────────────────────────────────────────────────
-# A single reactiveVal called `selected_tad` stores the
-# currently highlighted TAD (or NULL for "all").
-# Map clicks → update selected_tad
-# Chart clicks → update selected_tad
-# All three charts listen to selected_tad and re-render
-# whenever it changes — no manual wiring needed.
+# All variable state lives in one reactiveValues() store in the
+# server, with per-key dependency tracking:
+#   state$selected_tad  — highlighted TAD (NULL = all)
+#   state$closure_years — per-TAD closure year
+#   state$pilot_pcts    — per-TAD PILOT participation
+#   state$growth        — projection method + per-TAD rates
+# Widgets (sliders, presets, chart clicks) WRITE into the store;
+# reactives and outputs READ from it. Because invalidation is per
+# key, e.g. clicking a TAD re-renders only the three charts that
+# read state$selected_tad — no data is recomputed.
 # ============================================================
 
 library(shiny)

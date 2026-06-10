@@ -14,45 +14,192 @@ library(geomtextpath)
 # ════════════════════════════════════════════════════════════
 
 server <- function(input, output, session) {
-  # ── 7a. Shared state: which TAD is selected ──────────────
-  # reactiveVal() stores a single mutable value.
-  # Any reactive that reads selected_tad() automatically
-  # re-runs when it changes.
-  selected_tad <- reactiveVal(NULL)
-  active_preset <- reactiveVal("current") # matches app's initial slider state
+  # ── 7a. Central reactive store ────────────────────────────
+  # reactiveValues() is a single named container whose dependency tracking
+  # is PER KEY: writing state$pilot_pcts invalidates only readers of
+  # state$pilot_pcts, never readers of state$closure_years. Keys are chosen
+  # to match how things change together — that granularity is what preserves
+  # the app's recompute-avoidance (PILOT drags never touch the diversion
+  # chart; selecting a TAD never recomputes any data).
+  #
+  #   selected_tad  — VIEW state: highlighted TAD across charts (NULL = all)
+  #   closure_years — SCENARIO state: per-TAD closure year
+  #   pilot_pcts    — SCENARIO state: per-TAD PILOT participation (0–100)
+  #   growth        — SCENARIO state: projection method + per-TAD rates (%)
+  #
+  # Inputs (sliders, radios, chart clicks) WRITE into the store; reactives
+  # and outputs READ from it. Widgets are views of the store, not owners of
+  # the state — presets work whether or not the slider accordions have ever
+  # been opened, and no pre-render fallback logic is needed downstream.
 
+  # Active TADs: open, not yet closed, and with a known end year
+  active_tads <- tad_meta |> filter(!already_closed, !is.na(year_end_current))
+
+  state <- reactiveValues(
+    selected_tad = NULL,
+    # closure_years + pilot_pcts initialize to the "Current Plan" preset
+    # (Eastside PILOT at 100%)
+    closure_years = tibble(
+      tad_id = active_tads$tad_id,
+      closure_year = as.numeric(active_tads$year_end_current)
+    ),
+    pilot_pcts = tibble(
+      tad_id = active_tads$tad_id,
+      pilot_pct = if_else(active_tads$tad_id == "Eastside", 100, 0)
+    ),
+    # rates covers every TAD in growth_rates; gr_* sliders exist only for
+    # active TADs, the rest just keep their historical-CAGR defaults
+    growth = list(
+      method = "tad",
+      rates = tibble(
+        tad_id = growth_rates$tad_id,
+        rate_pct = round(growth_rates$cagr * 100, 1)
+      )
+    )
+  )
+
+  # ── 7a-i. Selection writers (cross-filtering) ─────────────
   # ignoreNULL = FALSE ensures these fire even when the selection becomes
   # empty (character(0)), which happens when the user clicks blank space
   # in a ggiraph chart. Without this, the observeEvent silently ignores
   # the deselect event and the highlight never clears.
   observeEvent(input$tad_map_selected, ignoreNULL = FALSE, {
     sel <- input$tad_map_selected
-    selected_tad(if (length(sel) == 0) NULL else sel[1])
+    state$selected_tad <- if (length(sel) == 0) NULL else sel[1]
   })
 
   observeEvent(input$historic_chart_selected, ignoreNULL = FALSE, {
     sel <- input$historic_chart_selected
-    selected_tad(if (length(sel) == 0) NULL else sel[1])
+    state$selected_tad <- if (length(sel) == 0) NULL else sel[1]
   })
 
   observeEvent(input$proj_chart_selected, ignoreNULL = FALSE, {
     sel <- input$proj_chart_selected
-    selected_tad(if (length(sel) == 0) NULL else sel[1])
+    state$selected_tad <- if (length(sel) == 0) NULL else sel[1]
   })
 
   # Explicit "Show all" button — always reliable
   observeEvent(input$clear_sel, {
-    selected_tad(NULL)
+    state$selected_tad <- NULL
   })
 
   # Blank-space click inside any ggiraph container (fired by the JS above)
   observeEvent(input$bg_click, {
-    selected_tad(NULL)
+    state$selected_tad <- NULL
+  })
+
+  # Preset closure year for a TAD; NA falls back to the current-plan year
+  preset_year <- function(tid, col) {
+    meta <- filter(tad_meta, tad_id == tid)
+    val <- meta[[col]]
+    if (is.na(val)) meta$year_end_current else val
+  }
+
+  # ── 7a-iii. Input → store writers ─────────────────────────
+  # One observer per slider. observeEvent handlers run isolated, so reading
+  # the store inside them adds no dependency. The equality guard breaks the
+  # write-back cycle (store → updateSliderInput → input change → store) and
+  # avoids a redundant invalidation when a preset has already set the value.
+  walk(active_tads$tad_id, \(tid) {
+    cl_id <- paste0("cl_", make.names(tid))
+    observeEvent(input[[cl_id]], {
+      cy <- state$closure_years
+      if (as.numeric(input[[cl_id]]) != cy$closure_year[cy$tad_id == tid]) {
+        cy$closure_year[cy$tad_id == tid] <- as.numeric(input[[cl_id]])
+        state$closure_years <- cy
+      }
+    })
+    pilot_id <- paste0("pilot_", make.names(tid))
+    observeEvent(input[[pilot_id]], {
+      pp <- state$pilot_pcts
+      if (as.numeric(input[[pilot_id]]) != pp$pilot_pct[pp$tad_id == tid]) {
+        pp$pilot_pct[pp$tad_id == tid] <- as.numeric(input[[pilot_id]])
+        state$pilot_pcts <- pp
+      }
+    })
+    gr_id <- paste0("gr_", make.names(tid))
+    observeEvent(input[[gr_id]], {
+      g <- state$growth
+      if (as.numeric(input[[gr_id]]) != g$rates$rate_pct[g$rates$tad_id == tid]) {
+        g$rates$rate_pct[g$rates$tad_id == tid] <- as.numeric(input[[gr_id]])
+        state$growth <- g
+      }
+    })
+  })
+
+  # Growth method: pushed from the radio-button / custom-panel JS in ui.R
+  observeEvent(input$proj_method, {
+    g <- state$growth
+    if (!identical(g$method, input$proj_method)) {
+      g$method <- input$proj_method
+      state$growth <- g
+    }
+  })
+
+  # ── 7a-iv. Store → slider sync ────────────────────────────
+  # Pushes store changes (presets, growth re-seeding) into rendered sliders.
+  # Skips sliders that already match (slider-originated changes don't echo)
+  # and silently no-ops for sliders that haven't been rendered yet — their
+  # renderUI reads initial values straight from the store. Split into one
+  # observer per key so e.g. a PILOT preset write doesn't run closure sync.
+  observe({
+    cy <- state$closure_years
+    walk(seq_len(nrow(cy)), \(i) {
+      cl_id <- paste0("cl_", make.names(cy$tad_id[i]))
+      val <- isolate(input[[cl_id]])
+      if (!is.null(val) && val != cy$closure_year[i]) {
+        updateSliderInput(session, cl_id, value = cy$closure_year[i])
+      }
+    })
+  })
+
+  observe({
+    pp <- state$pilot_pcts
+    walk(seq_len(nrow(pp)), \(i) {
+      pilot_id <- paste0("pilot_", make.names(pp$tad_id[i]))
+      val <- isolate(input[[pilot_id]])
+      if (!is.null(val) && val != pp$pilot_pct[i]) {
+        updateSliderInput(session, pilot_id, value = pp$pilot_pct[i])
+      }
+    })
+  })
+
+  observe({
+    g <- state$growth
+    walk(active_tads$tad_id, \(tid) {
+      gr_id <- paste0("gr_", make.names(tid))
+      val <- isolate(input[[gr_id]])
+      target <- g$rates$rate_pct[g$rates$tad_id == tid]
+      if (!is.null(val) && length(target) == 1 && val != target) {
+        updateSliderInput(session, gr_id, value = target)
+      }
+    })
+  })
+
+  # ── 7a-v. Derived state ───────────────────────────────────
+  # Which preset (if any) the current closure years correspond to — DERIVED
+  # from the store rather than tracked imperatively, so there is no flag to
+  # maintain and no "drift" observer: move a slider off a preset and this
+  # stops matching; move it back and the preset button relights.
+  active_preset <- reactive({
+    cy <- state$closure_years
+    matches <- function(col) {
+      every(cy$tad_id, \(tid) {
+        cy$closure_year[cy$tad_id == tid] == preset_year(tid, col)
+      })
+    }
+    if (matches("year_end_current")) {
+      "current"
+    } else if (matches("year_end_mayor1")) {
+      "mayor1"
+    } else if (matches("year_end_mayor2")) {
+      "mayor2"
+    } else {
+      NULL
+    }
   })
 
   # ── 7b. Dynamic sliders ───────────────────────────────────
-  # Active TADs: open, not yet closed, and with a known end year
-  active_tads <- tad_meta |> filter(!already_closed, !is.na(year_end_current))
 
   output$tad_sliders <- renderUI({
     SLIDER_MIN <- 2025
@@ -65,9 +212,12 @@ server <- function(input, output, session) {
       }
     }
 
-    # Build one slider per active TAD, then arrange in a grid
+    # Build one slider per active TAD, then arrange in a grid.
+    # isolate(): initial values come from current store state, but store
+    # changes must not re-render (and thereby reset) the sliders — after
+    # first render, the store→slider observer keeps them in sync.
+    cy <- isolate(state$closure_years)
     sliders <- map(active_tads$tad_id, \(tid) {
-      meta <- filter(tad_meta, tad_id == tid)
       div(
         style = "min-width: 130px;",
         tags$p(strong(tid), class = "mb-0 small text-center"),
@@ -76,7 +226,7 @@ server <- function(input, output, session) {
           label = NULL,
           min = SLIDER_MIN,
           max = SLIDER_MAX,
-          value = meta$year_end_current,
+          value = cy$closure_year[cy$tad_id == tid],
           step = 1,
           sep = "",
           ticks = FALSE
@@ -136,14 +286,11 @@ server <- function(input, output, session) {
   })
 
   # ── 7b-ii. Custom growth rate sliders ────────────────────
-  # One slider per active TAD; defaults to each TAD's historical CAGR.
-  # Only used when proj_method == "custom".
+  # One slider per active TAD; initial values from the store (seeded with
+  # each TAD's historical CAGR). Only used when growth method == "custom".
   output$growth_sliders <- renderUI({
+    g <- isolate(state$growth)
     sliders <- map(active_tads$tad_id, \(tid) {
-      default_rate <- round(
-        growth_rates$cagr[growth_rates$tad_id == tid] * 100,
-        1
-      )
       div(
         tags$p(strong(tid), class = "mb-0 small"),
         sliderInput(
@@ -151,7 +298,7 @@ server <- function(input, output, session) {
           label = NULL,
           min = 0,
           max = 15,
-          value = default_rate,
+          value = g$rates$rate_pct[g$rates$tad_id == tid],
           step = 0.1,
           post = "%",
           sep = "",
@@ -167,11 +314,10 @@ server <- function(input, output, session) {
   # Defaults to 0% (no participation). Does NOT affect the diversion chart,
   # which uses hardcoded scenario-specific PILOT assumptions.
   output$pilot_sliders <- renderUI({
-    # isolate() so re-clicking presets doesn't re-render and reset custom values;
-    # the initial render picks up whichever preset is active at open time.
-    preset <- isolate(active_preset()) %||% "current"
+    # isolate() so store changes don't re-render (and reset) the sliders;
+    # initial values come straight from the store.
+    pp <- isolate(state$pilot_pcts)
     sliders <- map(active_tads$tad_id, \(tid) {
-      default_pct <- if (tid == "Eastside" && preset %in% c("current", "mayor1")) 100 else 0
       div(
         tags$p(strong(tid), class = "mb-0 small"),
         sliderInput(
@@ -179,7 +325,7 @@ server <- function(input, output, session) {
           label = NULL,
           min = 0,
           max = 100,
-          value = default_pct,
+          value = pp$pilot_pct[pp$tad_id == tid],
           step = 5,
           post = "%",
           sep = "",
@@ -190,121 +336,58 @@ server <- function(input, output, session) {
     div(class = "px-1 pb-1", tagList(sliders))
   })
 
-  # Reads pilot slider inputs. When a slider hasn't been rendered yet (panel
-  # still collapsed), falls back to the active preset's assumed value rather
-  # than 0 — so Eastside starts at 100% under Current Plan on first load.
+  # PILOT participation per TAD, read straight from the store (as 0–1).
   # Debounced so dragging doesn't trigger proj_chart re-renders on every pixel.
   pilot_rates_raw <- reactive({
-    preset <- active_preset() %||% "current"
-    map_dfr(active_tads$tad_id, \(tid) {
-      val <- input[[paste0("pilot_", make.names(tid))]]
-      pct <- if (!is.null(val)) {
-        val / 100
-      } else {
-        # Pre-render fallback: match the hardcoded scenario PILOT assumptions
-        if (tid == "Eastside" && preset %in% c("current", "mayor1")) 1.0 else 0
-      }
-      tibble(tad_id = tid, pilot_pct = pct)
-    })
+    state$pilot_pcts |> transmute(tad_id, pilot_pct = pilot_pct / 100)
   })
   pilot_rates <- pilot_rates_raw |> debounce(350)
 
-  # When the custom growth panel opens, seed sliders with rates from the
-  # previously selected method — mirrors how closure sliders inherit preset dates.
+  # When the custom growth panel opens, re-seed the store's rates from the
+  # previously selected method — mirrors how closure sliders inherit preset
+  # dates. The store→slider sync observer pushes the new values into any
+  # rendered gr_* sliders.
   observeEvent(input$custom_growth_opened, {
     prev <- input$custom_growth_opened
-
-    rates <- switch(
+    g <- state$growth
+    g$rates$rate_pct <- switch(
       prev,
-      "tad" = setNames(round(growth_rates$cagr * 100, 1), growth_rates$tad_id),
-      "city" = setNames(
-        rep(round(citywide_cagr * 100, 1), nrow(growth_rates)),
-        growth_rates$tad_id
-      ),
-      "optimistic" = setNames(
-        rep(round(optimistic_cagr * 100, 1), nrow(growth_rates)),
-        growth_rates$tad_id
-      ),
-      setNames(round(growth_rates$cagr * 100, 1), growth_rates$tad_id) # fallback to tad
+      "city" = rep(round(citywide_cagr * 100, 1), nrow(g$rates)),
+      "optimistic" = rep(round(optimistic_cagr * 100, 1), nrow(g$rates)),
+      round(growth_rates$cagr * 100, 1) # "tad" and fallback
     )
-
-    walk(active_tads$tad_id, \(tid) {
-      val <- rates[[tid]]
-      if (!is.null(val) && !is.na(val)) {
-        updateSliderInput(session, paste0("gr_", make.names(tid)), value = val)
-      }
-    })
+    state$growth <- g
   })
 
   # ── 7c. Preset buttons ────────────────────────────────────
-  # observeEvent runs exactly once each time the button is clicked.
-  # updateSliderInput() programmatically sets a slider's value.
+  # Each preset writes the store's closure_years (from the preset's column)
+  # and pilot_pcts (from pilot_overrides, a named list of tad_id → pct
+  # 0–100; all other active TADs reset to 0). The store→slider observers
+  # propagate the new values into any rendered sliders, and active_preset()
+  # re-derives automatically — no flag-setting needed here.
 
-  apply_preset <- function(col) {
-    walk(active_tads$tad_id, \(tid) {
-      meta <- filter(tad_meta, tad_id == tid)
-      val <- meta[[col]]
-      if (is.na(val)) {
-        val <- meta$year_end_current
-      }
-      updateSliderInput(session, paste0("cl_", make.names(tid)), value = val)
+  apply_preset <- function(col, pilot_overrides = list()) {
+    cy <- isolate(state$closure_years)
+    cy$closure_year <- map_dbl(cy$tad_id, \(tid) {
+      as.numeric(preset_year(tid, col))
     })
-  }
+    state$closure_years <- cy
 
-  # Sets PILOT sliders to match a named scenario. pilot_overrides is a named
-  # list of tad_id → pct (0–100); all other active TADs are reset to 0.
-  apply_pilot_preset <- function(pilot_overrides = list()) {
-    walk(active_tads$tad_id, \(tid) {
-      val <- if (!is.null(pilot_overrides[[tid]])) pilot_overrides[[tid]] else 0
-      updateSliderInput(session, paste0("pilot_", make.names(tid)), value = val)
+    pp <- isolate(state$pilot_pcts)
+    pp$pilot_pct <- map_dbl(pp$tad_id, \(tid) {
+      if (!is.null(pilot_overrides[[tid]])) pilot_overrides[[tid]] else 0
     })
+    state$pilot_pcts <- pp
   }
 
   observeEvent(input$btn_current, {
-    apply_preset("year_end_current")
-    apply_pilot_preset(list("Eastside" = 100)) # Eastside → 100%, rest → 0%
-    active_preset("current")
+    apply_preset("year_end_current", list("Eastside" = 100))
   })
   observeEvent(input$btn_mayor1, {
-    apply_preset("year_end_mayor1")
-    apply_pilot_preset(list("Eastside" = 100)) # Eastside → 100%, rest → 0%
-    active_preset("mayor1")
+    apply_preset("year_end_mayor1", list("Eastside" = 100))
   })
   observeEvent(input$btn_mayor2, {
-    apply_preset("year_end_mayor2")
-    apply_pilot_preset() # all PILOTs → 0%
-    active_preset("mayor2")
-  })
-
-  # ── Slider drift: clear active preset when any slider moves off its preset value
-  observe({
-    # Read all sliders (establishes reactive dependency on each one)
-    slider_vals <- map(active_tads$tad_id, \(tid) {
-      input[[paste0("cl_", make.names(tid))]]
-    })
-
-    current <- isolate(active_preset())
-    if (is.null(current)) {
-      return()
-    }
-
-    col <- c(
-      current = "year_end_current",
-      mayor1 = "year_end_mayor1",
-      mayor2 = "year_end_mayor2"
-    )[[current]]
-
-    still_matches <- every(seq_along(active_tads$tad_id), \(i) {
-      meta <- filter(tad_meta, tad_id == active_tads$tad_id[i])
-      expected <- meta[[col]]
-      if (is.na(expected)) {
-        expected <- meta$year_end_current
-      }
-      val <- slider_vals[[i]]
-      is.null(val) || val == expected
-    })
-
-    if (!still_matches) active_preset(NULL)
+    apply_preset("year_end_mayor2") # all PILOTs → 0%
   })
 
   # ── Send active-preset key to JS whenever it changes
@@ -320,12 +403,11 @@ server <- function(input, output, session) {
   # Growth-rate-only projections — no PILOT. Used by diversion_data so that
   # moving PILOT sliders doesn't trigger the diversion chart to recompute.
   proj_data_base <- reactive({
-    method <- input$proj_method %||% "tad"
-    if (method == "custom") {
+    growth <- state$growth
+    if (growth$method == "custom") {
       map_dfr(seq_len(nrow(growth_rates)), \(i) {
         g <- growth_rates[i, ]
-        rate_pct <- input[[paste0("gr_", make.names(g$tad_id))]]
-        r <- if (!is.null(rate_pct)) rate_pct / 100 else g$cagr
+        r <- growth$rates$rate_pct[growth$rates$tad_id == g$tad_id] / 100
         tibble(
           year = (g$last_year + 1):PROJ_END,
           tad_id = g$tad_id,
@@ -338,7 +420,7 @@ server <- function(input, output, session) {
           aps_annual_revenue = increment * APS_MILLAGE / 1000
         )
     } else {
-      proj_list[[method]]
+      proj_list[[growth$method]]
     }
   })
 
@@ -353,42 +435,16 @@ server <- function(input, output, session) {
       )
   })
 
-  # Closure year for each TAD under the current slider/preset state.
+  # Closure year for each TAD: already-closed TADs use their actual historical
+  # end year; active TADs read straight from the store.
   # _raw fires immediately on every slider tick; the debounced version waits
   # until the user stops dragging so the chart only re-renders once per gesture.
   closure_years_raw <- reactive({
-    # Already-closed TADs: use their actual historical end year
     closed <- tad_meta |>
       filter(already_closed) |>
       transmute(tad_id, closure_year = year_end_current)
 
-    # When sliders haven't been rendered yet (accordion still closed), fall back
-    # to the active preset's column so preset buttons work before the accordion
-    # is ever opened.
-    preset_col <- switch(
-      active_preset() %||% "current",
-      "current" = "year_end_current",
-      "mayor1" = "year_end_mayor1",
-      "mayor2" = "year_end_mayor2",
-      "year_end_current"
-    )
-
-    # Active TADs: prefer the rendered slider value; fall back to preset column
-    open <- map_dfr(active_tads$tad_id, \(tid) {
-      val <- input[[paste0("cl_", make.names(tid))]]
-      tibble(
-        tad_id = tid,
-        closure_year = if (is.null(val)) {
-          meta <- filter(tad_meta, tad_id == tid)
-          fb <- meta[[preset_col]]
-          if (is.na(fb)) meta$year_end_current else fb
-        } else {
-          val
-        }
-      )
-    })
-
-    bind_rows(closed, open)
+    bind_rows(closed, state$closure_years)
   })
   closure_years <- closure_years_raw |> debounce(400)
 
@@ -410,7 +466,7 @@ server <- function(input, output, session) {
   # diversion_data depends on proj_data_base() not proj_data(), so PILOT slider
   # changes never trigger a diversion recompute.
   diversion_data <- reactive({
-    method <- input$proj_method %||% "tad"
+    method <- state$growth$method
     raw <- if (method == "custom") {
       make_diversion_data(proj_data_base())
     } else {
@@ -436,7 +492,7 @@ server <- function(input, output, session) {
       "optimistic" = "Optimistic Growth",
       "custom"    = "Custom Growth Rate"
     )
-    growth_name <- proj_labels[[input$proj_method %||% "tad"]]
+    growth_name <- proj_labels[[state$growth$method]]
     ref_year_div <- as.integer(input$ref_year_div %||% 2035)
 
     dd <- diversion_data()
@@ -657,7 +713,7 @@ server <- function(input, output, session) {
 
   # ── 7e. Graphic 1: Historic chart ────────────────────────
   output$historic_chart <- renderGirafe({
-    sel <- selected_tad()
+    sel <- state$selected_tad
 
     # Use alpha to dim non-selected lines; 1 = full, 0.12 = faded
     p <- hist_data |>
@@ -738,7 +794,7 @@ server <- function(input, output, session) {
   # The panel.background color matches the "surrounding area" gray, so any
   # aspect-ratio padding ggplot adds around the map panel is invisible.
   output$tad_map <- renderGirafe({
-    sel <- selected_tad()
+    sel <- state$selected_tad
 
     map_data <- tad_sf |>
       mutate(
@@ -842,7 +898,7 @@ server <- function(input, output, session) {
       "city"       = "Citywide Average Growth",
       "optimistic" = "Optimistic Growth",
       "custom"     = "Custom Growth Rate"
-    )[[input$proj_method %||% "tad"]]
+    )[[state$growth$method]]
 
     beltline_closure <- cy$closure_year[cy$tad_id == "Beltline"]
 
@@ -904,7 +960,7 @@ server <- function(input, output, session) {
 
   # ── 7g. Graphic 3: Projection chart ──────────────────────
   output$proj_chart <- renderGirafe({
-    sel <- selected_tad()
+    sel <- state$selected_tad
     cy <- closure_years()
     pd <- proj_data()
 
