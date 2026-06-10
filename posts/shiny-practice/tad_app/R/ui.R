@@ -3,6 +3,86 @@
 library(shiny)
 library(bslib)
 library(ggiraph)
+library(dplyr)
+library(purrr)
+
+# ════════════════════════════════════════════════════════════
+# § 5b  STATIC SIDEBAR SLIDERS ----
+# ════════════════════════════════════════════════════════════
+# Built once at startup from SCENARIO_DEFAULTS (data.R). active_tads is known
+# statically, so there's no reason to build these in renderUI: rendering them
+# here means they exist in the DOM from first load (even while their collapse
+# panels are hidden), so the server's store→slider sync observers can always
+# reach them — no suspendWhenHidden timing, no pre-render fallbacks.
+
+SLIDER_MIN <- 2025
+SLIDER_MAX <- 2060
+
+# Closure-year sliders, one per active TAD, stacked one per row
+closure_sliders_static <- local({
+  cy <- SCENARIO_DEFAULTS$closure_years
+  sliders <- map(cy$tad_id, \(tid) {
+    div(
+      style = "min-width: 130px;",
+      tags$p(strong(tid), class = "mb-0 small text-center"),
+      sliderInput(
+        inputId = paste0("cl_", make.names(tid)),
+        label = NULL,
+        min = SLIDER_MIN,
+        max = SLIDER_MAX,
+        value = cy$closure_year[cy$tad_id == tid],
+        step = 1,
+        sep = "",
+        ticks = FALSE
+      )
+    )
+  })
+  do.call(layout_column_wrap, c(list(width = 1), sliders))
+})
+
+# Custom growth-rate sliders (used when growth method == "custom")
+growth_sliders_static <- local({
+  rates <- SCENARIO_DEFAULTS$growth$rates
+  sliders <- map(ACTIVE_TADS$tad_id, \(tid) {
+    div(
+      tags$p(strong(tid), class = "mb-0 small"),
+      sliderInput(
+        inputId = paste0("gr_", make.names(tid)),
+        label = NULL,
+        min = 0,
+        max = 15,
+        value = rates$rate_pct[rates$tad_id == tid],
+        step = 0.1,
+        post = "%",
+        sep = "",
+        ticks = FALSE
+      )
+    )
+  })
+  div(class = "px-1 pb-1", tagList(sliders))
+})
+
+# PILOT participation sliders: 0–100% of the open-year increment to APS
+pilot_sliders_static <- local({
+  pp <- SCENARIO_DEFAULTS$pilot_pcts
+  sliders <- map(pp$tad_id, \(tid) {
+    div(
+      tags$p(strong(tid), class = "mb-0 small"),
+      sliderInput(
+        inputId = paste0("pilot_", make.names(tid)),
+        label = NULL,
+        min = 0,
+        max = 100,
+        value = pp$pilot_pct[pp$tad_id == tid],
+        step = 5,
+        post = "%",
+        sep = "",
+        ticks = FALSE
+      )
+    )
+  })
+  div(class = "px-1 pb-1", tagList(sliders))
+})
 
 # ════════════════════════════════════════════════════════════
 # § 6  UI ----
@@ -22,6 +102,18 @@ ui <- page_sidebar(
   tags$head(tags$link(
     rel = "stylesheet",
     href = "https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fira+Sans+Condensed:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+  )),
+
+  # ── JS: fix slider geometry inside collapsed panels ──────
+  # Sliders are rendered statically inside hidden collapse panels;
+  # ion.rangeSlider computes pixel positions at init time, when widths are 0.
+  # It re-computes on window resize, so trigger one when a panel opens.
+  tags$script(HTML(
+    "
+    $(document).on('shown.bs.collapse',
+      '#tad-sliders-collapse, #growth-sliders-collapse, #pilot-sliders-collapse',
+      function() { $(window).trigger('resize'); });
+  "
   )),
 
   # ── JS: background-click deselect ────────────────────────
@@ -116,6 +208,12 @@ ui <- page_sidebar(
     .risk-flip-front, .risk-flip-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 0.375rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; overflow: hidden; }
     .risk-flip-back { transform: rotateY(180deg); overflow-y: auto; justify-content: flex-start; align-items: flex-start; }
     .risk-flip-hint { font-size: 0.65rem; color: #adb5bd; margin-top: auto; padding-top: 6px; user-select: none; width: 100%; text-align: center; flex-shrink: 0; }
+    /* The navy fill encodes nothing on these pick-a-value sliders; fade it
+       so it reads as a position cue without dominating. Use 'transparent'
+       to remove it entirely. */
+    #tad-sliders-collapse .irs-bar,
+    #growth-sliders-collapse .irs-bar,
+    #pilot-sliders-collapse .irs-bar { background: rgba(74,144,217,0.18); border: none; }
     @keyframes subheader-fade { from { opacity: 0.45; } to { opacity: 1; } }
     .subheader-text { animation: subheader-fade 0.5s ease-out; }
     .dyn-val { background: rgba(74,144,217,0.12); border-radius: 3px; padding: 0 3px; font-weight: 600; }
@@ -165,7 +263,7 @@ ui <- page_sidebar(
     div(
       id = "tad-sliders-collapse",
       class = "collapse mt-2",
-      uiOutput("tad_sliders")
+      closure_sliders_static
     ),
 
     tags$button(
@@ -283,7 +381,7 @@ ui <- page_sidebar(
     div(
       id = "growth-sliders-collapse",
       class = "collapse mt-1",
-      uiOutput("growth_sliders")
+      growth_sliders_static
     ),
     tags$script(HTML(
       "
@@ -382,7 +480,7 @@ ui <- page_sidebar(
     div(
       id = "pilot-sliders-collapse",
       class = "collapse mt-1",
-      uiOutput("pilot_sliders")
+      pilot_sliders_static
     ),
 
     hr(class = "my-2"),

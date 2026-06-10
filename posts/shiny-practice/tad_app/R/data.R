@@ -358,6 +358,35 @@ LAST_CLOSURE_CURRENT <- max(
 # the point where the NRI lines go flat on the diversion chart
 LAST_CLOSURE_NRI <- 2055
 
+# ── Scenario defaults ──────────────────────────────────────────────────────
+# Single definition of the app's startup scenario, shared by ui.R (initial
+# values of the statically-built sliders) and server.R (initial value of the
+# central reactiveValues store) — so widgets and store agree at startup by
+# construction.
+ACTIVE_TADS <- tad_meta |> filter(!already_closed, !is.na(year_end_current))
+
+SCENARIO_DEFAULTS <- list(
+  # "Current Plan" preset
+  closure_years = tibble(
+    tad_id = ACTIVE_TADS$tad_id,
+    closure_year = as.numeric(ACTIVE_TADS$year_end_current)
+  ),
+  # Eastside PILOT at 100%, all others 0%
+  pilot_pcts = tibble(
+    tad_id = ACTIVE_TADS$tad_id,
+    pilot_pct = if_else(ACTIVE_TADS$tad_id == "Eastside", 100, 0)
+  ),
+  # Historic TAD growth; rates cover every TAD in growth_rates (sliders
+  # exist only for active TADs, the rest keep their CAGR defaults)
+  growth = list(
+    method = "tad",
+    rates = tibble(
+      tad_id = growth_rates$tad_id,
+      rate_pct = round(growth_rates$cagr * 100, 1)
+    )
+  )
+)
+
 
 # ════════════════════════════════════════════════════════════
 # § 4  SHAPEFILES ----

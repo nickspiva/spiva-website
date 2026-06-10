@@ -33,29 +33,16 @@ server <- function(input, output, session) {
   # been opened, and no pre-render fallback logic is needed downstream.
 
   # Active TADs: open, not yet closed, and with a known end year
-  active_tads <- tad_meta |> filter(!already_closed, !is.na(year_end_current))
+  active_tads <- ACTIVE_TADS
 
+  # Initialized from SCENARIO_DEFAULTS (data.R) — the same defaults the
+  # static sliders in ui.R are built with, so store and widgets agree at
+  # startup by construction.
   state <- reactiveValues(
     selected_tad = NULL,
-    # closure_years + pilot_pcts initialize to the "Current Plan" preset
-    # (Eastside PILOT at 100%)
-    closure_years = tibble(
-      tad_id = active_tads$tad_id,
-      closure_year = as.numeric(active_tads$year_end_current)
-    ),
-    pilot_pcts = tibble(
-      tad_id = active_tads$tad_id,
-      pilot_pct = if_else(active_tads$tad_id == "Eastside", 100, 0)
-    ),
-    # rates covers every TAD in growth_rates; gr_* sliders exist only for
-    # active TADs, the rest just keep their historical-CAGR defaults
-    growth = list(
-      method = "tad",
-      rates = tibble(
-        tad_id = growth_rates$tad_id,
-        rate_pct = round(growth_rates$cagr * 100, 1)
-      )
-    )
+    closure_years = SCENARIO_DEFAULTS$closure_years, # "Current Plan" preset
+    pilot_pcts = SCENARIO_DEFAULTS$pilot_pcts, # Eastside PILOT at 100%
+    growth = SCENARIO_DEFAULTS$growth # method "tad" + per-TAD CAGR rates
   )
 
   # ── 7a-i. Selection writers (cross-filtering) ─────────────
@@ -199,142 +186,11 @@ server <- function(input, output, session) {
     }
   })
 
-  # ── 7b. Dynamic sliders ───────────────────────────────────
-
-  output$tad_sliders <- renderUI({
-    SLIDER_MIN <- 2025
-    SLIDER_MAX <- 2060
-    pct <- function(yr) {
-      if (is.na(yr)) {
-        NULL
-      } else {
-        (yr - SLIDER_MIN) / (SLIDER_MAX - SLIDER_MIN) * 100
-      }
-    }
-
-    # Build one slider per active TAD, then arrange in a grid.
-    # isolate(): initial values come from current store state, but store
-    # changes must not re-render (and thereby reset) the sliders — after
-    # first render, the store→slider observer keeps them in sync.
-    cy <- isolate(state$closure_years)
-    sliders <- map(active_tads$tad_id, \(tid) {
-      div(
-        style = "min-width: 130px;",
-        tags$p(strong(tid), class = "mb-0 small text-center"),
-        sliderInput(
-          inputId = paste0("cl_", make.names(tid)),
-          label = NULL,
-          min = SLIDER_MIN,
-          max = SLIDER_MAX,
-          value = cy$closure_year[cy$tad_id == tid],
-          step = 1,
-          sep = "",
-          ticks = FALSE
-        )
-      )
-    })
-
-    # Build JS calls to place tick marks for each TAD.
-    # Three ticks per slider, matching the preset button colors:
-    #   blue  = Current planned closure year
-    #   amber = Mayor's original NRI proposal
-    #   red   = Mayor's updated NRI proposal
-    tick_calls <- map_chr(active_tads$tad_id, \(tid) {
-      meta <- filter(tad_meta, tad_id == tid)
-      sid <- paste0("cl_", make.names(tid))
-      calls <- c(
-        if (!is.na(meta$year_end_current)) {
-          sprintf(
-            'addSliderTick("%s", %.2f, "#4a90d9", "Current: %d");',
-            sid,
-            pct(meta$year_end_current),
-            meta$year_end_current
-          )
-        },
-        if (!is.na(meta$year_end_mayor1)) {
-          sprintf(
-            'addSliderTick("%s", %.2f, "#e8a020", "Mayor orig. NRI: %d");',
-            sid,
-            pct(meta$year_end_mayor1),
-            meta$year_end_mayor1
-          )
-        },
-        if (!is.na(meta$year_end_mayor2)) {
-          sprintf(
-            'addSliderTick("%s", %.2f, "#e74c3c", "Mayor updated NRI: %d");',
-            sid,
-            pct(meta$year_end_mayor2),
-            meta$year_end_mayor2
-          )
-        }
-      )
-      paste(calls, collapse = "\n")
-    })
-
-    # setTimeout(, 150) waits for ion.rangeSlider to finish rendering the
-    # .irs-line elements before we try to inject the tick marks into them.
-    tick_script <- tags$script(HTML(sprintf(
-      "setTimeout(function() {\n%s\n}, 150);",
-      paste(tick_calls, collapse = "\n")
-    )))
-
-    tagList(
-      # width = 1 stacks sliders one per row — fits the narrow sidebar
-      do.call(layout_column_wrap, c(list(width = 1), sliders)),
-      tick_script
-    )
-  })
-
-  # ── 7b-ii. Custom growth rate sliders ────────────────────
-  # One slider per active TAD; initial values from the store (seeded with
-  # each TAD's historical CAGR). Only used when growth method == "custom".
-  output$growth_sliders <- renderUI({
-    g <- isolate(state$growth)
-    sliders <- map(active_tads$tad_id, \(tid) {
-      div(
-        tags$p(strong(tid), class = "mb-0 small"),
-        sliderInput(
-          inputId = paste0("gr_", make.names(tid)),
-          label = NULL,
-          min = 0,
-          max = 15,
-          value = g$rates$rate_pct[g$rates$tad_id == tid],
-          step = 0.1,
-          post = "%",
-          sep = "",
-          ticks = FALSE
-        )
-      )
-    })
-    div(class = "px-1 pb-1", tagList(sliders))
-  })
-
-  # ── 7b-iii. PILOT participation sliders ─────────────────────
-  # One slider per active TAD: 0–100% of the open-year increment returned to APS.
-  # Defaults to 0% (no participation). Does NOT affect the diversion chart,
-  # which uses hardcoded scenario-specific PILOT assumptions.
-  output$pilot_sliders <- renderUI({
-    # isolate() so store changes don't re-render (and reset) the sliders;
-    # initial values come straight from the store.
-    pp <- isolate(state$pilot_pcts)
-    sliders <- map(active_tads$tad_id, \(tid) {
-      div(
-        tags$p(strong(tid), class = "mb-0 small"),
-        sliderInput(
-          inputId = paste0("pilot_", make.names(tid)),
-          label = NULL,
-          min = 0,
-          max = 100,
-          value = pp$pilot_pct[pp$tad_id == tid],
-          step = 5,
-          post = "%",
-          sep = "",
-          ticks = FALSE
-        )
-      )
-    })
-    div(class = "px-1 pb-1", tagList(sliders))
-  })
+  # ── 7b. Sliders are static ────────────────────────────────
+  # The closure / growth / PILOT sliders are built statically in ui.R from
+  # SCENARIO_DEFAULTS, so they exist in the DOM from first page load and the
+  # store→slider sync observers above can always reach them. Nothing to
+  # render server-side.
 
   # PILOT participation per TAD, read straight from the store (as 0–1).
   # Debounced so dragging doesn't trigger proj_chart re-renders on every pixel.
