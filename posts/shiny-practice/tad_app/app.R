@@ -38,9 +38,11 @@
 #   state$pilot_pcts    — per-TAD PILOT participation
 #   state$growth        — projection method + per-TAD rates
 # Widgets (sliders, presets, chart clicks) WRITE into the store;
-# reactives and outputs READ from it. Because invalidation is per
-# key, e.g. clicking a TAD re-renders only the three charts that
-# read state$selected_tad — no data is recomputed.
+# reactives and outputs READ from it, each invalidating only on
+# the keys it reads. Selection highlighting is applied client-side
+# by ggiraph CSS (opts_selection / opts_selection_inv), so clicking
+# a TAD re-renders nothing — the server just relays the selection
+# to the other charts via "<outputId>_set" messages.
 # ============================================================
 
 library(shiny)

@@ -15,8 +15,12 @@ library(purrr)
 # panels are hidden), so the server's store→slider sync observers can always
 # reach them — no suspendWhenHidden timing, no pre-render fallbacks.
 
-SLIDER_MIN <- 2025
-SLIDER_MAX <- 2060
+# Range must contain every preset value: current-plan closures span
+# 2030–2050, and both Mayor NRI presets are 2056 in the source data (the
+# increment is diverted through 2055 and returns to APS in 2056). A max of
+# 2055 would clamp the Mayor presets and break preset detection.
+SLIDER_MIN <- 2030
+SLIDER_MAX <- 2056
 
 # Closure-year sliders, one per active TAD, stacked one per row
 closure_sliders_static <- local({

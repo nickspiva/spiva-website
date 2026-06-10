@@ -46,34 +46,67 @@ server <- function(input, output, session) {
   )
 
   # ── 7a-i. Selection writers (cross-filtering) ─────────────
+  # Highlight/dim styling is applied CLIENT-SIDE by ggiraph
+  # (opts_selection / opts_selection_inv CSS in each chart's girafe call),
+  # so a selection change ships a TAD name to the browser, not three
+  # re-rendered SVGs. The server's only job is to keep the three charts'
+  # selections in sync through the store.
+
+  # Charts whose selection is kept in sync
+  SELECTABLE_CHARTS <- c("tad_map", "historic_chart", "proj_chart")
+
+  set_selected <- function(sel) {
+    new <- if (length(sel) == 0) NULL else sel[1]
+    # Guard: the programmatic *_set messages below echo back through the
+    # *_selected inputs; only a real change should invalidate the store key.
+    if (!identical(state$selected_tad, new)) {
+      state$selected_tad <- new
+    }
+  }
+
   # ignoreNULL = FALSE ensures these fire even when the selection becomes
   # empty (character(0)), which happens when the user clicks blank space
   # in a ggiraph chart. Without this, the observeEvent silently ignores
   # the deselect event and the highlight never clears.
   observeEvent(input$tad_map_selected, ignoreNULL = FALSE, {
-    sel <- input$tad_map_selected
-    state$selected_tad <- if (length(sel) == 0) NULL else sel[1]
+    set_selected(input$tad_map_selected)
   })
 
   observeEvent(input$historic_chart_selected, ignoreNULL = FALSE, {
-    sel <- input$historic_chart_selected
-    state$selected_tad <- if (length(sel) == 0) NULL else sel[1]
+    set_selected(input$historic_chart_selected)
   })
 
   observeEvent(input$proj_chart_selected, ignoreNULL = FALSE, {
-    sel <- input$proj_chart_selected
-    state$selected_tad <- if (length(sel) == 0) NULL else sel[1]
+    set_selected(input$proj_chart_selected)
   })
 
   # Explicit "Show all" button — always reliable
   observeEvent(input$clear_sel, {
-    state$selected_tad <- NULL
+    set_selected(NULL)
   })
 
   # Blank-space click inside any ggiraph container (fired by the JS above)
   observeEvent(input$bg_click, {
-    state$selected_tad <- NULL
+    set_selected(NULL)
   })
+
+  # Broadcast the current selection to every chart after EVERY reactive
+  # flush. ggiraph registers a "<outputId>_set" message handler per widget
+  # that sets its selection (and applies the selection CSS) client-side.
+  # Running after every flush — not just on selection changes — means a
+  # freshly re-rendered chart (e.g. proj_chart after a closure-slider drag)
+  # immediately gets the current selection re-applied instead of losing its
+  # highlight. The messages are a few bytes; idempotent re-sends are cheap.
+  session$onFlushed(
+    function() {
+      sel <- isolate(state$selected_tad)
+      msg <- if (is.null(sel)) character(0) else sel
+      walk(SELECTABLE_CHARTS, \(id) {
+        session$sendCustomMessage(paste0(id, "_set"), msg)
+      })
+    },
+    once = FALSE
+  )
 
   # Preset closure year for a TAD; NA falls back to the current-plan year
   preset_year <- function(tid, col) {
@@ -569,36 +602,25 @@ server <- function(input, output, session) {
 
   # ── 7e. Graphic 1: Historic chart ────────────────────────
   output$historic_chart <- renderGirafe({
-    sel <- state$selected_tad
-
-    # Use alpha to dim non-selected lines; 1 = full, 0.12 = faded
+    # Selection highlighting is client-side (opts_selection /
+    # opts_selection_inv CSS below), so this renders ONCE with neutral
+    # styling and does not re-render when the selection changes.
     p <- hist_data |>
-      mutate(
-        # if (is.null(sel)) returns TRUE (scalar that recycles), avoiding
-        # the logical(0) issue that tad_id == NULL would produce
-        is_sel = if (is.null(sel)) TRUE else tad_id == sel,
-        line_a = if_else(is_sel, 1, 0.12),
-        line_w = if_else(is_sel, 1.1, 0.45),
-        pt_size = if_else(is_sel, 1.8, 0.8)
-      ) |>
       ggplot(aes(x = year, y = value, color = tad_id, group = tad_id)) +
       # geom_line_interactive handles click-to-select (data_id) but its tooltip
       # attaches to the whole SVG path, so it only ever shows one value.
       # We give it a minimal tooltip; per-year values come from the points below.
       geom_line_interactive(
         aes(
-          alpha = line_a,
-          linewidth = line_w,
           data_id = tad_id,
           tooltip = tad_id # simple label — points give the year+value detail
-        )
+        ),
+        linewidth = 1.1
       ) +
       # geom_point_interactive creates one SVG circle per row, so each point
       # gets its own tooltip with the correct year and value.
       geom_point_interactive(
         aes(
-          alpha = line_a,
-          size = pt_size,
           data_id = tad_id,
           tooltip = paste0(
             "<b>",
@@ -612,13 +634,11 @@ server <- function(input, output, session) {
               dollar(value, scale = 1e-6, suffix = "M", accuracy = 1)
             )
           )
-        )
+        ),
+        size = 1.8
       ) +
-      scale_size_identity() +
       scale_color_manual(values = TAD_PALETTE, na.value = "grey70") +
       scale_y_continuous(labels = label_dollar(scale = 1e-9, suffix = "B")) +
-      scale_alpha_identity() +
-      scale_linewidth_identity() +
       labs(y = "") +
       theme_tad()
 
@@ -628,6 +648,7 @@ server <- function(input, output, session) {
       height_svg = 4,
       options = list(
         opts_selection(type = "single", css = "stroke-width:3px; opacity:1;"),
+        opts_selection_inv(css = "opacity:0.12;"),
         opts_hover(css = "cursor:pointer; opacity:0.9;"),
         opts_tooltip(
           css = "background:white; border:1px solid #ccc;
@@ -650,17 +671,10 @@ server <- function(input, output, session) {
   # The panel.background color matches the "surrounding area" gray, so any
   # aspect-ratio padding ggplot adds around the map panel is invisible.
   output$tad_map <- renderGirafe({
-    sel <- state$selected_tad
-
-    map_data <- tad_sf |>
-      mutate(
-        fill_a = if (is.null(sel)) {
-          0.70
-        } else {
-          if_else(!is.na(tad_id) & tad_id == sel, 0.88, 0.15)
-        }
-      )
-
+    # Selection highlighting is client-side (opts_selection /
+    # opts_selection_inv CSS below). Nothing reactive is read here, so the
+    # map — the heaviest chart (sf polygons + roads) — renders exactly once
+    # per session.
     p <- ggplot() +
       # City of Atlanta boundary
       geom_sf(
@@ -678,16 +692,16 @@ server <- function(input, output, session) {
       ) +
       # TAD polygons (interactive)
       geom_sf_interactive(
-        data = map_data,
+        data = tad_sf,
         aes(
           fill = tad_id,
-          alpha = fill_a,
           data_id = tad_id,
           tooltip = paste0(
             coalesce(tad_id, as.character(shp_name)),
             if_else(!is.na(already_closed) & already_closed, " (closed)", "")
           )
         ),
+        alpha = 0.70,
         color = "white",
         linewidth = 0.6
       ) +
@@ -695,7 +709,7 @@ server <- function(input, output, session) {
       geom_sf_label(
         data = tad_labels,
         aes(label = label),
-        size = 2.3,
+        size = 2.7,
         color = "grey10",
         fill = "white",
         alpha = 0.80,
@@ -709,7 +723,6 @@ server <- function(input, output, session) {
         na.value = "grey80",
         guide = "none"
       ) +
-      scale_alpha_identity() +
       coord_sf(
         xlim = c(-84.62, -84.27),
         ylim = c(33.62, 33.91),
@@ -733,6 +746,7 @@ server <- function(input, output, session) {
           type = "single",
           css = "stroke:black; stroke-width:2.5px; opacity:1;"
         ),
+        opts_selection_inv(css = "opacity:0.15;"),
         opts_hover(css = "cursor:pointer; opacity:0.85;"),
         opts_tooltip(
           css = "background:white; border:1px solid #ccc;
@@ -816,7 +830,10 @@ server <- function(input, output, session) {
 
   # ── 7g. Graphic 3: Projection chart ──────────────────────
   output$proj_chart <- renderGirafe({
-    sel <- state$selected_tad
+    # Selection highlighting is client-side (opts_selection /
+    # opts_selection_inv CSS below) — this re-renders only when the DATA
+    # changes (closure years, growth method/rates, PILOT rates), never when
+    # the selection changes.
     cy <- closure_years()
     pd <- proj_data()
 
@@ -833,11 +850,7 @@ server <- function(input, output, session) {
 
     per_tad <- pd |>
       left_join(cy, by = "tad_id") |>
-      filter(tad_id %in% active_tad_ids, year >= closure_year) |>
-      mutate(
-        line_a = if (is.null(sel)) 0.8 else if_else(tad_id == sel, 1, 0.12),
-        line_w = if (is.null(sel)) 0.8 else if_else(tad_id == sel, 1.4, 0.45)
-      )
+      filter(tad_id %in% active_tad_ids, year >= closure_year)
 
     # Pre-closure PILOT segments: shown only for TADs where pilot_pct > 0.
     # Uses aps_revenue_open (increment × millage × pilot_pct) as the y value.
@@ -845,11 +858,7 @@ server <- function(input, output, session) {
     pilot_tad <- pd |>
       left_join(cy, by = "tad_id") |>
       filter(tad_id %in% active_tad_ids, year >= 2030, year < closure_year, pilot_pct > 0) |>
-      mutate(
-        aps_annual_revenue = aps_revenue_open,
-        line_a = if (is.null(sel)) 0.4 else if_else(tad_id == sel, 0.55, 0.06),
-        line_w = if (is.null(sel)) 0.55 else if_else(tad_id == sel, 1.0, 0.3)
-      )
+      mutate(aps_annual_revenue = aps_revenue_open)
 
     # ── Empty-state guard ─────────────────────────────────────────────────
     # Under scenarios where all TADs close after 2055, per_tad has no rows.
@@ -897,20 +906,12 @@ server <- function(input, output, session) {
       )
 
     # ── Start-of-line labels ───────────────────────────────────────────────
-    # Individual TADs: label at first data point, stagger same-year pairs
+    # Individual TADs: label at first data point
     labels_individual <- per_tad |>
       filter(tad_id %in% individual_ids) |>
       group_by(tad_id) |>
       slice_min(year, n = 1) |>
-      ungroup() |>
-      arrange(year, aps_annual_revenue) |>
-      group_by(year) |>
-      mutate(rank_in_yr = row_number()) |>
-      ungroup() |>
-      mutate(
-        lbl_vjust = 1.6,
-        lbl_alpha = line_a
-      )
+      ungroup()
 
     p <- ggplot(
       per_tad,
@@ -930,18 +931,16 @@ server <- function(input, output, session) {
             geom_line_interactive(
               data = pilot_tad,
               aes(
-                alpha = line_a,
-                linewidth = line_w,
                 data_id = tad_id,
                 tooltip = tad_id
               ),
+              alpha = 0.4,
+              linewidth = 0.55,
               linetype = "dashed"
             ),
             geom_point_interactive(
               data = pilot_tad,
               aes(
-                alpha = line_a,
-                size = line_w,
                 data_id = tad_id,
                 tooltip = paste0(
                   "<b>",
@@ -957,23 +956,23 @@ server <- function(input, output, session) {
                     accuracy = 0.1
                   )
                 )
-              )
+              ),
+              alpha = 0.4,
+              size = 0.55
             )
           )
         }
       } +
       geom_line_interactive(
         aes(
-          alpha = line_a,
-          linewidth = line_w,
           data_id = tad_id,
           tooltip = tad_id # line tooltip is simple; points give year detail
-        )
+        ),
+        alpha = 0.8,
+        linewidth = 0.8
       ) +
       geom_point_interactive(
         aes(
-          alpha = line_a,
-          size = line_w, # scale with selection state like lines do
           data_id = tad_id,
           tooltip = paste0(
             "<b>",
@@ -989,23 +988,25 @@ server <- function(input, output, session) {
               accuracy = 0.1
             )
           )
-        )
+        ),
+        alpha = 0.8,
+        size = 0.8
       ) +
-      # Individual TAD names at the start of each line; dim with selection
-      geom_text(
+      # Individual TAD names at the start of each line. Interactive (with
+      # data_id) so they dim/highlight with the selection CSS like the lines.
+      geom_text_interactive(
         data = labels_individual,
-        aes(label = tad_id, vjust = lbl_vjust, alpha = lbl_alpha),
+        aes(label = tad_id, data_id = tad_id),
+        vjust = 1.6,
         hjust = 0.5,
         size = 3.2,
+        alpha = 0.9,
         fontface = "bold",
         show.legend = FALSE
       ) +
       scale_color_manual(values = TAD_PALETTE, na.value = "grey70") +
       scale_x_continuous(breaks = seq(2030, PROJ_END, by = 5)) +
       scale_y_continuous(labels = label_dollar(scale = 1e-6, suffix = "M")) +
-      scale_size_identity() +
-      scale_alpha_identity() +
-      scale_linewidth_identity() +
       labs(y = "") +
       theme_tad() +
       theme(
@@ -1018,7 +1019,8 @@ server <- function(input, output, session) {
       width_svg = 10,
       height_svg = 4.5,
       options = list(
-        opts_selection(type = "single"),
+        opts_selection(type = "single", css = "opacity:1; stroke-width:2.5px;"),
+        opts_selection_inv(css = "opacity:0.12;"),
         opts_hover(css = "cursor:pointer; opacity:1; stroke-width:2px;"),
         opts_tooltip(
           css = "background:white; border:1px solid #ccc;
