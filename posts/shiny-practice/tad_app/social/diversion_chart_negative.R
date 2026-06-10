@@ -54,11 +54,11 @@ ann_row <- ribbon_df |> filter(year == ann_year)
 ann_mid <- (ann_row$cp + ann_row$nri) / 2
 ann_height <- ann_row$cp - ann_row$nri # ribbon height (positive)
 
-# End-of-line labels — display as positive values
+# End-of-line labels — display as negative values
 labels_2055 <- dd |>
   filter(year == 2055) |>
   mutate(
-    lab = dollar(abs(cumulative), scale = 1e-9, suffix = "B", accuracy = 0.1)
+    lab = dollar(cumulative, scale = 1e-9, suffix = "B", accuracy = 0.1)
   )
 
 # ── Colors ────────────────────────────────────────────────
@@ -121,7 +121,7 @@ p <- ggplot() +
     "text",
     x = ann_year,
     y = ann_mid + ann_height * 0.22,
-    label = paste0("+", gap_label),
+    label = paste0("-", gap_label),
     color = col_nri,
     size = 9,
     fontface = "bold",
@@ -132,7 +132,7 @@ p <- ggplot() +
     "text",
     x = ann_year,
     y = -1.90 * 1000000000,
-    label = "more diverted from APS\nunder the Updated NRI Plan",
+    label = "additional revenue diverted\nunder the Updated NRI Plan",
     color = col_nri,
     size = 3.5,
     hjust = 0.5,
@@ -149,7 +149,7 @@ p <- ggplot() +
     labels = \(x) {
       ifelse(
         x == 0,
-        "",
+        "$0",
         label_dollar(scale = 1e-9, suffix = "B", accuracy = 1)(x)
       )
     },
